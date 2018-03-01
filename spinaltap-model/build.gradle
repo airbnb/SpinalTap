@@ -1,0 +1,19 @@
+plugins {
+  id "org.jruyi.thrift" version "0.4.0"
+}
+
+dependencies {
+  compile "org.apache.commons:commons-lang3:3.4"
+  compile "com.google.guava:guava:18.0"
+  compile "org.projectlombok:lombok:1.16.8"
+  compile "com.fasterxml.jackson.core:jackson-annotations:2.7.8"
+  compile "org.slf4j:slf4j-api:1.7.7"
+  compile "org.apache.thrift:libthrift:0.9.3"
+ 
+  testCompile "junit:junit:4.12"
+}
+
+compileThrift {
+  createGenFolder false
+  generator "java", "beans,fullcamel"
+}

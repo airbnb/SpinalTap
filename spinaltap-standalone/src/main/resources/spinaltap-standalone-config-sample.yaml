@@ -1,0 +1,14 @@
+zk-connection-string: localhost:2181
+zk-namespace: spinaltap-standalone
+kafka-config:
+mysql-user: spinaltap
+mysql-password: spinaltap
+mysql-sources:
+  - name: localhost
+    host: localhost
+    port: 3306
+    tables:
+      - test:users
+      - test:places
+    destination:
+      buffer_size: 1000

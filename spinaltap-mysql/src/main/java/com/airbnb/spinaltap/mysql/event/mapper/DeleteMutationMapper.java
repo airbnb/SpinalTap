@@ -1,0 +1,47 @@
+/**
+ * Copyright 2018 Airbnb. Licensed under Apache-2.0. See License in the project root for license
+ * information.
+ */
+package com.airbnb.spinaltap.mysql.event.mapper;
+
+import com.airbnb.spinaltap.mysql.DataSource;
+import com.airbnb.spinaltap.mysql.TableCache;
+import com.airbnb.spinaltap.mysql.Transaction;
+import com.airbnb.spinaltap.mysql.event.DeleteEvent;
+import com.airbnb.spinaltap.mysql.mutation.MysqlDeleteMutation;
+import com.airbnb.spinaltap.mysql.mutation.schema.ColumnMetadata;
+import com.airbnb.spinaltap.mysql.mutation.schema.Row;
+import com.airbnb.spinaltap.mysql.mutation.schema.Table;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
+
+class DeleteMutationMapper extends MysqlMutationMapper<DeleteEvent, MysqlDeleteMutation> {
+  DeleteMutationMapper(
+      DataSource dataSource,
+      TableCache tableCache,
+      AtomicReference<Transaction> beginTransaction,
+      AtomicReference<Transaction> lastTransaction,
+      AtomicLong leaderEpoch) {
+    super(dataSource, tableCache, beginTransaction, lastTransaction, leaderEpoch);
+  }
+
+  @Override
+  protected List<MysqlDeleteMutation> mapEvent(Table table, DeleteEvent event) {
+    Collection<ColumnMetadata> cols = table.getColumns().values();
+    List<MysqlDeleteMutation> mutations = new ArrayList<>();
+    List<Serializable[]> rows = event.getRows();
+
+    for (int position = 0; position < rows.size(); position++) {
+      mutations.add(
+          new MysqlDeleteMutation(
+              createMetadata(table, event, position),
+              new Row(table, zip(rows.get(position), cols))));
+    }
+
+    return mutations;
+  }
+}

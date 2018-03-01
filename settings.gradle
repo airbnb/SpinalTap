@@ -1,0 +1,6 @@
+include "spinaltap-common"
+include "spinaltap-kafka"
+include "spinaltap-model"
+include "spinaltap-mysql"
+include "spinaltap-standalone"
+include "kafka-test-harness"
