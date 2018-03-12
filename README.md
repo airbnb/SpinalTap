@@ -6,7 +6,7 @@ SpinalTap has become an integral component in Airbnb's infrastructure platform a
 This project is experimental. Please use with discretion.
 
 ## Getting Started
-### Install Thrift 0.9.x Compiler
+### Install Thrift 0.9.3 Compiler
 https://thrift.apache.org/docs/install/
 ### Building SpinalTap Standalone JAR
 ```
