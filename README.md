@@ -2,6 +2,9 @@
 SpinalTap is a general-purpose reliable Change Data Capture (CDC) service, capable of detecting data mutations with low-latency across different data sources, and propagating them as standardized events to downstream consumers.
 SpinalTap has become an integral component in Airbnb's infrastructure platform and data processing pipeline, on which several critical applications are reliant on.
 
+## Disclaimer
+This project is experimental. Please use with discretion.
+
 ## Getting Started
 ### Install Thrift 0.9.x Compiler
 https://thrift.apache.org/docs/install/
