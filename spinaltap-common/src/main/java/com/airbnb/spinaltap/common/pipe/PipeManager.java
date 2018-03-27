@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeoutException;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
@@ -20,6 +21,8 @@ import org.apache.commons.collections.CollectionUtils;
 @Slf4j
 @NoArgsConstructor
 public class PipeManager {
+  private static final long CHECK_STOPPED_WAIT_MILLISEC = 1000L;
+  private static final int CHECK_STOPPED_WAIT_TIMEOUT_SECONDS = 30;
   private final Table<String, String, List<Pipe>> pipeTable =
       Tables.newCustomTable(Maps.newConcurrentMap(), Maps::newConcurrentMap);
 
@@ -131,5 +134,26 @@ public class PipeManager {
                 log.error("Failed to stop pipe " + pipe.getName(), ex);
               }
             });
+  }
+
+  public boolean allPipesStopped() {
+    return pipeTable
+        .values()
+        .parallelStream()
+        .flatMap(Collection::parallelStream)
+        .noneMatch(Pipe::isStarted);
+  }
+
+  public void waitUntilStopped() throws Exception {
+    int periods = 0;
+    while (!allPipesStopped()) {
+      if (CHECK_STOPPED_WAIT_MILLISEC * periods++ >= 1000 * CHECK_STOPPED_WAIT_TIMEOUT_SECONDS) {
+        throw new TimeoutException(
+            String.format(
+                "Not all pipes were stopped completely within %s seconds",
+                CHECK_STOPPED_WAIT_TIMEOUT_SECONDS));
+      }
+      Thread.sleep(CHECK_STOPPED_WAIT_MILLISEC);
+    }
   }
 }

@@ -107,6 +107,7 @@ public class MySQLPipeFactory extends AbstractPipeFactory<MysqlConfiguration> {
             .withPool(destConfig.getPoolSize(), MysqlKeyProvider.INSTANCE)
             .withValidation()
             .withLargeMessage(sourceConfig.isLargeMessageEnabled())
+            .withDelaySendMs(sourceConfig.getDelaySendMs())
             .build();
 
     PipeMetrics metrics = new PipeMetrics(source.getName(), metricRegistry);
