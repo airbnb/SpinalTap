@@ -103,7 +103,7 @@ public class KafkaDestinationTest extends AbstractKafkaIntegrationTestHarness {
   public void KafkaDestination() throws Exception {
     createKafkaTopic(TOPIC);
     KafkaProducerConfiguration configs = new KafkaProducerConfiguration(this.bootstrapServers());
-    KafkaDestination kafkaDestination = new KafkaDestination(null, configs, null, null);
+    KafkaDestination kafkaDestination = new KafkaDestination(null, configs, null, null, 0L);
     List<Mutation> messages = new ArrayList<>();
     messages.add(createMutation(MutationType.INSERT));
     messages.add(createMutation(MutationType.UPDATE));

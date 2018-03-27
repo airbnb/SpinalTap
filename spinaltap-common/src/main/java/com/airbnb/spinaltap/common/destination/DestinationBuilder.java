@@ -23,6 +23,7 @@ public abstract class DestinationBuilder<T> {
   protected DestinationMetrics metrics;
   protected String topicNamePrefix = "spinaltap";
   protected boolean largeMessageEnabled = false;
+  protected long delaySendMs = 0;
 
   private KeyProvider<Mutation<?>, String> keyProvider;
   private int bufferSize = 0;
@@ -69,6 +70,11 @@ public abstract class DestinationBuilder<T> {
 
   public DestinationBuilder<T> withLargeMessage(boolean largeMessageEnabled) {
     this.largeMessageEnabled = largeMessageEnabled;
+    return this;
+  }
+
+  public DestinationBuilder<T> withDelaySendMs(long delaySendMs) {
+    this.delaySendMs = delaySendMs;
     return this;
   }
 

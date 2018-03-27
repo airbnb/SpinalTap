@@ -15,6 +15,6 @@ public class KafkaDestinationBuilder<T extends TBase<?, ?>> extends DestinationB
 
   @Override
   protected Destination createDestination() {
-    return new KafkaDestination<>(topicNamePrefix, producerConfig, mapper, metrics);
+    return new KafkaDestination<>(topicNamePrefix, producerConfig, mapper, metrics, delaySendMs);
   }
 }
