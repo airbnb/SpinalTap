@@ -9,30 +9,43 @@ import com.airbnb.spinaltap.common.exception.SourceException;
 import com.airbnb.spinaltap.common.util.Filter;
 import com.airbnb.spinaltap.common.util.Mapper;
 import com.airbnb.spinaltap.common.util.Validator;
-import com.google.common.base.Preconditions;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
+
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import com.google.common.base.Preconditions;
+import com.google.common.base.Stopwatch;
+
 /**
- * Base abstract implementation of Source.
+ * Base abstract implementation of {@link Source}.
  *
- * @param <E> The event type produced by the source
+ * @param <E> The {@link SourceEvent} type produced by the given {@link Source}.
  */
 @Slf4j
 @RequiredArgsConstructor
 public abstract class AbstractSource<E extends SourceEvent> extends ListenableSource<E> {
-  @Getter protected final String name;
-  protected final SourceMetrics metrics;
-  protected final AtomicBoolean started = new AtomicBoolean(false);
+  @NonNull @Getter protected final String name;
+  @NonNull protected final SourceMetrics metrics;
+  @NonNull protected final AtomicBoolean started = new AtomicBoolean(false);
 
+  /**
+   * Maps the {@link Source} event to the corresponding {@link Mutation}.
+   */
   private final Mapper<E, List<? extends Mutation<?>>> mutationMapper;
+
+  /**
+   * Filters the {@link SourceEvent}s.
+   */
   private final Filter<E> eventFilter;
 
   @Override
-  public void open() {
+  public final void open() {
     try {
       if (isStarted()) {
         log.info("Source {} already started", name);
@@ -40,7 +53,7 @@ public abstract class AbstractSource<E extends SourceEvent> extends ListenableSo
       }
 
       Preconditions.checkState(
-          isTerminated(), "Previous processor thread has not terminated for source ", name);
+          isTerminated(), "Previous processor thread has not terminated for source %s", name);
 
       initialize();
       notifyStart();
@@ -51,7 +64,7 @@ public abstract class AbstractSource<E extends SourceEvent> extends ListenableSo
       log.info("Started source {}", name);
       metrics.start();
     } catch (Throwable ex) {
-      String errorMessage = String.format("Failed to start source %s", name);
+      final String errorMessage = String.format("Failed to start source %s", name);
 
       log.error(errorMessage, ex);
       metrics.startFailure(ex);
@@ -63,7 +76,7 @@ public abstract class AbstractSource<E extends SourceEvent> extends ListenableSo
   }
 
   @Override
-  public void close() {
+  public final void close() {
     try {
       stop();
       started.set(false);
@@ -76,7 +89,7 @@ public abstract class AbstractSource<E extends SourceEvent> extends ListenableSo
   }
 
   @Override
-  public void checkpoint(Mutation<?> mutation) {
+  public final void checkpoint(Mutation<?> mutation) {
     try {
       log.info("Checkpoint source {}", name);
 
@@ -84,7 +97,7 @@ public abstract class AbstractSource<E extends SourceEvent> extends ListenableSo
 
       metrics.checkpoint();
     } catch (Throwable ex) {
-      String errorMessage = String.format("Failed to checkpoint source %s", name);
+      final String errorMessage = String.format("Failed to checkpoint source %s", name);
 
       log.error(errorMessage, ex);
       metrics.checkpointFailure(ex);
@@ -111,10 +124,10 @@ public abstract class AbstractSource<E extends SourceEvent> extends ListenableSo
   protected abstract boolean isTerminated();
 
   /**
-   * Processes an event produced by the source and notifies subscribers of the corresponding
-   * mutations
+   * Processes an event produced by the {@link Source} and notifies {@link Source.Listener}
+   * subscribers of the corresponding {@link Mutation}s.
    */
-  public void processEvent(E event) {
+  public final void processEvent(final E event) {
     try {
       if (!eventFilter.apply(event)) {
         log.debug("Event filtered from source {}. Skipping. event={}", name, event);
@@ -123,23 +136,25 @@ public abstract class AbstractSource<E extends SourceEvent> extends ListenableSo
 
       notifyEvent(event);
 
+      final Stopwatch stopwatch = Stopwatch.createStarted();
+
       metrics.eventReceived(event);
       log.debug("Received event from source {}. event={}", name, event);
 
-      long start = System.currentTimeMillis();
-
       notifyMutations(mutationMapper.map(event));
 
-      long end = System.currentTimeMillis();
-      metrics.processEventTime(event, end - start);
+      stopwatch.stop();
+      final long time = stopwatch.elapsed(TimeUnit.MILLISECONDS);
+
+      metrics.processEventTime(event, time);
 
     } catch (Exception ex) {
       if (!isStarted()) {
-        // Do not process the exception if streaming has stopped
+        // Do not process the exception if streaming has stopped.
         return;
       }
 
-      String errorMessage = String.format("Failed to process event from source %s", name);
+      final String errorMessage = String.format("Failed to process event from source %s", name);
 
       log.error(errorMessage, ex);
       metrics.eventFailure(ex);
@@ -150,7 +165,7 @@ public abstract class AbstractSource<E extends SourceEvent> extends ListenableSo
     }
   }
 
-  public void addEventValidator(Validator<E> validator) {
+  public final void addEventValidator(@NonNull final Validator<E> validator) {
     addListener(
         new Listener() {
           @Override
@@ -166,7 +181,8 @@ public abstract class AbstractSource<E extends SourceEvent> extends ListenableSo
         });
   }
 
-  public <M extends Mutation<?>> void addMutationValidator(Validator<M> validator) {
+  public final <M extends Mutation<?>> void addMutationValidator(
+      @NonNull final Validator<M> validator) {
     addListener(
         new Listener() {
           @Override
