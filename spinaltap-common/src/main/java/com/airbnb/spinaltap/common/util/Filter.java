@@ -15,7 +15,7 @@ public interface Filter<T> {
    * Applies the filter on the object
    *
    * @param object the object to filter
-   * @return true if the object passes the filter, false otherwise
+   * @return {@code true} if the filter condition passes, {@code false} otherwise
    */
   boolean apply(T object);
 }

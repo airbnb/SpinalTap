@@ -4,29 +4,38 @@
  */
 package com.airbnb.spinaltap.common.util;
 
-import java.util.HashMap;
-import java.util.Map;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
-/** Maps an object according to the registered mapper for the class type */
+import java.util.HashMap;
+import java.util.Map;
+
+import com.google.common.base.Preconditions;
+
+/**
+ * Maps an object according to the registered mapper by {@link Class} type
+ * */
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public class ClassBasedMapper<T, R> implements Mapper<T, R> {
-  private final Map<Class<? extends T>, Mapper<T, ? extends R>> locator;
+  @NonNull private final Map<Class<? extends T>, Mapper<T, ? extends R>> locator;
+
+
+  public static <T, R> ClassBasedMapper.Builder<T, R> builder() {
+    return new ClassBasedMapper.Builder<>();
+  }
 
   @SuppressWarnings("unchecked")
-  public R map(T object) {
+  @Override
+  public R map(@NonNull final T object) {
     Mapper<T, ? extends R> mapper = locator.get(object.getClass());
-
-    if (mapper == null) {
-      throw new UnsupportedOperationException("No mapper found for type " + object.getClass());
-    }
+    Preconditions.checkNotNull(mapper, "No mapper found for type " + object.getClass());
 
     return mapper.map(object);
   }
 
-  @NoArgsConstructor
+  @NoArgsConstructor(access = AccessLevel.PRIVATE)
   public static class Builder<T, R> {
     private final Map<Class<? extends T>, Mapper<? extends T, ? extends R>> locator =
         new HashMap<>();

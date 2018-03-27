@@ -5,12 +5,16 @@
 package com.airbnb.spinaltap.common.util;
 
 /**
- * Responsible for performing validation logic on an object
+ * Responsible for validation logic on an object.
  *
- * @param <T> The object type
+ * @param <T> The object type.
  */
 public interface Validator<T> {
-  /** Validates the object */
+  /**
+   * Validates the object
+   *
+   * @param object the object
+   */
   void validate(T object);
 
   /** Resets the state of the validator */
