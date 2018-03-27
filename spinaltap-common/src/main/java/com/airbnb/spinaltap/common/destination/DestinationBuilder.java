@@ -10,12 +10,18 @@ import com.airbnb.spinaltap.common.util.KeyProvider;
 import com.airbnb.spinaltap.common.util.Mapper;
 import com.airbnb.spinaltap.common.util.Validator;
 import com.airbnb.spinaltap.common.validator.MutationOrderValidator;
-import com.google.common.base.Preconditions;
-import com.google.common.collect.Lists;
+
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
+
 import java.util.List;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
-import lombok.NoArgsConstructor;
+
+import javax.validation.constraints.Min;
+
+import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
 
 @NoArgsConstructor
 public abstract class DestinationBuilder<T> {
@@ -41,23 +47,23 @@ public abstract class DestinationBuilder<T> {
     return this;
   }
 
-  public DestinationBuilder<T> withTopicNamePrefix(String topicNamePrefix) {
+  public DestinationBuilder<T> withTopicNamePrefix(@NonNull final String topicNamePrefix) {
     this.topicNamePrefix = topicNamePrefix;
     return this;
   }
 
-  public DestinationBuilder<T> withMetrics(DestinationMetrics metrics) {
+  public DestinationBuilder<T> withMetrics(@NonNull final DestinationMetrics metrics) {
     this.metrics = metrics;
     return this;
   }
 
-  public DestinationBuilder<T> withBuffer(int bufferSize) {
+  public DestinationBuilder<T> withBuffer(@Min(0) final int bufferSize) {
     this.bufferSize = bufferSize;
     return this;
   }
 
   public DestinationBuilder<T> withPool(
-      int poolSize, KeyProvider<Mutation<?>, String> keyProvider) {
+      @Min(0) final int poolSize, @NonNull final KeyProvider<Mutation<?>, String> keyProvider) {
     this.poolSize = poolSize;
     this.keyProvider = keyProvider;
     return this;
@@ -68,7 +74,7 @@ public abstract class DestinationBuilder<T> {
     return this;
   }
 
-  public DestinationBuilder<T> withLargeMessage(boolean largeMessageEnabled) {
+  public DestinationBuilder<T> withLargeMessage(final boolean largeMessageEnabled) {
     this.largeMessageEnabled = largeMessageEnabled;
     return this;
   }
@@ -79,12 +85,12 @@ public abstract class DestinationBuilder<T> {
   }
 
   public Destination build() {
-    Preconditions.checkNotNull(mapper, "Mapper was not specified");
-    Preconditions.checkNotNull(metrics, "Metrics were not specified");
+    Preconditions.checkNotNull(mapper, "Mapper was not specified.");
+    Preconditions.checkNotNull(metrics, "Metrics were not specified.");
 
-    Supplier<Destination> supplier =
+    final Supplier<Destination> supplier =
         () -> {
-          Destination destination = createDestination();
+          final Destination destination = createDestination();
 
           if (validationEnabled) {
             registerValidator(destination, new MutationOrderValidator(metrics::outOfOrder));
@@ -106,10 +112,10 @@ public abstract class DestinationBuilder<T> {
 
   protected abstract Destination createDestination();
 
-  private Destination createDestinationPool(Supplier<Destination> supplier) {
+  private Destination createDestinationPool(final Supplier<Destination> supplier) {
     Preconditions.checkNotNull(keyProvider, "Key provider was not specified");
 
-    List<Destination> destinations = Lists.newArrayList();
+    final List<Destination> destinations = Lists.newArrayList();
     for (int i = 0; i < poolSize; i++) {
       destinations.add(supplier.get());
     }

@@ -6,20 +6,36 @@ package com.airbnb.spinaltap.common.destination;
 
 import com.airbnb.spinaltap.Mutation;
 import com.airbnb.spinaltap.common.util.KeyProvider;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
+
+import lombok.AccessLevel;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import lombok.extern.slf4j.Slf4j;
+import java.util.stream.Collectors;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+
+import static java.util.stream.Collectors.groupingBy;
+
+/**
+ * Represents a pool of {@link Destination}s, where events are routed to given a partitioning
+ * function based on {@link Mutation} key. This implement helps to fan-out load, which is
+ * particularly useful to keep event latency smooeth when there are event spikes.</p>
+ */
 @Slf4j
-public class DestinationPool extends ListenableDestination {
-  private final KeyProvider<Mutation<?>, String> keyProvider;
-  private final List<Destination> destinations;
-  private final boolean[] isActive;
+@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
+public final class DestinationPool extends ListenableDestination {
+  @NonNull private final KeyProvider<Mutation<?>, String> keyProvider;
+  @NonNull private final List<Destination> destinations;
+  @NonNull private final boolean[] isActive;
 
   private Listener destinationListener =
       new Listener() {
@@ -29,11 +45,9 @@ public class DestinationPool extends ListenableDestination {
       };
 
   public DestinationPool(
-      KeyProvider<Mutation<?>, String> keyProvider, List<Destination> destinations) {
-    this.destinations = destinations;
-    this.keyProvider = keyProvider;
-
-    this.isActive = new boolean[destinations.size()];
+      @NonNull final KeyProvider<Mutation<?>, String> keyProvider,
+      @NonNull final List<Destination> destinations) {
+    this(keyProvider, destinations, new boolean[destinations.size()]);
 
     destinations.forEach(destination -> destination.addListener(destinationListener));
   }
@@ -43,16 +57,15 @@ public class DestinationPool extends ListenableDestination {
   }
 
   /**
-   * Gets the mutation with the earliest id from the last published mutations of the destinations in
-   * the pool
+   * Gets the {@link Mutation} with the earliest id from the last published {@link Mutation}s across
+   * all {@link Destination}s in the pool.
    *
-   * <p>Note: If there is any destination that we have sent mutations to but has not published yet,
-   * it will return null as its lastPublishedMutation. This might lead to data loss if 1) that
-   * destination fails to publish, and 2) we checkpoint on another destination's last mutation that
-   * is ahead in position.
-   *
-   * <p>The solution is to avoid checkpointing in this scenario by returning null. isActive is used
-   * in order to disregard destinations that have not yet been sent any mutations
+   * <p>Note: If there is any {@link Destination} that we have sent {@link Mutation}s to but has not
+   * been published yet, null will be returned as the last published {@link Mutation}. This might
+   * lead to data loss if 1) the {@code Destination} fails to publish, and 2) we checkpoint on
+   * another {@link Destination}'s last published {@link Mutation} that is ahead in position. The
+   * solution is to avoid checkpointing in this scenario by returning null. {@code isActive} is used
+   * in order to disregard {@link Destination}s that have not yet been sent any {@link Mutation}s.
    */
   @Override
   public synchronized Mutation<?> getLastPublishedMutation() {
@@ -71,15 +84,17 @@ public class DestinationPool extends ListenableDestination {
   }
 
   /**
-   * Partitions the mutation list according to the supplied key provider and routes to the
-   * corresponding destinations
+   * Partitions the {@link Mutation} list according to the supplied {@link KeyProvider} and routes
+   * to the corresponding {@link Destination}s
    */
   @Override
-  public synchronized void send(List<? extends Mutation<?>> mutations) {
-    partition(mutations)
+  public synchronized void send(@NonNull final List<? extends Mutation<?>> mutations) {
+    mutations
+        .stream()
+        .collect(groupingBy(this::getPartitionId))
         .forEach(
             (id, mutationList) -> {
-              log.debug("Sending {} mutations to destination {}", mutationList.size(), id);
+              log.debug("Sending {} mutations to destination {}.", mutationList.size(), id);
 
               // Always retain this order
               isActive[id] = true;
@@ -87,22 +102,8 @@ public class DestinationPool extends ListenableDestination {
             });
   }
 
-  private Map<Integer, List<Mutation<?>>> partition(List<? extends Mutation<?>> mutations) {
-    Map<Integer, List<Mutation<?>>> partitions = Maps.newLinkedHashMap();
-
-    mutations.forEach(
-        mutation -> {
-          int partitionId = getPartitionId(mutation);
-
-          partitions.putIfAbsent(partitionId, Lists.newArrayList());
-          partitions.get(partitionId).add(mutation);
-        });
-
-    return partitions;
-  }
-
   /** The is currently a replication of the logic in {@link kafka.producer.DefaultPartitioner} */
-  private int getPartitionId(Mutation<?> mutation) {
+  private int getPartitionId(final Mutation<?> mutation) {
     return Math.abs(keyProvider.get(mutation).hashCode() % destinations.size());
   }
 
