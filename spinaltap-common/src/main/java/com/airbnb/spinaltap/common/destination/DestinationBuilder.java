@@ -34,7 +34,7 @@ public abstract class DestinationBuilder<T> {
   private int poolSize = 0;
   private boolean validationEnabled = false;
 
-  public DestinationBuilder<T> withMapper(@NonNull final BatchMapper<Mutation<?>, T> mapper) {
+  public DestinationBuilder<T> withBatchMapper(@NonNull final BatchMapper<Mutation<?>, T> mapper) {
     this.mapper = mapper;
     return this;
   }

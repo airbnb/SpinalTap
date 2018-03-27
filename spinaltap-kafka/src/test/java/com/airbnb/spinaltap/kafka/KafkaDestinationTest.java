@@ -105,6 +105,7 @@ public class KafkaDestinationTest extends AbstractKafkaIntegrationTestHarness {
     }
   }
 
+  @SuppressWarnings("unchecked")
   @Test
   public void KafkaDestination() throws Exception {
     createKafkaTopic(TOPIC);

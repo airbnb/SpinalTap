@@ -25,7 +25,7 @@ public class ClassBasedMapper<T, R> implements Mapper<T, R> {
     return new ClassBasedMapper.Builder<>();
   }
 
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings("rawtypes")
   @Override
   public R map(@NonNull final T object) {
     Mapper<T, ? extends R> mapper = locator.get(object.getClass());

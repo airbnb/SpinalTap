@@ -35,6 +35,7 @@ public abstract class AbstractDestination<T> extends ListenableDestination {
     return lastPublishedMutation.get();
   }
 
+  @SuppressWarnings("unchecked")
   @Override
   public void send(@NonNull final List<? extends Mutation<?>> mutations) {
     if (mutations.isEmpty()) {
