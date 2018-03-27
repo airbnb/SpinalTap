@@ -4,9 +4,6 @@
  */
 package com.airbnb.spinaltap.mysql.event.mapper;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
-
 import com.airbnb.spinaltap.Mutation;
 import com.airbnb.spinaltap.common.util.Mapper;
 import com.airbnb.spinaltap.mysql.BinlogFilePos;
@@ -32,15 +29,24 @@ import com.airbnb.spinaltap.mysql.mutation.schema.Row;
 import com.airbnb.spinaltap.mysql.mutation.schema.Table;
 import com.airbnb.spinaltap.mysql.schema.MysqlSchemaTracker;
 import com.airbnb.spinaltap.mysql.schema.SchemaTracker;
-import com.google.common.collect.ImmutableList;
+
 import java.io.Serializable;
 import java.util.AbstractMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
+
+import com.google.common.collect.ImmutableList;
 import org.junit.Before;
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class MysqlMutationMapperTest {
   private static final DataSource DATA_SOURCE = new DataSource("test", 0, "test");
@@ -406,7 +412,7 @@ public class MysqlMutationMapperTest {
     verify(tableCache, times(1)).clear();
   }
 
-  @Test(expected = UnsupportedOperationException.class)
+  @Test(expected = IllegalStateException.class)
   public void testNoMutationMapping() throws Exception {
     eventMapper.map(mock(BinlogEvent.class));
   }

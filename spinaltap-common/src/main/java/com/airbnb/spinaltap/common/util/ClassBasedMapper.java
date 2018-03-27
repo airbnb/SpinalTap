@@ -15,12 +15,11 @@ import java.util.Map;
 import com.google.common.base.Preconditions;
 
 /**
- * Maps an object according to the registered mapper by {@link Class} type
+ * Maps an object according to the registered mapper by {@link Class} type.
  * */
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public class ClassBasedMapper<T, R> implements Mapper<T, R> {
   @NonNull private final Map<Class<? extends T>, Mapper<T, ? extends R>> locator;
-
 
   public static <T, R> ClassBasedMapper.Builder<T, R> builder() {
     return new ClassBasedMapper.Builder<>();
@@ -30,7 +29,7 @@ public class ClassBasedMapper<T, R> implements Mapper<T, R> {
   @Override
   public R map(@NonNull final T object) {
     Mapper<T, ? extends R> mapper = locator.get(object.getClass());
-    Preconditions.checkNotNull(mapper, "No mapper found for type " + object.getClass());
+    Preconditions.checkState(mapper != null, "No mapper found for type " + object.getClass());
 
     return mapper.map(object);
   }

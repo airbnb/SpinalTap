@@ -11,7 +11,6 @@ import com.airbnb.spinaltap.common.util.Mapper;
 import com.airbnb.spinaltap.common.util.Validator;
 import com.airbnb.spinaltap.common.validator.MutationOrderValidator;
 
-import lombok.NoArgsConstructor;
 import lombok.NonNull;
 
 import java.util.List;
@@ -23,7 +22,6 @@ import javax.validation.constraints.Min;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 
-@NoArgsConstructor
 public abstract class DestinationBuilder<T> {
   protected BatchMapper<Mutation<?>, T> mapper;
   protected DestinationMetrics metrics;
@@ -36,45 +34,45 @@ public abstract class DestinationBuilder<T> {
   private int poolSize = 0;
   private boolean validationEnabled = false;
 
-  public DestinationBuilder<T> withMapper(BatchMapper<Mutation<?>, T> mapper) {
+  public DestinationBuilder<T> withMapper(@NonNull final BatchMapper<Mutation<?>, T> mapper) {
     this.mapper = mapper;
     return this;
   }
 
-  public DestinationBuilder<T> withMapper(Mapper<Mutation<?>, T> mapper) {
+  public final DestinationBuilder<T> withMapper(@NonNull final Mapper<Mutation<?>, T> mapper) {
     this.mapper = mutations -> mutations.stream().map(mapper::map).collect(Collectors.toList());
 
     return this;
   }
 
-  public DestinationBuilder<T> withTopicNamePrefix(@NonNull final String topicNamePrefix) {
+  public final DestinationBuilder<T> withTopicNamePrefix(@NonNull final String topicNamePrefix) {
     this.topicNamePrefix = topicNamePrefix;
     return this;
   }
 
-  public DestinationBuilder<T> withMetrics(@NonNull final DestinationMetrics metrics) {
+  public final DestinationBuilder<T> withMetrics(@NonNull final DestinationMetrics metrics) {
     this.metrics = metrics;
     return this;
   }
 
-  public DestinationBuilder<T> withBuffer(@Min(0) final int bufferSize) {
+  public final DestinationBuilder<T> withBuffer(@Min(0) final int bufferSize) {
     this.bufferSize = bufferSize;
     return this;
   }
 
-  public DestinationBuilder<T> withPool(
+  public final DestinationBuilder<T> withPool(
       @Min(0) final int poolSize, @NonNull final KeyProvider<Mutation<?>, String> keyProvider) {
     this.poolSize = poolSize;
     this.keyProvider = keyProvider;
     return this;
   }
 
-  public DestinationBuilder<T> withValidation() {
+  public final DestinationBuilder<T> withValidation() {
     this.validationEnabled = true;
     return this;
   }
 
-  public DestinationBuilder<T> withLargeMessage(final boolean largeMessageEnabled) {
+  public final DestinationBuilder<T> withLargeMessage(final boolean largeMessageEnabled) {
     this.largeMessageEnabled = largeMessageEnabled;
     return this;
   }
@@ -84,7 +82,7 @@ public abstract class DestinationBuilder<T> {
     return this;
   }
 
-  public Destination build() {
+  public final Destination build() {
     Preconditions.checkNotNull(mapper, "Mapper was not specified.");
     Preconditions.checkNotNull(metrics, "Metrics were not specified.");
 

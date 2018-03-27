@@ -7,11 +7,15 @@ package com.airbnb.spinaltap;
 import com.airbnb.common.metrics.TaggedMetricRegistry;
 import com.airbnb.spinaltap.common.pipe.PipeManager;
 import com.airbnb.spinaltap.kafka.KafkaDestinationBuilder;
+import com.airbnb.spinaltap.mysql.MySQLPipeFactory;
 import com.airbnb.spinaltap.mysql.config.MysqlConfiguration;
+
+import lombok.extern.slf4j.Slf4j;
+
+import java.io.File;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import java.io.File;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.ExponentialBackoffRetry;

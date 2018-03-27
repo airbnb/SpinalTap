@@ -39,13 +39,14 @@ public final class BufferedDestination extends ListenableDestination {
   @NonNull private final Destination destination;
   @NonNull private final DestinationMetrics metrics;
   @NonNull private final BlockingQueue<List<? extends Mutation<?>>> mutationBuffer;
-  @NonNull private ExecutorService consumer;
+
+  private ExecutorService consumer;
 
   public BufferedDestination(
       @Min(1) final int bufferSize,
       @NonNull final Destination destination,
       @NonNull final DestinationMetrics metrics) {
-    this(destination, metrics, new ArrayBlockingQueue<>(bufferSize, true), null);
+    this(destination, metrics, new ArrayBlockingQueue<>(bufferSize, true));
 
     destination.addListener(
         new Listener() {
