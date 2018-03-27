@@ -7,16 +7,24 @@ package com.airbnb.spinaltap.common.pipe;
 import com.airbnb.spinaltap.Mutation;
 import com.airbnb.spinaltap.common.destination.Destination;
 import com.airbnb.spinaltap.common.source.Source;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
+
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
-/** Responsible for managing source and routing mutations to destination */
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
+
+/**
+ * Responsible for managing event streaming from a {@link com.airbnb.spinaltap.common.source.Source}
+ * to a given {@link com.airbnb.spinaltap.common.destination.Destination}, as well as the lifecycle
+ * of both components.
+ */
 @Slf4j
 @RequiredArgsConstructor
 public class Pipe {
@@ -24,24 +32,41 @@ public class Pipe {
   private static final int KEEP_ALIVE_PERIOD_SECONDS = 5;
   private static final int EXECUTOR_DELAY_SECONDS = 5;
 
-  @Getter private final Source source;
-  private final Destination destination;
-  private final PipeMetrics metrics;
+  @NonNull @Getter private final Source source;
+  @NonNull private final Destination destination;
+  @NonNull private final PipeMetrics metrics;
 
   private final Source.Listener sourceListener = new SourceListener();
   private final Destination.Listener destinationListener = new DestinationListener();
 
+  /**
+   * The checkpoint executor periodically checkpoints the state of the source
+   */
   private ScheduledExecutorService checkpointExecutor;
+
+  /**
+   * The keep-alive executor periodically ensure the pipe is alive, and otherwise (for instance, in
+   * event of failure) restarts it.
+   */
   private ScheduledExecutorService keepAliveExecutor;
 
+  /**
+   * @return The name of the pipe
+   */
   public String getName() {
     return source.getName();
   }
 
+  /**
+   * @return the last mutation successfully sent to the pipe's {@link Destination}.
+   */
   public Mutation<?> getLastMutation() {
     return destination.getLastPublishedMutation();
   }
 
+  /**
+   * Starts event streaming for the pipe.
+   */
   public void start() {
     source.addListener(sourceListener);
     destination.addListener(destinationListener);
@@ -108,6 +133,9 @@ public class Pipe {
         TimeUnit.SECONDS);
   }
 
+  /**
+   * Stops event streaming for the pipe.
+   */
   public void stop() {
     if (keepAliveExecutor != null) {
       keepAliveExecutor.shutdownNow();
@@ -123,12 +151,14 @@ public class Pipe {
     close();
 
     source.removeListener(sourceListener);
-
     destination.removeListener(destinationListener);
 
     metrics.stop();
   }
 
+  /**
+   * Opens {@link Source} and {@link Destination} to start event streaming
+   */
   private synchronized void open() {
     destination.open();
     source.open();
@@ -136,6 +166,10 @@ public class Pipe {
     metrics.open();
   }
 
+  /**
+   * Closes the {@link Source} and {@link Destination} to stop event streaming, and checkpoints the
+   * last recorded {@link Source} state.
+   */
   private synchronized void close() {
     source.close();
     destination.close();
@@ -149,15 +183,21 @@ public class Pipe {
     source.removeListener(sourceListener);
   }
 
+  /**
+   * @return whether the pipe is currently streaming events
+   */
   public boolean isStarted() {
     return source.isStarted() && destination.isStarted();
   }
 
+  /**
+   * Checkpoints the source according to the last streamed {@link Mutation} in the pipe
+   */
   public void checkpoint() {
     source.checkpoint(getLastMutation());
   }
 
-  class SourceListener extends Source.Listener {
+  final class SourceListener extends Source.Listener {
     public void onMutation(List<? extends Mutation<?>> mutations) {
       destination.send(mutations);
     }
@@ -167,7 +207,7 @@ public class Pipe {
     }
   }
 
-  class DestinationListener extends Destination.Listener {
+  final class DestinationListener extends Destination.Listener {
     public void onError(Exception ex) {
       destination.close();
     }
