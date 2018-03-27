@@ -25,15 +25,18 @@ import com.airbnb.spinaltap.mysql.mutation.schema.Column;
 import com.airbnb.spinaltap.mysql.mutation.schema.ColumnMetadata;
 import com.airbnb.spinaltap.mysql.mutation.schema.Table;
 import com.airbnb.spinaltap.mysql.schema.SchemaTracker;
-import com.google.common.collect.ImmutableMap;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+
+import com.google.common.collect.ImmutableMap;
 
 /** Maps a BinlogEvent to a Mutation */
 @Slf4j
@@ -54,7 +57,7 @@ public abstract class MysqlMutationMapper<R extends BinlogEvent, T extends Mysql
       AtomicReference<Transaction> beginTransaction,
       AtomicReference<Transaction> lastTransaction,
       MysqlSourceMetrics metrics) {
-    return new ClassBasedMapper.Builder<BinlogEvent, List<? extends Mutation<?>>>()
+    return ClassBasedMapper.<BinlogEvent, List<? extends Mutation<?>>>builder()
         .addMapper(TableMapEvent.class, new TableMapMapper(tableCache))
         .addMapper(QueryEvent.class, new QueryMapper(beginTransaction, schemaTracker))
         .addMapper(XidEvent.class, new XidMapper(lastTransaction, metrics))

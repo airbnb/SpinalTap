@@ -16,10 +16,13 @@ import com.airbnb.spinaltap.mysql.mutation.MysqlMutationMetadata;
 import com.airbnb.spinaltap.mysql.mutation.MysqlUpdateMutation;
 import com.airbnb.spinaltap.mysql.mutation.schema.Column;
 import com.airbnb.spinaltap.mysql.mutation.schema.Row;
-import com.google.common.collect.ImmutableMap;
+
+import lombok.RequiredArgsConstructor;
+
 import java.nio.ByteBuffer;
 import java.util.Map;
-import lombok.RequiredArgsConstructor;
+
+import com.google.common.collect.ImmutableMap;
 
 @RequiredArgsConstructor
 public abstract class ThriftMutationMapper<T extends MysqlMutation>
@@ -27,7 +30,7 @@ public abstract class ThriftMutationMapper<T extends MysqlMutation>
   protected final String sourceId;
 
   public static Mapper<com.airbnb.spinaltap.Mutation<?>, Mutation> create(String sourceId) {
-    return new ClassBasedMapper.Builder<com.airbnb.spinaltap.Mutation<?>, Mutation>()
+    return ClassBasedMapper.<com.airbnb.spinaltap.Mutation<?>, Mutation>builder()
         .addMapper(MysqlInsertMutation.class, new InsertMutationMapper(sourceId))
         .addMapper(MysqlUpdateMutation.class, new UpdateMutationMapper(sourceId))
         .addMapper(MysqlDeleteMutation.class, new DeleteMutationMapper(sourceId))

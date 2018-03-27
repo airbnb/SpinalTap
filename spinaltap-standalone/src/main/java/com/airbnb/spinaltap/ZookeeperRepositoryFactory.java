@@ -5,7 +5,7 @@
 package com.airbnb.spinaltap;
 
 import com.airbnb.spinaltap.common.source.SourceState;
-import com.airbnb.spinaltap.common.util.RepositoryFactory;
+import com.airbnb.spinaltap.common.util.StateRepositoryFactory;
 import com.airbnb.spinaltap.common.util.ZookeeperRepository;
 import com.fasterxml.jackson.core.type.TypeReference;
 import java.util.Collection;
@@ -13,7 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.apache.curator.framework.CuratorFramework;
 
 @RequiredArgsConstructor
-public class ZookeeperRepositoryFactory implements RepositoryFactory {
+public class ZookeeperRepositoryFactory implements StateRepositoryFactory {
   private final CuratorFramework zkClient;
 
   @Override

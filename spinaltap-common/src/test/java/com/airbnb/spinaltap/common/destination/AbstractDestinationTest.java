@@ -15,12 +15,15 @@ import static org.mockito.Mockito.when;
 
 import com.airbnb.spinaltap.Mutation;
 import com.airbnb.spinaltap.common.exception.DestinationException;
+
+import lombok.Getter;
+import lombok.Setter;
+
+import java.util.List;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import java.util.List;
-import lombok.Getter;
-import lombok.Setter;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -28,7 +31,7 @@ public class AbstractDestinationTest {
   private final Destination.Listener listener = mock(Destination.Listener.class);
   private final DestinationMetrics metrics = mock(DestinationMetrics.class);
 
-  TestDestination destination;
+  private TestDestination destination;
 
   @Before
   public void setUp() throws Exception {

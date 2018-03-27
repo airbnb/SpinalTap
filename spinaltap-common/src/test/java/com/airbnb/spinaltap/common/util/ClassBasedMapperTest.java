@@ -4,9 +4,9 @@
  */
 package com.airbnb.spinaltap.common.util;
 
-import static org.junit.Assert.*;
-
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
 
 public class ClassBasedMapperTest {
   private final Mapper<Float, Integer> floatMapper =
@@ -26,7 +26,7 @@ public class ClassBasedMapperTest {
   @Test
   public void testMap() throws Exception {
     Mapper<Object, Integer> mapper =
-        new ClassBasedMapper.Builder<Object, Integer>()
+        ClassBasedMapper.<Object, Integer>builder()
             .addMapper(Float.class, floatMapper)
             .addMapper(String.class, stringMapper)
             .build();
@@ -37,7 +37,7 @@ public class ClassBasedMapperTest {
 
   @Test(expected = UnsupportedOperationException.class)
   public void testNoMapFound() throws Exception {
-    Mapper<Object, Integer> mapper = new ClassBasedMapper.Builder<Object, Integer>().build();
+    Mapper<Object, Integer> mapper = ClassBasedMapper.<Object, Integer>builder().build();
 
     mapper.map(1);
   }

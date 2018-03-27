@@ -15,7 +15,7 @@ import java.util.concurrent.atomic.AtomicReference;
 public abstract class MysqlEventFilter implements Filter<BinlogEvent> {
   public static Filter<BinlogEvent> create(
       TableCache tableCache, Set<String> tableNames, AtomicReference<SourceState> state) {
-    return new ChainedFilter.Builder<BinlogEvent>()
+    return ChainedFilter.<BinlogEvent>builder()
         .addFilter(new EventTypeFilter())
         .addFilter(new TableFilter(tableCache, tableNames))
         .addFilter(new DuplicateFilter(state))

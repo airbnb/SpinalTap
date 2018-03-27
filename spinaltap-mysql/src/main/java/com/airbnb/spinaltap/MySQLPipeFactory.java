@@ -9,6 +9,7 @@ import com.airbnb.jitney.event.spinaltap.v1.Mutation;
 import com.airbnb.spinaltap.common.config.DestinationConfiguration;
 import com.airbnb.spinaltap.common.destination.Destination;
 import com.airbnb.spinaltap.common.destination.DestinationBuilder;
+import com.airbnb.spinaltap.common.pipe.AbstractPipeFactory;
 import com.airbnb.spinaltap.common.pipe.Pipe;
 import com.airbnb.spinaltap.common.pipe.PipeMetrics;
 import com.airbnb.spinaltap.common.source.Source;
@@ -20,11 +21,14 @@ import com.airbnb.spinaltap.mysql.config.MysqlConfiguration;
 import com.airbnb.spinaltap.mysql.config.MysqlSchemaStoreConfiguration;
 import com.airbnb.spinaltap.mysql.mutation.MysqlKeyProvider;
 import com.airbnb.spinaltap.mysql.mutation.mapper.ThriftMutationMapper;
-import com.google.common.base.Preconditions;
+
+import lombok.extern.slf4j.Slf4j;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Supplier;
-import lombok.extern.slf4j.Slf4j;
+
+import com.google.common.base.Preconditions;
 
 @Slf4j
 public class MySQLPipeFactory extends AbstractPipeFactory<MysqlConfiguration> {
