@@ -40,18 +40,17 @@ public class Pipe {
   private final Destination.Listener destinationListener = new DestinationListener();
 
   /**
-   * The checkpoint executor periodically checkpoints the state of the source
+   * The checkpoint executor that periodically checkpoints the state of the source.
    */
   private ScheduledExecutorService checkpointExecutor;
 
   /**
-   * The keep-alive executor periodically ensure the pipe is alive, and otherwise (for instance, in
-   * event of failure) restarts it.
+   * The keep-alive executor that periodically checks the pipe is alive, and otherwise restarts it.
    */
   private ScheduledExecutorService keepAliveExecutor;
 
   /**
-   * @return The name of the pipe
+   * @return The name of the pipe.
    */
   public String getName() {
     return source.getName();
@@ -157,7 +156,7 @@ public class Pipe {
   }
 
   /**
-   * Opens {@link Source} and {@link Destination} to start event streaming
+   * Opens the {@link Source} and {@link Destination} to initiate event streaming
    */
   private synchronized void open() {
     destination.open();
@@ -167,8 +166,8 @@ public class Pipe {
   }
 
   /**
-   * Closes the {@link Source} and {@link Destination} to stop event streaming, and checkpoints the
-   * last recorded {@link Source} state.
+   * Closes the {@link Source} and {@link Destination} to terminate event streaming,
+   * and checkpoints the last recorded {@link Source} state.
    */
   private synchronized void close() {
     source.close();

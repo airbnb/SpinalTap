@@ -32,7 +32,7 @@ public class DestinationConfiguration {
 
   /**
    * The pool size. If greater than 0, a {@link com.airbnb.spinaltap.common.destination.DestinationPool}
-   * will be constructed with the specified number of {@link com.airbnb.spinaltap.common.destination.Destination}s
+   * will be constructed with the specified number of {@link com.airbnb.spinaltap.common.destination.Destination}s.
    */
   @Min(0)
   @JsonProperty("pool_size")

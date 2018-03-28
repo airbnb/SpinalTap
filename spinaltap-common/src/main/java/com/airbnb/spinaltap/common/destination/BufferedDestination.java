@@ -101,7 +101,7 @@ public final class BufferedDestination extends ListenableDestination {
   }
 
   /**
-   * @return the last published {@link Mutation} to this destination
+   * @return the last published {@link Mutation} to the underlying {@link Destination}.
    */
   public Mutation<?> getLastPublishedMutation() {
     return destination.getLastPublishedMutation();

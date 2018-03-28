@@ -65,16 +65,16 @@ public class SourceConfiguration {
   private int partitions = DEFAULT_PARTITIONS;
 
   /**
-   * The source type, ex: MySQL, DynamoDB, etc...
+   * The source type (ex: MySQL, DynamoDB)
    */
   @JsonProperty("type")
   private String type;
 
   /**
-   * The group tags for cluster instances of the given source.
+   * The group tag for cluster instances of the given source.
    *
    * <p> Note: This is only applicable if a cluster solution is employed. Tagging is used
-   * to indicate what source a specific instance is streaming from. </p>
+   * to indicate the instances streaming a particular source. </p>
    */
   @JsonProperty("instance_group_tag")
   private String instanceGroupTag;

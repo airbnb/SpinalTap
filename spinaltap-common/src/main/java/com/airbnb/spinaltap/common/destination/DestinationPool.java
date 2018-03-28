@@ -26,9 +26,11 @@ import com.google.common.collect.Maps;
 import static java.util.stream.Collectors.groupingBy;
 
 /**
- * Represents a pool of {@link Destination}s, where events are routed to given a partitioning
- * function based on {@link Mutation} key. This implement helps to fan-out load, which is
- * particularly useful to keep event latency smooeth when there are event spikes.</p>
+ * Represents a pool of {@link Destination}s, where events are routed to the appropriate
+ * {@link Destination} given a partitioning function based on {@link Mutation} key.
+ *
+ * <p>Note: This implement helps to fan-out load, which is particularly useful to keep
+ * {@link Mutation} lag low when there are event spikes.</p>
  */
 @Slf4j
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)

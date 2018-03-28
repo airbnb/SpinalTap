@@ -5,14 +5,13 @@
 package com.airbnb.spinaltap.common.destination;
 
 import com.airbnb.spinaltap.Mutation;
-import com.airbnb.spinaltap.common.source.Source;
 
 import java.util.Collections;
 import java.util.List;
 
 /**
  *  Represents the receiving end of the {@link com.airbnb.spinaltap.common.pipe.Pipe}, where
- * {@link Mutation}s are published (aka Sink)
+ * {@link Mutation}s are published, i.e. a Sink.
  */
 public interface Destination {
   /**
@@ -27,20 +26,18 @@ public interface Destination {
   /**
    * Publishes a list of {@link Mutation}s.
    *
-   * <p>Note: On failure, streaming should be halted and the error propagated to avoid potential
+   * <p>Note: On failure, streaming should be halted and the error propagated to avoid potential.
    * event loss</p>
-   *
-   * @param mutations the mutations
    */
   void send(List<? extends Mutation<?>> mutations);
 
   /**
-   * Adds a {@link Source.Listener} to the destination.
+   * Adds a {@link Listener} to the destination.
    */
   void addListener(Listener listener);
 
   /**
-   * Removes a {@link Source.Listener} from the destination.
+   * Removes a {@link Listener} from the destination.
    */
   void removeListener(Listener listener);
 
@@ -50,14 +47,14 @@ public interface Destination {
   boolean isStarted();
 
   /**
-   * Initializes the destination and prepares for mutation publishing.
+   * Initializes the destination and prepares for {@link Mutation} publishing.
    *
    * <p>The operation should be idempotent.</p>
    */
   void open();
 
   /**
-   * Stops mutation publishing and closes the destination.
+   * Stops {@link Mutation} publishing and closes the destination.
    *
    * <p>The operation should be idempotent.</p>
    */

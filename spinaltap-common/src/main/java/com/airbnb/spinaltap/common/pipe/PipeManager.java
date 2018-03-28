@@ -21,7 +21,7 @@ import com.google.common.collect.Table;
 import com.google.common.collect.Tables;
 
 /**
- * Responsible for managing a collection of {@link Pipe}s for a set of resource.
+ * Responsible for managing a collection of {@link Pipe}s for a set of resources.
  *
  * <p>A resource is typically associated with a data source, ex: a MySQL database</p>
  */
@@ -31,8 +31,8 @@ public class PipeManager {
   private static final long CHECK_STOPPED_WAIT_MILLISEC = 1000L;
   private static final int CHECK_STOPPED_WAIT_TIMEOUT_SECONDS = 30;
   /**
-   * Mapped table of [Resource][Partition][Pipe]. In other words, each resource will have a set of
-   * partitions, each of which will have a collection of {@link Pipe}s registered.
+   * Mapped table of [Resource][Partition][Pipes]. In other words, registered resource will have a
+   * set of partitions, each of which will have a collection of {@link Pipe}s registered.
    */
   private final Table<String, String, List<Pipe>> pipeTable =
       Tables.newCustomTable(Maps.newConcurrentMap(), Maps::newConcurrentMap);
@@ -40,7 +40,7 @@ public class PipeManager {
   private final Executor executor = Executors.newSingleThreadExecutor();
 
   /**
-   * Registers a pipe
+   * Registers a pipe for the given resource.
    *
    * @param name the resource name
    * @param pipe the pipe
@@ -50,11 +50,11 @@ public class PipeManager {
   }
 
   /**
-   * Registers a list of {@link Pipe}s
+   * Registers a {@link Pipe} for the given resource partition
    *
    * @param name The resource name
    * @param partition the partition name
-   * @param pipe the {@link Pipe}s
+   * @param pipe the {@link Pipe}
    */
   public void addPipe(
       @NonNull final String name, @NonNull final String partition, @NonNull final Pipe pipe) {
@@ -62,7 +62,7 @@ public class PipeManager {
   }
 
   /**
-   * Registers a list of {@link Pipe}s
+   * Registers a list of {@link Pipe}s for the give resource partition
    *
    * @param name The resource name
    * @param partition the partition name
@@ -85,14 +85,14 @@ public class PipeManager {
   }
 
   /**
-   * @return whether the given resource is registered
+   * @return whether the given resource is registered.
    */
   public boolean contains(@NonNull final String name) {
     return pipeTable.containsRow(name);
   }
 
   /**
-   * @return whether the given resource and partition is registered
+   * @return whether the given resource partition is registered.
    */
   public boolean contains(@NonNull final String name, @NonNull final String partition) {
     return pipeTable.contains(name, partition);
@@ -110,15 +110,15 @@ public class PipeManager {
   }
 
   /**
-   * Removes a resource partition
+   * Removes a resource partition.
    *
    * @param name the resource
    * @param partition the partition
    */
-  public void removePipe(String name, String partition) {
+  public void removePipe(@NonNull final String name, @NonNull final String partition) {
     log.debug("Removing pipes for {} / {}", name, partition);
 
-    List<Pipe> pipes = pipeTable.get(name, partition);
+    final List<Pipe> pipes = pipeTable.get(name, partition);
     if (pipes == null || pipes.isEmpty()) {
       log.info("Pipes do not exist for {} / {}", name, partition);
       return;
@@ -136,7 +136,7 @@ public class PipeManager {
     log.info("Removed pipes for {} / {}", name, partition);
   }
 
-  public void executeAsync(Runnable operation) {
+  public void executeAsync(@NonNull final Runnable operation) {
     executor.execute(operation);
   }
 

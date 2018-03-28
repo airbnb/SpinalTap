@@ -11,7 +11,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import org.apache.curator.framework.CuratorFramework;
 
 /**
- * {@link Repository} implement where objects are stored in Zookeeper.
+ * {@link Repository} implement with Zookeeper as backing store for objects.
  *
  * @param <T> the object type.
  */

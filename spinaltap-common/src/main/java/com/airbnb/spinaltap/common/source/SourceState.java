@@ -42,7 +42,7 @@ public class SourceState {
 
   /**
    * The leader epoch for the {@code Source}. The epoch acts as a high watermark, and is typically
-   * incremented on leader election and/or {@code Source} restart.
+   * incremented on leader election.
    *
    * <p> Note: This is only applicable if a cluster solution is employed. It is is used to
    * mitigate network partition (split brain) scenarios, and avoid having two cluster nodes

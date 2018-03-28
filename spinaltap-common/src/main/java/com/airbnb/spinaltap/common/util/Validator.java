@@ -11,7 +11,7 @@ package com.airbnb.spinaltap.common.util;
  */
 public interface Validator<T> {
   /**
-   * Validates the object
+   * Validates the object.
    *
    * @param object the object
    */

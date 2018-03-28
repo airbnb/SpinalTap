@@ -24,7 +24,7 @@ import java.util.function.Consumer;
 @RequiredArgsConstructor
 public final class MutationOrderValidator implements Validator<Mutation<?>> {
   /**
-   * The handler to trigger on an out-of-order {@link Mutation}.
+   * The handler to execute on out-of-order {@link Mutation}.
    */
   @NonNull private final Consumer<Mutation<?>> handler;
 

@@ -16,6 +16,7 @@ import java.util.List;
 public interface BatchMapper<T, R> {
   /**
    * Applies the mapping function on the list of objects.
+   *
    * @param objects the objects to map.
    * @return the mapped objects.
    */
