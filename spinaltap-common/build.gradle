@@ -1,14 +1,18 @@
 dependencies {
   compile project(':spinaltap-model')
-  compile "org.apache.commons:commons-lang3:3.4"
-  compile "commons-collections:commons-collections:3.2.1"
-  compile "org.apache.curator:curator-framework:2.6.0"
-  compile "com.codahale.metrics:metrics-core:3.0.2"
-  compile "com.fasterxml.jackson.core:jackson-databind:2.7.8"
-  compile "com.fasterxml.jackson.datatype:jackson-datatype-joda:2.7.8"
-  compile "javax.validation:validation-api:1.1.0.Final"
-  compile "com.google.code.findbugs:jsr305:3.0.0"
+  compile libraries.apache_commons_lang
+  compile libraries.codahale_metrics_core
+  compile libraries.findbugs_jsr305
+  compile libraries.jackson_databind
+  compile libraries.jackson_datatype_joda
+  compile libraries.javax_validaton
+  compile libraries.zookeeper
 
-  testCompile "junit:junit:4.12"
-  testCompile "org.mockito:mockito-all:1.10.19"
+  // Use zookeeper 3.4
+  compile(libraries.apache_curator_framework) {
+    exclude group: 'org.apache.zookeeper', module: 'zookeeper'
+  }
+  
+  testCompile libraries.junit
+  testCompile libraries.mokito
 }

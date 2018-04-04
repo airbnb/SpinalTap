@@ -3,14 +3,14 @@ plugins {
 }
 
 dependencies {
-  compile "org.apache.commons:commons-lang3:3.4"
-  compile "com.google.guava:guava:18.0"
-  compile "org.projectlombok:lombok:1.16.8"
-  compile "com.fasterxml.jackson.core:jackson-annotations:2.7.8"
-  compile "org.slf4j:slf4j-api:1.7.7"
-  compile "org.apache.thrift:libthrift:0.9.3"
+  compile libraries.apache_commons_lang
+  compile libraries.guava
+  compile libraries.lombok
+  compile libraries.jackson_annotations
+  compile libraries.slf4j
+  compile libraries.thrift
  
-  testCompile "junit:junit:4.12"
+  testCompile libraries.junit
 }
 
 compileThrift {

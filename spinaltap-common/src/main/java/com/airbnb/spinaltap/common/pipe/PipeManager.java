@@ -15,7 +15,6 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections.CollectionUtils;
 
 @Slf4j
 @NoArgsConstructor
@@ -66,7 +65,7 @@ public class PipeManager {
     log.debug("Removing pipes for {} / {}", name, partition);
 
     List<Pipe> pipes = pipeTable.get(name, partition);
-    if (CollectionUtils.isEmpty(pipes)) {
+    if (pipes == null || pipes.isEmpty()) {
       log.info("Pipes do not exist for {} / {}", name, partition);
       return;
     }

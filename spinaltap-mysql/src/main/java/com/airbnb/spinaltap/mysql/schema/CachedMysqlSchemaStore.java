@@ -53,7 +53,8 @@ public class CachedMysqlSchemaStore extends AbstractMysqlSchemaStore
       schemaVersionTable = schemaStore.getAll();
     } catch (Exception ex) {
       log.error("Failed to populate cache.", ex);
-      throw Throwables.propagate(ex);
+      Throwables.throwIfUnchecked(ex);
+      throw new RuntimeException(ex);
     }
 
     schemaVersionTable
@@ -133,7 +134,8 @@ public class CachedMysqlSchemaStore extends AbstractMysqlSchemaStore
       return tableSchemaTreeMap.get(key);
     } catch (Exception ex) {
       metrics.schemaStoreGetFailure(database, table, ex);
-      throw Throwables.propagate(ex);
+      Throwables.throwIfUnchecked(ex);
+      throw new RuntimeException(ex);
     }
   }
 
@@ -155,7 +157,8 @@ public class CachedMysqlSchemaStore extends AbstractMysqlSchemaStore
       return schemaVersionMap.get(version);
     } catch (Exception ex) {
       metrics.schemaStoreGetFailure(database, table, ex);
-      throw Throwables.propagate(ex);
+      Throwables.throwIfUnchecked(ex);
+      throw new RuntimeException(ex);
     }
   }
 
@@ -172,7 +175,8 @@ public class CachedMysqlSchemaStore extends AbstractMysqlSchemaStore
       return schemaVersionMap.lastEntry().getValue();
     } catch (Exception ex) {
       metrics.schemaStoreGetFailure(database, table, ex);
-      throw Throwables.propagate(ex);
+      Throwables.throwIfUnchecked(ex);
+      throw new RuntimeException(ex);
     }
   }
 
@@ -196,7 +200,8 @@ public class CachedMysqlSchemaStore extends AbstractMysqlSchemaStore
       return latestSchemaMap;
     } catch (Exception ex) {
       metrics.schemaStoreGetFailure(database, ex);
-      throw Throwables.propagate(ex);
+      Throwables.throwIfUnchecked(ex);
+      throw new RuntimeException(ex);
     }
   }
 
@@ -213,7 +218,8 @@ public class CachedMysqlSchemaStore extends AbstractMysqlSchemaStore
       return schemaVersionMap.lastKey();
     } catch (Exception ex) {
       metrics.schemaStoreGetFailure(database, table, ex);
-      throw Throwables.propagate(ex);
+      Throwables.throwIfUnchecked(ex);
+      throw new RuntimeException(ex);
     }
   }
 
@@ -235,7 +241,8 @@ public class CachedMysqlSchemaStore extends AbstractMysqlSchemaStore
       return schemaVersionTable.get(database, table);
     } catch (Exception ex) {
       metrics.schemaStoreGetFailure(database, table, ex);
-      throw Throwables.propagate(ex);
+      Throwables.throwIfUnchecked(ex);
+      throw new RuntimeException(ex);
     }
   }
 

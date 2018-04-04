@@ -33,8 +33,8 @@ public class StateRepository {
     } catch (Exception ex) {
       log.error("Failed to save state for source " + sourceName, ex);
       metrics.stateSaveFailure(ex);
-
-      Throwables.propagate(ex);
+      Throwables.throwIfUnchecked(ex);
+      throw new RuntimeException(ex);
     }
 
     log.info("Saved state for source {}. state={}", sourceName, state);
@@ -54,8 +54,8 @@ public class StateRepository {
     } catch (Exception ex) {
       log.error("Failed to read state for source " + sourceName, ex);
       metrics.stateReadFailure(ex);
-
-      Throwables.propagate(ex);
+      Throwables.throwIfUnchecked(ex);
+      throw new RuntimeException(ex);
     }
 
     log.debug("Read state for source {}. state={}", sourceName, state);

@@ -194,7 +194,8 @@ public class MysqlSource extends AbstractMysqlSource {
               socket.setSoTimeout(socketTimeoutInSeconds * 1000);
             }
           } catch (Exception ex) {
-            Throwables.propagate(ex);
+            Throwables.throwIfUnchecked(ex);
+            throw new RuntimeException(ex);
           }
           return socket;
         });
