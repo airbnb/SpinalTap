@@ -135,7 +135,8 @@ public abstract class AbstractMysqlSource extends AbstractDataStoreSource<Binlog
     metrics.deserializationFailure(ex);
 
     // Fail on deserialization errors and restart source from last checkpoint
-    Throwables.propagate(ex);
+    Throwables.throwIfUnchecked(ex);
+    throw new RuntimeException(ex);
   }
 
   protected void onCommunicationError(Exception ex) {

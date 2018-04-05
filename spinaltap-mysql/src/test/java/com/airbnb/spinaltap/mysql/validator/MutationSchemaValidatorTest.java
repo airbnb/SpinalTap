@@ -12,7 +12,6 @@ import com.airbnb.spinaltap.mysql.mutation.schema.ColumnDataType;
 import com.airbnb.spinaltap.mysql.mutation.schema.ColumnMetadata;
 import com.airbnb.spinaltap.mysql.mutation.schema.Row;
 import com.airbnb.spinaltap.mysql.mutation.schema.Table;
-import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.io.Serializable;
@@ -38,7 +37,10 @@ public class MutationSchemaValidatorTest {
       new MysqlMutationMetadata(null, null, TABLE, 0L, 0L, 0L, null, null, 0L, 0);
 
   private final MutationSchemaValidator validator =
-      new MutationSchemaValidator((mutation) -> Throwables.propagate(new IllegalStateException()));
+      new MutationSchemaValidator(
+          (mutation) -> {
+            throw new IllegalStateException();
+          });
 
   @Test
   public void testValidSchema() throws Exception {
