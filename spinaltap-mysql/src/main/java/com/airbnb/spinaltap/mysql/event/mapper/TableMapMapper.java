@@ -29,7 +29,8 @@ class TableMapMapper implements Mapper<TableMapEvent, List<MysqlMutation>> {
           event.getColumnTypes());
     } catch (Exception ex) {
       log.error("Failed to process table map event: " + event, ex);
-      Throwables.propagate(ex);
+      Throwables.throwIfUnchecked(ex);
+      throw new RuntimeException(ex);
     }
 
     return Collections.emptyList();

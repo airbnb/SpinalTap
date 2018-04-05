@@ -102,8 +102,8 @@ public class StateHistory {
     } catch (Exception ex) {
       log.error("Failed to read state history for source " + sourceName, ex);
       metrics.stateReadFailure(ex);
-
-      Throwables.propagate(ex);
+      Throwables.throwIfUnchecked(ex);
+      throw new RuntimeException(ex);
     }
 
     return previousStates != null ? previousStates : Collections.emptyList();
@@ -119,8 +119,8 @@ public class StateHistory {
     } catch (Exception ex) {
       log.error("Failed to save state history for source " + sourceName, ex);
       metrics.stateSaveFailure(ex);
-
-      Throwables.propagate(ex);
+      Throwables.throwIfUnchecked(ex);
+      throw new RuntimeException(ex);
     }
   }
 }

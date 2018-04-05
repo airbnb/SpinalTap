@@ -1,0 +1,12 @@
+Configuration:
+  status: warn
+  appenders:
+    Console:
+      name: STDOUT
+      PatternLayout:
+        Pattern: "%-5p [%d] - %t - %c: %m %n"
+  Loggers:
+    Root:
+      level: info
+      AppenderRef:
+        ref: STDOUT
