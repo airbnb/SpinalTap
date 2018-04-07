@@ -34,6 +34,7 @@ public class MysqlConfiguration extends AbstractMysqlConfiguration {
   public static final int DEFAULT_PORT = 5672;
   public static final boolean DEFAULT_SCHEMA_VERSION_ENABLED = false;
   public static final boolean DEFAULT_LARGE_MESSAGE_ENABLED = false;
+  public static final long DEFAULT_DELAY_SEND_MS = 0L;
   public static final Map<HostRole, String> MYSQL_TOPICS =
       ImmutableMap.of(
           MysqlConfiguration.HostRole.MASTER, "spinaltap",
@@ -87,6 +88,9 @@ public class MysqlConfiguration extends AbstractMysqlConfiguration {
 
   @JsonProperty("large_message_enabled")
   private boolean largeMessageEnabled = DEFAULT_LARGE_MESSAGE_ENABLED;
+
+  @JsonProperty("delay_send_ms")
+  private long delaySendMs = DEFAULT_DELAY_SEND_MS;
 
   @Override
   public void setPartitions(int partitions) {

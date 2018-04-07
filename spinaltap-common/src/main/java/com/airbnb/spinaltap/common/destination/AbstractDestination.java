@@ -19,6 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 public abstract class AbstractDestination<T> extends ListenableDestination {
   private final BatchMapper<Mutation<?>, T> mapper;
   private final DestinationMetrics metrics;
+  private final long delaySendMs;
 
   private final AtomicBoolean started = new AtomicBoolean(false);
 
@@ -38,6 +39,11 @@ public abstract class AbstractDestination<T> extends ListenableDestination {
 
       List<T> messages = mapper.apply(mutations.stream().collect(Collectors.toList()));
 
+      // Ability to process delayed publish messages.
+      Mutation<?> latestMutation = mutations.get(mutations.size() - 1);
+      long delayMs = System.currentTimeMillis() - latestMutation.getMetadata().getTimestamp();
+      long waitMs = delayMs >= delaySendMs ? 0 : delaySendMs - delayMs;
+      Thread.sleep(waitMs);
       publish(messages);
 
       lastPublishedMutation.set(mutations.get(mutations.size() - 1));

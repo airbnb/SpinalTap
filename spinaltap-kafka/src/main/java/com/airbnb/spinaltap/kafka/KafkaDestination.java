@@ -37,8 +37,9 @@ public class KafkaDestination<T extends TBase<?, ?>> extends AbstractDestination
       String prefix,
       KafkaProducerConfiguration producerConfig,
       BatchMapper<Mutation<?>, T> mapper,
-      DestinationMetrics metrics) {
-    super(mapper, metrics);
+      DestinationMetrics metrics,
+      long delaySendMs) {
+    super(mapper, metrics, delaySendMs);
 
     topicNamePrefix = prefix == null ? "spinaltap" : prefix;
     Properties props = new Properties();

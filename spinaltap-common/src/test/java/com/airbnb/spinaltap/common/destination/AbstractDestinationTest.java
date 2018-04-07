@@ -11,6 +11,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.when;
 
 import com.airbnb.spinaltap.Mutation;
 import com.airbnb.spinaltap.common.exception.DestinationException;
@@ -40,6 +41,11 @@ public class AbstractDestinationTest {
     Mutation<?> firstMutation = mock(Mutation.class);
     Mutation<?> secondMutation = mock(Mutation.class);
     Mutation<?> thirdMutation = mock(Mutation.class);
+    Mutation.Metadata metadata = mock(Mutation.Metadata.class);
+    when(firstMutation.getMetadata()).thenReturn(metadata);
+    when(secondMutation.getMetadata()).thenReturn(metadata);
+    when(thirdMutation.getMetadata()).thenReturn(metadata);
+    when(metadata.getTimestamp()).thenReturn(0L);
 
     List<Mutation<?>> mutations = ImmutableList.of(firstMutation, secondMutation, thirdMutation);
 
@@ -64,6 +70,9 @@ public class AbstractDestinationTest {
   @Test(expected = DestinationException.class)
   public void testSendFailure() throws Exception {
     Mutation<?> mutation = mock(Mutation.class);
+    Mutation.Metadata metadata = mock(Mutation.Metadata.class);
+    when(mutation.getMetadata()).thenReturn(metadata);
+    when(metadata.getTimestamp()).thenReturn(0L);
 
     destination.setFailPublish(true);
 
@@ -80,6 +89,9 @@ public class AbstractDestinationTest {
   @Test
   public void testOpen() throws Exception {
     Mutation<?> mutation = mock(Mutation.class);
+    Mutation.Metadata metadata = mock(Mutation.Metadata.class);
+    when(mutation.getMetadata()).thenReturn(metadata);
+    when(metadata.getTimestamp()).thenReturn(0L);
 
     destination.send(ImmutableList.of(mutation));
 
@@ -96,7 +108,7 @@ public class AbstractDestinationTest {
     @Setter private boolean failPublish;
 
     public TestDestination() {
-      super(m -> m, metrics);
+      super(m -> m, metrics, 0L);
     }
 
     @Override
