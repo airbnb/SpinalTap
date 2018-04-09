@@ -41,7 +41,6 @@ import com.github.shyiko.mysql.binlog.event.UpdateRowsEventData;
 import com.github.shyiko.mysql.binlog.event.WriteRowsEventData;
 import com.github.shyiko.mysql.binlog.event.XidEventData;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Throwables;
 import java.net.Socket;
 import java.util.Collection;
 import java.util.HashSet;
@@ -194,7 +193,6 @@ public class MysqlSource extends AbstractMysqlSource {
               socket.setSoTimeout(socketTimeoutInSeconds * 1000);
             }
           } catch (Exception ex) {
-            Throwables.throwIfUnchecked(ex);
             throw new RuntimeException(ex);
           }
           return socket;

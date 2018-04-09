@@ -7,7 +7,6 @@ package com.airbnb.spinaltap.mysql;
 import com.airbnb.spinaltap.common.source.SourceState;
 import com.airbnb.spinaltap.common.util.Repository;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Throwables;
 import com.google.common.collect.Queues;
 import java.util.Collection;
 import java.util.Collections;
@@ -102,7 +101,6 @@ public class StateHistory {
     } catch (Exception ex) {
       log.error("Failed to read state history for source " + sourceName, ex);
       metrics.stateReadFailure(ex);
-      Throwables.throwIfUnchecked(ex);
       throw new RuntimeException(ex);
     }
 
@@ -119,7 +117,6 @@ public class StateHistory {
     } catch (Exception ex) {
       log.error("Failed to save state history for source " + sourceName, ex);
       metrics.stateSaveFailure(ex);
-      Throwables.throwIfUnchecked(ex);
       throw new RuntimeException(ex);
     }
   }

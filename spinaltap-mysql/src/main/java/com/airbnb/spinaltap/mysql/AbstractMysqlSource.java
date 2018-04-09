@@ -16,7 +16,6 @@ import com.airbnb.spinaltap.mysql.mutation.MysqlMutationMetadata;
 import com.airbnb.spinaltap.mysql.schema.SchemaTracker;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Throwables;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -135,7 +134,6 @@ public abstract class AbstractMysqlSource extends AbstractDataStoreSource<Binlog
     metrics.deserializationFailure(ex);
 
     // Fail on deserialization errors and restart source from last checkpoint
-    Throwables.throwIfUnchecked(ex);
     throw new RuntimeException(ex);
   }
 

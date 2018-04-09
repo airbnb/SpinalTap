@@ -6,7 +6,6 @@ package com.airbnb.spinaltap.mysql;
 
 import com.airbnb.spinaltap.common.source.SourceState;
 import com.airbnb.spinaltap.common.util.Repository;
-import com.google.common.base.Throwables;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -33,7 +32,6 @@ public class StateRepository {
     } catch (Exception ex) {
       log.error("Failed to save state for source " + sourceName, ex);
       metrics.stateSaveFailure(ex);
-      Throwables.throwIfUnchecked(ex);
       throw new RuntimeException(ex);
     }
 
@@ -54,7 +52,6 @@ public class StateRepository {
     } catch (Exception ex) {
       log.error("Failed to read state for source " + sourceName, ex);
       metrics.stateReadFailure(ex);
-      Throwables.throwIfUnchecked(ex);
       throw new RuntimeException(ex);
     }
 

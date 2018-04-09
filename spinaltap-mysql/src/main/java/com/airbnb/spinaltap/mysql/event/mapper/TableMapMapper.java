@@ -8,7 +8,6 @@ import com.airbnb.spinaltap.common.util.Mapper;
 import com.airbnb.spinaltap.mysql.TableCache;
 import com.airbnb.spinaltap.mysql.event.TableMapEvent;
 import com.airbnb.spinaltap.mysql.mutation.MysqlMutation;
-import com.google.common.base.Throwables;
 import java.util.Collections;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -29,7 +28,6 @@ class TableMapMapper implements Mapper<TableMapEvent, List<MysqlMutation>> {
           event.getColumnTypes());
     } catch (Exception ex) {
       log.error("Failed to process table map event: " + event, ex);
-      Throwables.throwIfUnchecked(ex);
       throw new RuntimeException(ex);
     }
 
