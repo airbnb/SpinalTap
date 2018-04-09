@@ -32,6 +32,9 @@ public class DestinationMetrics extends SpinalTapMetrics {
   private static final String PUBLISH_OUT_OF_ORDER_METRIC =
       DESTINATION_PREFIX + ".publish.out.of.order.count";
 
+  private static final String IGNORE_RECORD_TOO_LARGE_METRIC =
+      DESTINATION_PREFIX + ".publish.record.too.large.count";
+
   private static final String SEND_TIME_METRIC = DESTINATION_PREFIX + ".send.time";
   private static final String SEND_FAILURE_METRIC = DESTINATION_PREFIX + ".send.failure.count";
 
@@ -106,6 +109,13 @@ public class DestinationMetrics extends SpinalTapMetrics {
 
     topicTags.put(TOPIC_NAME_TAG, tpName);
     inc(PUBLISH_OUT_OF_ORDER_METRIC, topicTags);
+  }
+
+  public void publishRecordTooLarge(String tpName) {
+    Map<String, String> topicTags = Maps.newHashMap();
+
+    topicTags.put(TOPIC_NAME_TAG, tpName);
+    inc(IGNORE_RECORD_TOO_LARGE_METRIC, topicTags);
   }
 
   public void publishTime(long timeInMilliseconds) {
