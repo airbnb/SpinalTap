@@ -72,7 +72,7 @@ public class StateRepositoryTest {
     try {
       stateRepository.save(mock(SourceState.class));
     } catch (RuntimeException ex) {
-      verify(metrics, times(1)).stateSaveFailure(ex);
+      verify(metrics, times(1)).stateSaveFailure(any(Exception.class));
       throw ex;
     }
   }
@@ -99,7 +99,7 @@ public class StateRepositoryTest {
     try {
       stateRepository.read();
     } catch (RuntimeException ex) {
-      verify(metrics, times(1)).stateReadFailure(ex);
+      verify(metrics, times(1)).stateReadFailure(any(Exception.class));
       throw ex;
     }
   }
