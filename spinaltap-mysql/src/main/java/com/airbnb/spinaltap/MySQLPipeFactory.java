@@ -13,7 +13,7 @@ import com.airbnb.spinaltap.common.pipe.AbstractPipeFactory;
 import com.airbnb.spinaltap.common.pipe.Pipe;
 import com.airbnb.spinaltap.common.pipe.PipeMetrics;
 import com.airbnb.spinaltap.common.source.Source;
-import com.airbnb.spinaltap.common.util.RepositoryFactory;
+import com.airbnb.spinaltap.common.util.StateRepositoryFactory;
 import com.airbnb.spinaltap.mysql.MysqlDestinationMetrics;
 import com.airbnb.spinaltap.mysql.MysqlSource;
 import com.airbnb.spinaltap.mysql.MysqlSourceMetrics;
@@ -59,7 +59,7 @@ public class MySQLPipeFactory extends AbstractPipeFactory<MysqlConfiguration> {
   public List<Pipe> createPipes(
       MysqlConfiguration sourceConfig,
       String partitionName,
-      RepositoryFactory repositoryFactory,
+      StateRepositoryFactory repositoryFactory,
       long leaderEpoch)
       throws Exception {
     return Collections.singletonList(
@@ -69,7 +69,7 @@ public class MySQLPipeFactory extends AbstractPipeFactory<MysqlConfiguration> {
   private Pipe create(
       MysqlConfiguration sourceConfig,
       String partitionName,
-      RepositoryFactory repositoryFactory,
+      StateRepositoryFactory repositoryFactory,
       long leaderEpoch)
       throws Exception {
     String sourceName = sourceConfig.getName();

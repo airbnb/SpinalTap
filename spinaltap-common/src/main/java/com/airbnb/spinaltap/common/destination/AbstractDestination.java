@@ -46,10 +46,7 @@ public abstract class AbstractDestination<T> extends ListenableDestination {
       final Stopwatch stopwatch = Stopwatch.createStarted();
 
       final List<T> messages = mapper.apply(mutations.stream().collect(Collectors.toList()));
-      final Mutation<?> latestMutation = mutations
-          .stream()
-          .findFirst()
-          .orElseThrow(() -> new IllegalStateException("No mutations found"));
+      final Mutation<?> latestMutation = mutations.get(mutations.size() - 1);
 
       delay(latestMutation);
       publish(messages);

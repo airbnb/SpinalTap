@@ -4,10 +4,8 @@
  */
 package com.airbnb.spinaltap.kafka;
 
-import com.airbnb.common.metrics.TaggedMetricRegistry;
 import com.airbnb.jitney.event.spinaltap.v1.Mutation;
 import com.airbnb.jitney.event.spinaltap.v1.MutationType;
-import com.airbnb.spinaltap.common.destination.DestinationMetrics;
 import com.airbnb.spinaltap.common.util.Mapper;
 import com.airbnb.spinaltap.mysql.BinlogFilePos;
 import com.airbnb.spinaltap.mysql.DataSource;
@@ -57,10 +55,6 @@ public class KafkaDestinationTest extends AbstractKafkaIntegrationTestHarness {
   private static final String TOPIC = "spinaltap" + "." + HOSTNAME + "-" + DATABASE + "-" + TABLE;
   private static final ThreadLocal<TDeserializer> deserializer =
       ThreadLocal.withInitial(() -> new TDeserializer((new TBinaryProtocol.Factory())));
-
-  private static final DestinationMetrics metrics =
-      new DestinationMetrics("test", "test", new TaggedMetricRegistry());
-
 
   @Before
   public void setUp() {
