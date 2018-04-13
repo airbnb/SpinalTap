@@ -10,9 +10,7 @@ package com.airbnb.spinaltap.common.util;
  * @param <T> the object type stored in the repository.
  */
 public interface Repository<T> {
-  /**
-   * @return whether an object exists
-   */
+  /** @return whether an object exists */
   boolean exists() throws Exception;
 
   /**
@@ -37,9 +35,7 @@ public interface Repository<T> {
    */
   void update(T value, DataUpdater<T> updater) throws Exception;
 
-  /**
-   * Retrieves the current object value.
-   */
+  /** Retrieves the current object value. */
   T get() throws Exception;
 
   /**

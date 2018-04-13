@@ -18,14 +18,11 @@ import com.airbnb.spinaltap.mysql.config.MysqlConfiguration;
 import com.airbnb.spinaltap.mysql.config.MysqlSchemaStoreConfiguration;
 import com.airbnb.spinaltap.mysql.mutation.MysqlKeyProvider;
 import com.airbnb.spinaltap.mysql.mutation.mapper.ThriftMutationMapper;
-
-import lombok.extern.slf4j.Slf4j;
-
+import com.google.common.base.Preconditions;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Supplier;
-
-import com.google.common.base.Preconditions;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class MySQLPipeFactory extends AbstractPipeFactory<MysqlConfiguration> {

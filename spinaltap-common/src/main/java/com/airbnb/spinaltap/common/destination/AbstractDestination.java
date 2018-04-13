@@ -7,18 +7,15 @@ package com.airbnb.spinaltap.common.destination;
 import com.airbnb.spinaltap.Mutation;
 import com.airbnb.spinaltap.common.exception.DestinationException;
 import com.airbnb.spinaltap.common.util.BatchMapper;
-
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-
+import com.google.common.base.Stopwatch;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
-
-import com.google.common.base.Stopwatch;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RequiredArgsConstructor

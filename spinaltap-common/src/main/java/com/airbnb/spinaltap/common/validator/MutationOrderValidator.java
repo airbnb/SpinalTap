@@ -6,31 +6,25 @@ package com.airbnb.spinaltap.common.validator;
 
 import com.airbnb.spinaltap.Mutation;
 import com.airbnb.spinaltap.common.util.Validator;
-
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Consumer;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.Consumer;
-
 /**
  * Responsible for validating that {@link Mutation}s are streamed in order. This is typically used
- * as a {@link com.airbnb.spinaltap.common.source.Source.Listener} or
- * {@link com.airbnb.spinaltap.common.destination.Destination.Listener} to enforce {@link Mutation}
+ * as a {@link com.airbnb.spinaltap.common.source.Source.Listener} or {@link
+ * com.airbnb.spinaltap.common.destination.Destination.Listener} to enforce {@link Mutation}
  * ordering guarantee in run-time.
  */
 @Slf4j
 @RequiredArgsConstructor
 public final class MutationOrderValidator implements Validator<Mutation<?>> {
-  /**
-   * The handler to execute on out-of-order {@link Mutation}.
-   */
+  /** The handler to execute on out-of-order {@link Mutation}. */
   @NonNull private final Consumer<Mutation<?>> handler;
 
-  /**
-   * The id of the last {@link Mutation} validated so far.
-   */
+  /** The id of the last {@link Mutation} validated so far. */
   private AtomicLong lastSeenId = new AtomicLong(-1);
 
   /**
@@ -42,16 +36,15 @@ public final class MutationOrderValidator implements Validator<Mutation<?>> {
     log.debug("Validating order for mutation with id {}.", mutationId);
 
     if (lastSeenId.get() > mutationId) {
-      log.warn("Mutation with id {} is out of order and should precede {}.", mutationId, lastSeenId);
+      log.warn(
+          "Mutation with id {} is out of order and should precede {}.", mutationId, lastSeenId);
       handler.accept(mutation);
     }
 
     lastSeenId.set(mutationId);
   }
 
-  /**
-   * Resets the state of the {@link Validator}.
-   */
+  /** Resets the state of the {@link Validator}. */
   @Override
   public void reset() {
     lastSeenId.set(-1);

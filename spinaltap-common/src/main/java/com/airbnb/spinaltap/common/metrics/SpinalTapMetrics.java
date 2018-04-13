@@ -7,20 +7,15 @@ package com.airbnb.spinaltap.common.metrics;
 import com.airbnb.common.metrics.TaggedMetricRegistry;
 import com.airbnb.spinaltap.Mutation;
 import com.airbnb.spinaltap.common.source.SourceEvent;
-
-import lombok.RequiredArgsConstructor;
-
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-
 import com.codahale.metrics.Gauge;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import lombok.RequiredArgsConstructor;
 
-/**
- * Base class for metrics collection.
- */
+/** Base class for metrics collection. */
 @RequiredArgsConstructor
 public abstract class SpinalTapMetrics {
   protected static final String METRIC_PREFIX = "spinaltap";

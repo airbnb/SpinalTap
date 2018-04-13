@@ -7,18 +7,15 @@ package com.airbnb.spinaltap.common.pipe;
 import com.airbnb.spinaltap.Mutation;
 import com.airbnb.spinaltap.common.destination.Destination;
 import com.airbnb.spinaltap.common.source.Source;
-
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Responsible for managing event streaming from a {@link com.airbnb.spinaltap.common.source.Source}
@@ -39,9 +36,7 @@ public class Pipe {
   private final Source.Listener sourceListener = new SourceListener();
   private final Destination.Listener destinationListener = new DestinationListener();
 
-  /**
-   * The checkpoint executor that periodically checkpoints the state of the source.
-   */
+  /** The checkpoint executor that periodically checkpoints the state of the source. */
   private ScheduledExecutorService checkpointExecutor;
 
   /**
@@ -49,23 +44,17 @@ public class Pipe {
    */
   private ScheduledExecutorService keepAliveExecutor;
 
-  /**
-   * @return The name of the pipe.
-   */
+  /** @return The name of the pipe. */
   public String getName() {
     return source.getName();
   }
 
-  /**
-   * @return the last mutation successfully sent to the pipe's {@link Destination}.
-   */
+  /** @return the last mutation successfully sent to the pipe's {@link Destination}. */
   public Mutation<?> getLastMutation() {
     return destination.getLastPublishedMutation();
   }
 
-  /**
-   * Starts event streaming for the pipe.
-   */
+  /** Starts event streaming for the pipe. */
   public void start() {
     source.addListener(sourceListener);
     destination.addListener(destinationListener);
@@ -132,9 +121,7 @@ public class Pipe {
         TimeUnit.SECONDS);
   }
 
-  /**
-   * Stops event streaming for the pipe.
-   */
+  /** Stops event streaming for the pipe. */
   public void stop() {
     if (keepAliveExecutor != null) {
       keepAliveExecutor.shutdownNow();
@@ -155,9 +142,7 @@ public class Pipe {
     metrics.stop();
   }
 
-  /**
-   * Opens the {@link Source} and {@link Destination} to initiate event streaming
-   */
+  /** Opens the {@link Source} and {@link Destination} to initiate event streaming */
   private synchronized void open() {
     destination.open();
     source.open();
@@ -166,8 +151,8 @@ public class Pipe {
   }
 
   /**
-   * Closes the {@link Source} and {@link Destination} to terminate event streaming,
-   * and checkpoints the last recorded {@link Source} state.
+   * Closes the {@link Source} and {@link Destination} to terminate event streaming, and checkpoints
+   * the last recorded {@link Source} state.
    */
   private synchronized void close() {
     source.close();
@@ -182,16 +167,12 @@ public class Pipe {
     source.removeListener(sourceListener);
   }
 
-  /**
-   * @return whether the pipe is currently streaming events
-   */
+  /** @return whether the pipe is currently streaming events */
   public boolean isStarted() {
     return source.isStarted() && destination.isStarted();
   }
 
-  /**
-   * Checkpoints the source according to the last streamed {@link Mutation} in the pipe
-   */
+  /** Checkpoints the source according to the last streamed {@link Mutation} in the pipe */
   public void checkpoint() {
     source.checkpoint(getLastMutation());
   }

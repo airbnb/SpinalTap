@@ -7,15 +7,11 @@ package com.airbnb.spinaltap.common.source;
 import com.airbnb.common.metrics.TaggedMetricRegistry;
 import com.airbnb.spinaltap.Mutation;
 import com.airbnb.spinaltap.common.metrics.SpinalTapMetrics;
-
+import com.google.common.collect.ImmutableMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
-import com.google.common.collect.ImmutableMap;
-
-/**
- * Responsible for metrics collection for a {@link Source}.
- */
+/** Responsible for metrics collection for a {@link Source}. */
 public class SourceMetrics extends SpinalTapMetrics {
   protected static final String SOURCE_PREFIX = METRIC_PREFIX + ".source";
 

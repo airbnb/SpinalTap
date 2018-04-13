@@ -25,18 +25,15 @@ import com.airbnb.spinaltap.mysql.mutation.schema.Column;
 import com.airbnb.spinaltap.mysql.mutation.schema.ColumnMetadata;
 import com.airbnb.spinaltap.mysql.mutation.schema.Table;
 import com.airbnb.spinaltap.mysql.schema.SchemaTracker;
-
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-
+import com.google.common.collect.ImmutableMap;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
-
-import com.google.common.collect.ImmutableMap;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 /** Maps a BinlogEvent to a Mutation */
 @Slf4j

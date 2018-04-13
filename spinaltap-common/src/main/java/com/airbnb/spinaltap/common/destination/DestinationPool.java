@@ -4,33 +4,25 @@
  */
 package com.airbnb.spinaltap.common.destination;
 
+import static java.util.stream.Collectors.groupingBy;
+
 import com.airbnb.spinaltap.Mutation;
 import com.airbnb.spinaltap.common.util.KeyProvider;
-
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Objects;
 import lombok.AccessLevel;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Collectors;
-
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-
-import static java.util.stream.Collectors.groupingBy;
-
 /**
- * Represents a pool of {@link Destination}s, where events are routed to the appropriate
- * {@link Destination} given a partitioning function based on {@link Mutation} key.
+ * Represents a pool of {@link Destination}s, where events are routed to the appropriate {@link
+ * Destination} given a partitioning function based on {@link Mutation} key.
  *
- * <p>Note: This implement helps to fan-out load, which is particularly useful to keep
- * {@link Mutation} lag low when there are event spikes.</p>
+ * <p>Note: This implement helps to fan-out load, which is particularly useful to keep {@link
+ * Mutation} lag low when there are event spikes.
  */
 @Slf4j
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)

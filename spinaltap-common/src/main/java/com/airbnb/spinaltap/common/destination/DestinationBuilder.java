@@ -10,17 +10,13 @@ import com.airbnb.spinaltap.common.util.KeyProvider;
 import com.airbnb.spinaltap.common.util.Mapper;
 import com.airbnb.spinaltap.common.util.Validator;
 import com.airbnb.spinaltap.common.validator.MutationOrderValidator;
-
-import lombok.NonNull;
-
+import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
 import java.util.List;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
-
 import javax.validation.constraints.Min;
-
-import com.google.common.base.Preconditions;
-import com.google.common.collect.Lists;
+import lombok.NonNull;
 
 public abstract class DestinationBuilder<T> {
   protected BatchMapper<Mutation<?>, T> mapper;

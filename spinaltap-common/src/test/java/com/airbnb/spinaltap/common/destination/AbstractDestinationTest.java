@@ -4,19 +4,6 @@
  */
 package com.airbnb.spinaltap.common.destination;
 
-import com.airbnb.spinaltap.Mutation;
-import com.airbnb.spinaltap.common.exception.DestinationException;
-
-import lombok.Getter;
-import lombok.Setter;
-
-import java.util.List;
-
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
-import org.junit.Before;
-import org.junit.Test;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.any;
@@ -25,6 +12,16 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
+
+import com.airbnb.spinaltap.Mutation;
+import com.airbnb.spinaltap.common.exception.DestinationException;
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
+import java.util.List;
+import lombok.Getter;
+import lombok.Setter;
+import org.junit.Before;
+import org.junit.Test;
 
 public class AbstractDestinationTest {
   private final Destination.Listener listener = mock(Destination.Listener.class);
@@ -83,8 +80,7 @@ public class AbstractDestinationTest {
       destination.send(ImmutableList.of(firstMutation, secondMutation));
     } catch (Exception ex) {
       assertNull(destination.getLastPublishedMutation());
-      verify(metrics, times(2))
-          .publishFailed(any(Mutation.class), any(RuntimeException.class));
+      verify(metrics, times(2)).publishFailed(any(Mutation.class), any(RuntimeException.class));
 
       throw ex;
     }

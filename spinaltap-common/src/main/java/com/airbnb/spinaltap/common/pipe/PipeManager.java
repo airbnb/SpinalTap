@@ -4,10 +4,9 @@
  */
 package com.airbnb.spinaltap.common.pipe;
 
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
-import lombok.extern.slf4j.Slf4j;
-
+import com.google.common.collect.Maps;
+import com.google.common.collect.Table;
+import com.google.common.collect.Tables;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -15,15 +14,14 @@ import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeoutException;
-
-import com.google.common.collect.Maps;
-import com.google.common.collect.Table;
-import com.google.common.collect.Tables;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Responsible for managing a collection of {@link Pipe}s for a set of resources.
  *
- * <p>A resource is typically associated with a data source, ex: a MySQL database</p>
+ * <p>A resource is typically associated with a data source, ex: a MySQL database
  */
 @Slf4j
 @NoArgsConstructor
@@ -45,7 +43,7 @@ public class PipeManager {
    * @param name the resource name
    * @param pipe the pipe
    */
-  public void addPipe(@NonNull final String name,  @NonNull final Pipe pipe) {
+  public void addPipe(@NonNull final String name, @NonNull final Pipe pipe) {
     addPipe(name, getDefaultPartition(name), pipe);
   }
 
@@ -84,16 +82,12 @@ public class PipeManager {
     return String.format("%s_%d", name, 0);
   }
 
-  /**
-   * @return whether the given resource is registered.
-   */
+  /** @return whether the given resource is registered. */
   public boolean contains(@NonNull final String name) {
     return pipeTable.containsRow(name);
   }
 
-  /**
-   * @return whether the given resource partition is registered.
-   */
+  /** @return whether the given resource partition is registered. */
   public boolean contains(@NonNull final String name, @NonNull final String partition) {
     return pipeTable.contains(name, partition);
   }
@@ -102,9 +96,7 @@ public class PipeManager {
     return pipeTable.isEmpty();
   }
 
-  /**
-   * @return all partitions for a given registered resource.
-   */
+  /** @return all partitions for a given registered resource. */
   public Set<String> getPartitions(@NonNull final String name) {
     return pipeTable.row(name).keySet();
   }
@@ -140,9 +132,7 @@ public class PipeManager {
     executor.execute(operation);
   }
 
-  /**
-   * Starts all {@link Pipe}s for all managed resources.
-   */
+  /** Starts all {@link Pipe}s for all managed resources. */
   public void start() throws Exception {
     log.debug("Starting pipe manager");
 
@@ -162,9 +152,7 @@ public class PipeManager {
     log.info("Started pipe manager");
   }
 
-  /**
-   * Starts all {@link Pipe}s for all managed resources.
-   */
+  /** Starts all {@link Pipe}s for all managed resources. */
   public void stop() {
     log.debug("Stopping pipe manager");
 

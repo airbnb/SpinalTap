@@ -4,19 +4,6 @@
  */
 package com.airbnb.spinaltap.common.destination;
 
-import com.airbnb.spinaltap.Mutation;
-import com.airbnb.spinaltap.common.util.KeyProvider;
-
-import lombok.NoArgsConstructor;
-
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import com.google.common.collect.ImmutableList;
-import org.junit.Test;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -25,6 +12,16 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import com.airbnb.spinaltap.Mutation;
+import com.airbnb.spinaltap.common.util.KeyProvider;
+import com.google.common.collect.ImmutableList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+import lombok.NoArgsConstructor;
+import org.junit.Test;
 
 public class DestinationPoolTest {
   private final Destination firstDestination = mock(Destination.class);

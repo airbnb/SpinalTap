@@ -5,12 +5,9 @@
 package com.airbnb.spinaltap.common.util;
 
 import com.airbnb.spinaltap.common.source.SourceState;
-
 import java.util.Collection;
 
-/**
- * Factory for {@link Repository}s that store {@link SourceState} objects.
- */
+/** Factory for {@link Repository}s that store {@link SourceState} objects. */
 public interface StateRepositoryFactory {
   /**
    * @return the {@link Repository} of the {@SourceState} object for a given resource and partition.
@@ -19,7 +16,7 @@ public interface StateRepositoryFactory {
 
   /**
    * @return the {@link Repository} of the history of {@SourceState} objects for a given resource
-   * and partition.
+   *     and partition.
    */
   Repository<Collection<SourceState>> getStateHistoryRepository(
       String resourceName, String partitionName);

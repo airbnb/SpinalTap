@@ -7,12 +7,9 @@ package com.airbnb.spinaltap.common.destination;
 import com.airbnb.spinaltap.Mutation;
 import com.airbnb.spinaltap.common.exception.DestinationException;
 import com.airbnb.spinaltap.common.util.ConcurrencyUtil;
-
-import lombok.AccessLevel;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-
+import com.google.common.base.Preconditions;
+import com.google.common.base.Stopwatch;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -21,17 +18,17 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-
 import javax.validation.constraints.Min;
-
-import com.google.common.base.Preconditions;
-import com.google.common.base.Stopwatch;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import lombok.AccessLevel;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Represents a {@link Destination} implement with a bounded in-memory buffer. This is used to solve
  * the Producer-Consumer problem between {@link com.airbnb.spinaltap.common.source.Source} and
- * {@link Destination} processing, resulting in higher concurrency and reducing overall event latency.
+ * {@link Destination} processing, resulting in higher concurrency and reducing overall event
+ * latency.
  */
 @Slf4j
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
@@ -53,8 +50,7 @@ public final class BufferedDestination extends ListenableDestination {
           public void onError(Exception ex) {
             notifyError(ex);
           }
-        }
-    );
+        });
   }
 
   public int getRemainingCapacity() {
@@ -62,8 +58,8 @@ public final class BufferedDestination extends ListenableDestination {
   }
 
   /**
-   * Adds a list of {@link Mutation}s to the buffer, to be sent to the underlying {@link Destination}.
-   * This action is blocking, i.e. thread will wait if the buffer is full.
+   * Adds a list of {@link Mutation}s to the buffer, to be sent to the underlying {@link
+   * Destination}. This action is blocking, i.e. thread will wait if the buffer is full.
    *
    * @param mutations the mutations to send
    */
@@ -100,15 +96,14 @@ public final class BufferedDestination extends ListenableDestination {
     }
   }
 
-  /**
-   * @return the last published {@link Mutation} to the underlying {@link Destination}.
-   */
+  /** @return the last published {@link Mutation} to the underlying {@link Destination}. */
   public Mutation<?> getLastPublishedMutation() {
     return destination.getLastPublishedMutation();
   }
 
   /**
-   * Process all {@link Mutation}s in the buffer, and sends them to the underlying {@link Destination}.
+   * Process all {@link Mutation}s in the buffer, and sends them to the underlying {@link
+   * Destination}.
    */
   void processMutations() throws Exception {
     final List<List<? extends Mutation<?>>> mutationBatches = new ArrayList<>();
@@ -117,11 +112,7 @@ public final class BufferedDestination extends ListenableDestination {
     mutationBatches.add(mutationBuffer.take());
     mutationBuffer.drainTo(mutationBatches);
 
-    destination.send(
-        mutationBatches
-            .stream()
-            .flatMap(List::stream)
-            .collect(Collectors.toList()));
+    destination.send(mutationBatches.stream().flatMap(List::stream).collect(Collectors.toList()));
   }
 
   private void execute() {
@@ -170,9 +161,7 @@ public final class BufferedDestination extends ListenableDestination {
 
       consumer =
           Executors.newSingleThreadExecutor(
-              new ThreadFactoryBuilder()
-                  .setNameFormat("buffered-destination-consumer")
-                  .build());
+              new ThreadFactoryBuilder().setNameFormat("buffered-destination-consumer").build());
 
       consumer.execute(this::execute);
 

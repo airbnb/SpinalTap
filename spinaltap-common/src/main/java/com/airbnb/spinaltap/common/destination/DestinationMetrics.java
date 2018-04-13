@@ -7,17 +7,13 @@ package com.airbnb.spinaltap.common.destination;
 import com.airbnb.common.metrics.TaggedMetricRegistry;
 import com.airbnb.spinaltap.Mutation;
 import com.airbnb.spinaltap.common.metrics.SpinalTapMetrics;
-
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
-
-/**
- * Responsible for metrics collection for a {@link Destination}.
- */
+/** Responsible for metrics collection for a {@link Destination}. */
 public class DestinationMetrics extends SpinalTapMetrics {
   private static final String DESTINATION_PREFIX = METRIC_PREFIX + ".destination";
 

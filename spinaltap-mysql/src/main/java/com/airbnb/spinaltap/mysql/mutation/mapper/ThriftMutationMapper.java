@@ -16,13 +16,10 @@ import com.airbnb.spinaltap.mysql.mutation.MysqlMutationMetadata;
 import com.airbnb.spinaltap.mysql.mutation.MysqlUpdateMutation;
 import com.airbnb.spinaltap.mysql.mutation.schema.Column;
 import com.airbnb.spinaltap.mysql.mutation.schema.Row;
-
-import lombok.RequiredArgsConstructor;
-
+import com.google.common.collect.ImmutableMap;
 import java.nio.ByteBuffer;
 import java.util.Map;
-
-import com.google.common.collect.ImmutableMap;
+import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 public abstract class ThriftMutationMapper<T extends MysqlMutation>

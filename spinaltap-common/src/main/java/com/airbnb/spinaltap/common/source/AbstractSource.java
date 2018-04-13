@@ -9,18 +9,15 @@ import com.airbnb.spinaltap.common.exception.SourceException;
 import com.airbnb.spinaltap.common.util.Filter;
 import com.airbnb.spinaltap.common.util.Mapper;
 import com.airbnb.spinaltap.common.util.Validator;
-
+import com.google.common.base.Preconditions;
+import com.google.common.base.Stopwatch;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import com.google.common.base.Preconditions;
-import com.google.common.base.Stopwatch;
 
 /**
  * Base abstract implementation of {@link Source}.
@@ -34,14 +31,10 @@ public abstract class AbstractSource<E extends SourceEvent> extends ListenableSo
   @NonNull protected final SourceMetrics metrics;
   @NonNull protected final AtomicBoolean started = new AtomicBoolean(false);
 
-  /**
-   * Maps the {@link Source} event to the corresponding {@link Mutation}.
-   */
+  /** Maps the {@link Source} event to the corresponding {@link Mutation}. */
   private final Mapper<E, List<? extends Mutation<?>>> mutationMapper;
 
-  /**
-   * Filters the {@link SourceEvent}s.
-   */
+  /** Filters the {@link SourceEvent}s. */
   private final Filter<E> eventFilter;
 
   @Override

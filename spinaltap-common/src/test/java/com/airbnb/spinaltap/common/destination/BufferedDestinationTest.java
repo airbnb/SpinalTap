@@ -4,19 +4,17 @@
  */
 package com.airbnb.spinaltap.common.destination;
 
-import com.airbnb.spinaltap.Mutation;
-
-import java.util.List;
-
-import com.google.common.collect.ImmutableList;
-import org.junit.Before;
-import org.junit.Test;
-
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import com.airbnb.spinaltap.Mutation;
+import com.google.common.collect.ImmutableList;
+import java.util.List;
+import org.junit.Before;
+import org.junit.Test;
 
 public class BufferedDestinationTest {
   private final Mutation<?> firstMutation = mock(Mutation.class);

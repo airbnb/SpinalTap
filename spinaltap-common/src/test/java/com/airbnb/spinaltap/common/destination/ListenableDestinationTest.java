@@ -1,15 +1,17 @@
+/**
+ * Copyright 2018 Airbnb. Licensed under Apache-2.0. See License in the project root for license
+ * information.
+ */
 package com.airbnb.spinaltap.common.destination;
-
-import com.airbnb.spinaltap.Mutation;
-
-import java.util.List;
-
-import com.google.common.collect.ImmutableList;
-import org.junit.Test;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
+
+import com.airbnb.spinaltap.Mutation;
+import com.google.common.collect.ImmutableList;
+import java.util.List;
+import org.junit.Test;
 
 public class ListenableDestinationTest {
   private final Destination.Listener listener = mock(Destination.Listener.class);
@@ -47,8 +49,7 @@ public class ListenableDestinationTest {
     }
 
     @Override
-    public void send(List<? extends Mutation<?>> mutations) {
-    }
+    public void send(List<? extends Mutation<?>> mutations) {}
 
     @Override
     public boolean isStarted() {
@@ -56,11 +57,9 @@ public class ListenableDestinationTest {
     }
 
     @Override
-    public void close() {
-    }
+    public void close() {}
 
     @Override
-    public void clear() {
-    }
+    public void clear() {}
   }
 }

@@ -4,10 +4,9 @@
  */
 package com.airbnb.spinaltap.common.util;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-
-import com.fasterxml.jackson.core.type.TypeReference;
 import org.apache.curator.framework.CuratorFramework;
 
 /**

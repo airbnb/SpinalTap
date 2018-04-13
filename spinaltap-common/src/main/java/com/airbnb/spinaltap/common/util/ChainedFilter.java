@@ -4,13 +4,12 @@
  */
 package com.airbnb.spinaltap.common.util;
 
+import java.util.ArrayList;
+import java.util.List;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Represents a chain of {@link Filter}s, where all {@link Filter} conditions need to pass.

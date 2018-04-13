@@ -5,15 +5,14 @@
 package com.airbnb.spinaltap.common.source;
 
 import com.airbnb.spinaltap.Mutation;
-
-import lombok.NonNull;
-
 import java.util.ArrayList;
 import java.util.List;
+import lombok.NonNull;
 
 /**
- * Base {@link Source} implement using <a href="https://en.wikipedia.org/wiki/Observer_pattern">observer pattern</a>
- * to allow listening to streamed events and subscribe to lifecycle change notifications.
+ * Base {@link Source} implement using <a
+ * href="https://en.wikipedia.org/wiki/Observer_pattern">observer pattern</a> to allow listening to
+ * streamed events and subscribe to lifecycle change notifications.
  */
 abstract class ListenableSource<E extends SourceEvent> implements Source {
   private final List<Listener> listeners = new ArrayList<>();

@@ -4,19 +4,15 @@
  */
 package com.airbnb.spinaltap.common.util;
 
+import com.google.common.base.Preconditions;
+import java.util.HashMap;
+import java.util.Map;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import com.google.common.base.Preconditions;
-
-/**
- * Maps an object according to the registered mapper by {@link Class} type.
- * */
+/** Maps an object according to the registered mapper by {@link Class} type. */
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public class ClassBasedMapper<T, R> implements Mapper<T, R> {
   @NonNull private final Map<Class<? extends T>, Mapper<T, ? extends R>> locator;

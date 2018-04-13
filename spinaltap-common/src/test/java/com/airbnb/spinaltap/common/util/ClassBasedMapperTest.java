@@ -4,9 +4,9 @@
  */
 package com.airbnb.spinaltap.common.util;
 
-import org.junit.Test;
-
 import static org.junit.Assert.assertEquals;
+
+import org.junit.Test;
 
 public class ClassBasedMapperTest {
   @Test
@@ -23,8 +23,6 @@ public class ClassBasedMapperTest {
 
   @Test(expected = IllegalStateException.class)
   public void testNoMapFound() throws Exception {
-    ClassBasedMapper.<Object, Integer>builder()
-        .build()
-        .map(1);
+    ClassBasedMapper.<Object, Integer>builder().build().map(1);
   }
 }
