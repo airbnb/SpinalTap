@@ -4,8 +4,10 @@
  */
 package com.airbnb.spinaltap.kafka;
 
+import com.airbnb.common.metrics.TaggedMetricRegistry;
 import com.airbnb.jitney.event.spinaltap.v1.Mutation;
 import com.airbnb.jitney.event.spinaltap.v1.MutationType;
+import com.airbnb.spinaltap.common.destination.DestinationMetrics;
 import com.airbnb.spinaltap.common.util.Mapper;
 import com.airbnb.spinaltap.mysql.BinlogFilePos;
 import com.airbnb.spinaltap.mysql.DataSource;
@@ -56,6 +58,9 @@ public class KafkaDestinationTest extends AbstractKafkaIntegrationTestHarness {
   private static final ThreadLocal<TDeserializer> deserializer =
       ThreadLocal.withInitial(() -> new TDeserializer((new TBinaryProtocol.Factory())));
 
+  private final DestinationMetrics metrics =
+      new DestinationMetrics("test", "test", new TaggedMetricRegistry());
+
   @Before
   public void setUp() {
     super.setUp();
@@ -104,7 +109,7 @@ public class KafkaDestinationTest extends AbstractKafkaIntegrationTestHarness {
   public void KafkaDestination() throws Exception {
     createKafkaTopic(TOPIC);
     KafkaProducerConfiguration configs = new KafkaProducerConfiguration(this.bootstrapServers());
-    KafkaDestination kafkaDestination = new KafkaDestination(null, configs, null, null, 0L);
+    KafkaDestination kafkaDestination = new KafkaDestination(null, configs, x -> x, metrics, 0L);
     List<Mutation> messages = new ArrayList<>();
     messages.add(createMutation(MutationType.INSERT));
     messages.add(createMutation(MutationType.UPDATE));
