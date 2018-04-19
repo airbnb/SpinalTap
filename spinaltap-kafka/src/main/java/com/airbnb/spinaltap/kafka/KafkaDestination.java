@@ -8,8 +8,12 @@ import com.airbnb.spinaltap.Mutation;
 import com.airbnb.spinaltap.common.destination.AbstractDestination;
 import com.airbnb.spinaltap.common.destination.DestinationMetrics;
 import com.airbnb.spinaltap.common.util.BatchMapper;
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.producer.Callback;
 import org.apache.kafka.clients.producer.KafkaProducer;
@@ -78,11 +82,30 @@ public class KafkaDestination<T extends TBase<?, ?>> extends AbstractDestination
   private ProducerRecord<byte[], byte[]> transform(TBase<?, ?> event) throws RuntimeException {
     try {
       String topic = getTopic(event);
-      byte[] bytes = serializer.get().serialize(event);
-      return new ProducerRecord<>(topic, bytes);
+      byte[] key = getKey(event);
+      byte[] value = serializer.get().serialize(event);
+      return new ProducerRecord<>(topic, key, value);
     } catch (TException ex) {
       throw new RuntimeException("Error when transforming event from TBase to ProducerRecord.", ex);
+    } catch (Exception ex) {
+      throw new RuntimeException("Invalid mutation found when transforming.", ex);
     }
+  }
+
+  /** Use the primary key as the key of the ProducerRecord. */
+  private byte[] getKey(TBase<?, ?> event) {
+    com.airbnb.jitney.event.spinaltap.v1.Mutation mutation =
+        ((com.airbnb.jitney.event.spinaltap.v1.Mutation) event);
+    Set<String> primaryKeys = mutation.getTable().getPrimaryKey();
+    String tableName = mutation.getTable().getName();
+    String databaseName = mutation.getTable().getDatabase();
+    Map<String, ByteBuffer> entities = mutation.getEntity();
+    StringBuilder builder = new StringBuilder(databaseName + ":" + tableName);
+    for (String keyComponent : primaryKeys) {
+      String component = new String(entities.get(keyComponent).array(), StandardCharsets.UTF_8);
+      builder.append(":").append(component);
+    }
+    return builder.toString().getBytes(StandardCharsets.UTF_8);
   }
 
   /**
