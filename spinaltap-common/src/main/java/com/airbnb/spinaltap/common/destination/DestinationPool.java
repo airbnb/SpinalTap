@@ -5,11 +5,13 @@
 package com.airbnb.spinaltap.common.destination;
 
 import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.toList;
 
 import com.airbnb.spinaltap.Mutation;
 import com.airbnb.spinaltap.common.util.KeyProvider;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Objects;
 import lombok.AccessLevel;
@@ -85,7 +87,7 @@ public final class DestinationPool extends ListenableDestination {
   public synchronized void send(@NonNull final List<? extends Mutation<?>> mutations) {
     mutations
         .stream()
-        .collect(groupingBy(this::getPartitionId))
+        .collect(groupingBy(this::getPartitionId, LinkedHashMap::new, toList()))
         .forEach(
             (id, mutationList) -> {
               log.debug("Sending {} mutations to destination {}.", mutationList.size(), id);
@@ -96,7 +98,7 @@ public final class DestinationPool extends ListenableDestination {
             });
   }
 
-  /** The is currently a replication of the logic in {@link kafka.producer.DefaultPartitioner} */
+  /** The is currently a replication of the logic in {@code kafka.producer.DefaultPartitioner} */
   private int getPartitionId(final Mutation<?> mutation) {
     return Math.abs(keyProvider.get(mutation).hashCode() % destinations.size());
   }

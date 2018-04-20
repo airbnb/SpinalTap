@@ -73,10 +73,7 @@ public enum ColumnDataType {
    * <p>As an example, let's take BLOB/252. Mysql column type will be the byte 0b11111100. If casted
    * to a java integer it will be interpreted as -4.
    *
-   * <p>Integer.toBinaryString((int)((byte) 252)) -> '11111111111111111111111111111100'
-   *
-   * @param code
-   * @return
+   * <p>Integer.toBinaryString((int)((byte) 252)): '11111111111111111111111111111100'
    */
   public static ColumnDataType byCode(byte code) {
     final int upcastedIntValue = code & 0xFF;
