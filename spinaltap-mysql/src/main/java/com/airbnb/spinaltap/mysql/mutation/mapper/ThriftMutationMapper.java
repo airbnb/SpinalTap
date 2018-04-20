@@ -27,7 +27,7 @@ public abstract class ThriftMutationMapper<T extends MysqlMutation>
   protected final String sourceId;
 
   public static Mapper<com.airbnb.spinaltap.Mutation<?>, Mutation> create(String sourceId) {
-    return new ClassBasedMapper.Builder<com.airbnb.spinaltap.Mutation<?>, Mutation>()
+    return ClassBasedMapper.<com.airbnb.spinaltap.Mutation<?>, Mutation>builder()
         .addMapper(MysqlInsertMutation.class, new InsertMutationMapper(sourceId))
         .addMapper(MysqlUpdateMutation.class, new UpdateMutationMapper(sourceId))
         .addMapper(MysqlDeleteMutation.class, new DeleteMutationMapper(sourceId))

@@ -54,7 +54,7 @@ public abstract class MysqlMutationMapper<R extends BinlogEvent, T extends Mysql
       AtomicReference<Transaction> beginTransaction,
       AtomicReference<Transaction> lastTransaction,
       MysqlSourceMetrics metrics) {
-    return new ClassBasedMapper.Builder<BinlogEvent, List<? extends Mutation<?>>>()
+    return ClassBasedMapper.<BinlogEvent, List<? extends Mutation<?>>>builder()
         .addMapper(TableMapEvent.class, new TableMapMapper(tableCache))
         .addMapper(QueryEvent.class, new QueryMapper(beginTransaction, schemaTracker))
         .addMapper(XidEvent.class, new XidMapper(lastTransaction, metrics))

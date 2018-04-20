@@ -7,6 +7,7 @@ package com.airbnb.spinaltap;
 import com.airbnb.common.metrics.TaggedMetricRegistry;
 import com.airbnb.spinaltap.common.pipe.PipeManager;
 import com.airbnb.spinaltap.kafka.KafkaDestinationBuilder;
+import com.airbnb.spinaltap.mysql.MySQLPipeFactory;
 import com.airbnb.spinaltap.mysql.config.MysqlConfiguration;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;

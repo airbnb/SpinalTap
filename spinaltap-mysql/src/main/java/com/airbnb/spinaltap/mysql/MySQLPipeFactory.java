@@ -2,7 +2,7 @@
  * Copyright 2018 Airbnb. Licensed under Apache-2.0. See License in the project root for license
  * information.
  */
-package com.airbnb.spinaltap;
+package com.airbnb.spinaltap.mysql;
 
 import com.airbnb.common.metrics.TaggedMetricRegistry;
 import com.airbnb.jitney.event.spinaltap.v1.Mutation;
@@ -14,9 +14,6 @@ import com.airbnb.spinaltap.common.pipe.Pipe;
 import com.airbnb.spinaltap.common.pipe.PipeMetrics;
 import com.airbnb.spinaltap.common.source.Source;
 import com.airbnb.spinaltap.common.util.StateRepositoryFactory;
-import com.airbnb.spinaltap.mysql.MysqlDestinationMetrics;
-import com.airbnb.spinaltap.mysql.MysqlSource;
-import com.airbnb.spinaltap.mysql.MysqlSourceMetrics;
 import com.airbnb.spinaltap.mysql.config.MysqlConfiguration;
 import com.airbnb.spinaltap.mysql.config.MysqlSchemaStoreConfiguration;
 import com.airbnb.spinaltap.mysql.mutation.MysqlKeyProvider;
@@ -108,7 +105,6 @@ public class MySQLPipeFactory extends AbstractPipeFactory<MysqlConfiguration> {
             .withPool(destConfig.getPoolSize(), MysqlKeyProvider.INSTANCE)
             .withValidation()
             .withLargeMessage(sourceConfig.isLargeMessageEnabled())
-            .withDelaySendMs(sourceConfig.getDelaySendMs())
             .build();
 
     PipeMetrics metrics = new PipeMetrics(source.getName(), metricRegistry);

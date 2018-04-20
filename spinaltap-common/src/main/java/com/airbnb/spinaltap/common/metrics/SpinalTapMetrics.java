@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 
+/** Base class for metrics collection. */
 @RequiredArgsConstructor
 public abstract class SpinalTapMetrics {
   protected static final String METRIC_PREFIX = "spinaltap";

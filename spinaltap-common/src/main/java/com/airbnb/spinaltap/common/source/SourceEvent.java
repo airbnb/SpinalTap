@@ -9,7 +9,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
-/** Base event produced from a source */
+/** Represents a base event streamed from a {@link Source}. */
 @Getter
 @ToString
 @NoArgsConstructor

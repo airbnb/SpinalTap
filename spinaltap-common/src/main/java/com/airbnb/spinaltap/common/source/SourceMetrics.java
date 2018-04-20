@@ -11,6 +11,7 @@ import com.google.common.collect.ImmutableMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
+/** Responsible for metrics collection for a {@link Source}. */
 public class SourceMetrics extends SpinalTapMetrics {
   protected static final String SOURCE_PREFIX = METRIC_PREFIX + ".source";
 

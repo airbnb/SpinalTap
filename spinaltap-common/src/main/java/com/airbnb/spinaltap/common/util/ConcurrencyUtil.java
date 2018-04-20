@@ -10,9 +10,20 @@ import javax.validation.constraints.Min;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
+/** Utility methods for concurrency operations */
 @UtilityClass
-public final class SpinalTapConcurrencyUtil {
-  public static boolean shutdownGracefully(
+public class ConcurrencyUtil {
+  /**
+   * Attempts to shutdown the {@link ExecutorService}. If the service does not terminate within the
+   * specified timeout, a force shutdown will be triggered.
+   *
+   * @param executorService the {@link ExecutorService}.
+   * @param timeout the timeout.
+   * @param unit the time unit.
+   * @return {@code true} if shutdown was successful within the specified timeout, {@code false}
+   *     otherwise.
+   */
+  public boolean shutdownGracefully(
       @NonNull ExecutorService executorService, @Min(1) long timeout, @NonNull TimeUnit unit) {
     boolean shutdown = false;
     executorService.shutdown();

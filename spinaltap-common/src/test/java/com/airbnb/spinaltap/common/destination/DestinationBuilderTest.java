@@ -4,9 +4,11 @@
  */
 package com.airbnb.spinaltap.common.destination;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
 
+import com.airbnb.common.metrics.TaggedMetricRegistry;
 import com.airbnb.spinaltap.Mutation;
 import com.airbnb.spinaltap.common.util.KeyProvider;
 import com.airbnb.spinaltap.common.util.Mapper;
@@ -14,8 +16,9 @@ import lombok.NoArgsConstructor;
 import org.junit.Test;
 
 public class DestinationBuilderTest {
-  private static final Mapper<Mutation<?>, Mutation<?>> mapper = mock(Mapper.class);
-  private static final DestinationMetrics metrics = mock(DestinationMetrics.class);
+  private static final Mapper<Mutation<?>, Mutation<?>> mapper = mutation -> mutation;
+  private static final DestinationMetrics metrics =
+      new DestinationMetrics("test", "test", new TaggedMetricRegistry());
 
   @Test(expected = NullPointerException.class)
   public void testNoMapper() throws Exception {

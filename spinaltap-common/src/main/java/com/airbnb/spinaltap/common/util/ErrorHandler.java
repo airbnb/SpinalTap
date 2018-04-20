@@ -6,6 +6,8 @@ package com.airbnb.spinaltap.common.util;
 
 import com.airbnb.spinaltap.common.exception.SpinaltapException;
 
+/** Responsible for handling {@code SpinaltapException}s. */
+@FunctionalInterface
 public interface ErrorHandler {
   void handle(SpinaltapException e) throws SpinaltapException;
 }

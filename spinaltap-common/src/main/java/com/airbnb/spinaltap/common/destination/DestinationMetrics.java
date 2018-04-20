@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
+/** Responsible for metrics collection for a {@link Destination}. */
 public class DestinationMetrics extends SpinalTapMetrics {
   private static final String DESTINATION_PREFIX = METRIC_PREFIX + ".destination";
 

@@ -4,11 +4,15 @@
  */
 package com.airbnb.spinaltap.common.destination;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import com.airbnb.spinaltap.Mutation;
 import com.google.common.collect.ImmutableList;
+import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -17,11 +21,15 @@ public class BufferedDestinationTest {
   private final Mutation<?> secondMutation = mock(Mutation.class);
   private final Mutation<?> thirdMutation = mock(Mutation.class);
 
+  private final List<Mutation<?>> mutations =
+      ImmutableList.of(firstMutation, secondMutation, thirdMutation);
+
   private final Destination destination = mock(Destination.class);
   private final Destination.Listener listener = mock(Destination.Listener.class);
   private final DestinationMetrics metrics = mock(DestinationMetrics.class);
 
-  BufferedDestination bufferedDestination = new BufferedDestination(10, destination, metrics);
+  private BufferedDestination bufferedDestination =
+      new BufferedDestination(10, destination, metrics);
 
   @Before
   public void setUp() throws Exception {
@@ -37,12 +45,12 @@ public class BufferedDestinationTest {
     when(destination.isStarted()).thenReturn(true);
 
     assertTrue(bufferedDestination.isStarted());
-    verify(destination, times(1)).open();
+    verify(destination).open();
 
     bufferedDestination.open();
 
     assertTrue(bufferedDestination.isStarted());
-    verify(destination, times(1)).open();
+    verify(destination).open();
 
     bufferedDestination.close();
 
@@ -52,16 +60,16 @@ public class BufferedDestinationTest {
   @Test
   public void testSend() throws Exception {
     when(destination.isStarted()).thenReturn(true);
+
     bufferedDestination.send(ImmutableList.of(firstMutation, secondMutation));
     bufferedDestination.processMutations();
 
-    verify(destination, times(1)).send(ImmutableList.of(firstMutation, secondMutation));
+    verify(destination).send(ImmutableList.of(firstMutation, secondMutation));
 
     bufferedDestination.send(ImmutableList.of(firstMutation));
     bufferedDestination.send(ImmutableList.of(secondMutation, thirdMutation));
     bufferedDestination.processMutations();
 
-    verify(destination, times(1))
-        .send(ImmutableList.of(firstMutation, secondMutation, thirdMutation));
+    verify(destination).send(mutations);
   }
 }
