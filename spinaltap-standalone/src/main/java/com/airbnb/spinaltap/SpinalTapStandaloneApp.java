@@ -17,6 +17,7 @@ import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 
+/** A standalone single-node application to run SpinalTap process. */
 @Slf4j
 public class SpinalTapStandaloneApp {
   public static void main(String[] args) throws Exception {
@@ -25,41 +26,48 @@ public class SpinalTapStandaloneApp {
       System.exit(1);
     }
 
-    ObjectMapper objectMapper = new ObjectMapper(new YAMLFactory());
-    SpinalTapStandaloneConfiguration config =
+    final ObjectMapper objectMapper = new ObjectMapper(new YAMLFactory());
+    final SpinalTapStandaloneConfiguration config =
         objectMapper.readValue(new File(args[0]), SpinalTapStandaloneConfiguration.class);
 
-    MySQLPipeFactory mySQLPipeFactory =
-        new MySQLPipeFactory(
-            config.getMysqlUser(),
-            config.getMysqlPassword(),
-            config.getMysqlServerId(),
-            () -> new KafkaDestinationBuilder<>(config.getKafkaProducerConfig()),
-            config.getMysqlSchemaStoreConfig(),
-            new TaggedMetricRegistry());
-
-    CuratorFramework zkClient =
-        CuratorFrameworkFactory.builder()
-            .namespace(config.getZkNamespace())
-            .connectString(config.getZkConnectionString())
-            .retryPolicy(new ExponentialBackoffRetry(100, 3))
-            .build();
-
-    ZookeeperRepositoryFactory zkRepositoryFactory = new ZookeeperRepositoryFactory(zkClient);
-
-    zkClient.start();
-
-    PipeManager pipeManager = new PipeManager();
+    final MySQLPipeFactory mySQLPipeFactory = createMysqlPipeFactory(config);
+    final ZookeeperRepositoryFactory zkRepositoryFactory = createZookeeperRepositoryFactory(config);
+    final PipeManager pipeManager = new PipeManager();
 
     for (MysqlConfiguration mysqlSourceConfig : config.getMysqlSources()) {
-      String sourceName = mysqlSourceConfig.getName();
-      String partitionName = String.format("%s_0", sourceName);
+      final String sourceName = mysqlSourceConfig.getName();
+      final String partitionName = String.format("%s_0", sourceName);
       pipeManager.addPipes(
           sourceName,
           partitionName,
           mySQLPipeFactory.createPipes(mysqlSourceConfig, partitionName, zkRepositoryFactory, 0));
     }
 
-    Runtime.getRuntime().addShutdownHook(new Thread(() -> pipeManager.stop()));
+    Runtime.getRuntime().addShutdownHook(new Thread(pipeManager::stop));
+  }
+
+  private static MySQLPipeFactory createMysqlPipeFactory(
+      final SpinalTapStandaloneConfiguration config) {
+    return new MySQLPipeFactory(
+        config.getMysqlUser(),
+        config.getMysqlPassword(),
+        config.getMysqlServerId(),
+        () -> new KafkaDestinationBuilder<>(config.getKafkaProducerConfig()),
+        config.getMysqlSchemaStoreConfig(),
+        new TaggedMetricRegistry());
+  }
+
+  private static ZookeeperRepositoryFactory createZookeeperRepositoryFactory(
+      final SpinalTapStandaloneConfiguration config) {
+    final CuratorFramework zkClient =
+        CuratorFrameworkFactory.builder()
+            .namespace(config.getZkNamespace())
+            .connectString(config.getZkConnectionString())
+            .retryPolicy(new ExponentialBackoffRetry(100, 3))
+            .build();
+
+    zkClient.start();
+
+    return new ZookeeperRepositoryFactory(zkClient);
   }
 }
