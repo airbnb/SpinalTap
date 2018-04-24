@@ -7,7 +7,7 @@ package com.airbnb.spinaltap;
 import com.airbnb.common.metrics.TaggedMetricRegistry;
 import com.airbnb.spinaltap.common.pipe.PipeManager;
 import com.airbnb.spinaltap.kafka.KafkaDestinationBuilder;
-import com.airbnb.spinaltap.mysql.MySQLPipeFactory;
+import com.airbnb.spinaltap.mysql.MysqlPipeFactory;
 import com.airbnb.spinaltap.mysql.config.MysqlConfiguration;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
@@ -30,7 +30,7 @@ public final class SpinalTapStandaloneApp {
     final SpinalTapStandaloneConfiguration config =
         objectMapper.readValue(new File(args[0]), SpinalTapStandaloneConfiguration.class);
 
-    final MySQLPipeFactory mySQLPipeFactory = createMysqlPipeFactory(config);
+    final MysqlPipeFactory mysqlPipeFactory = createMysqlPipeFactory(config);
     final ZookeeperRepositoryFactory zkRepositoryFactory = createZookeeperRepositoryFactory(config);
     final PipeManager pipeManager = new PipeManager();
 
@@ -40,15 +40,15 @@ public final class SpinalTapStandaloneApp {
       pipeManager.addPipes(
           sourceName,
           partitionName,
-          mySQLPipeFactory.createPipes(mysqlSourceConfig, partitionName, zkRepositoryFactory, 0));
+          mysqlPipeFactory.createPipes(mysqlSourceConfig, partitionName, zkRepositoryFactory, 0));
     }
 
     Runtime.getRuntime().addShutdownHook(new Thread(pipeManager::stop));
   }
 
-  private static MySQLPipeFactory createMysqlPipeFactory(
+  private static MysqlPipeFactory createMysqlPipeFactory(
       final SpinalTapStandaloneConfiguration config) {
-    return new MySQLPipeFactory(
+    return new MysqlPipeFactory(
         config.getMysqlUser(),
         config.getMysqlPassword(),
         config.getMysqlServerId(),

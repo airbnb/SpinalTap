@@ -18,17 +18,21 @@ import com.airbnb.spinaltap.mysql.config.MysqlConfiguration;
 import com.airbnb.spinaltap.mysql.config.MysqlSchemaStoreConfiguration;
 import com.airbnb.spinaltap.mysql.mutation.MysqlKeyProvider;
 import com.airbnb.spinaltap.mysql.mutation.mapper.ThriftMutationMapper;
-import com.google.common.base.Preconditions;
-import java.util.Collections;
-import java.util.List;
-import java.util.function.Supplier;
-import javax.validation.constraints.Min;
+
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.function.Supplier;
+
+import javax.validation.constraints.Min;
+
+import com.google.common.base.Preconditions;
+
 /** Represents a factory implement for {@link Pipe}s streaming from a {@link MysqlSource}. */
 @Slf4j
-public final class MySQLPipeFactory extends AbstractPipeFactory<MysqlConfiguration> {
+public final class MysqlPipeFactory extends AbstractPipeFactory<MysqlConfiguration> {
   public static final String DEFAULT_MYSQL_TOPIC_PREFIX = "spinaltap";
 
   private final String mysqlUser;
@@ -37,7 +41,7 @@ public final class MySQLPipeFactory extends AbstractPipeFactory<MysqlConfigurati
   private final Supplier<DestinationBuilder<Mutation>> destinationBuilderSupplier;
   private final MysqlSchemaStoreConfiguration schemaStoreConfig;
 
-  public MySQLPipeFactory(
+  public MysqlPipeFactory(
       @NonNull final String mysqlUser,
       @NonNull final String mysqlPassword,
       @NonNull final long mysqlServerId,
@@ -87,21 +91,15 @@ public final class MySQLPipeFactory extends AbstractPipeFactory<MysqlConfigurati
       final StateRepositoryFactory repositoryFactory,
       final String partitionName,
       final long leaderEpoch) {
-    return MysqlSource.create(
-        configuration.getName(),
-        configuration.getHost(),
-        configuration.getPort(),
-        configuration.getSocketTimeoutInSeconds(),
+    return MysqlSourceFactory.create(
+        configuration,
         mysqlUser,
         mysqlPassword,
         // Use a different server_id for REPLICAS in case the same database is configured as
         // both MASTER and REPLICA
         mysqlServerId + configuration.getHostRole().ordinal() * 100,
-        configuration.getCanonicalTableNames(),
         repositoryFactory.getStateRepository(configuration.getName(), partitionName),
         repositoryFactory.getStateHistoryRepository(configuration.getName(), partitionName),
-        configuration.getInitialBinlogFilePosition(),
-        configuration.isSchemaVersionEnabled(),
         schemaStoreConfig,
         new MysqlSourceMetrics(configuration.getName(), metricRegistry),
         leaderEpoch);

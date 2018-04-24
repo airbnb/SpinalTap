@@ -5,10 +5,6 @@
 package com.airbnb.spinaltap.mysql;
 
 import com.airbnb.spinaltap.common.source.Source;
-import com.airbnb.spinaltap.common.source.SourceState;
-import com.airbnb.spinaltap.common.util.Repository;
-import com.airbnb.spinaltap.common.validator.MutationOrderValidator;
-import com.airbnb.spinaltap.mysql.config.MysqlSchemaStoreConfiguration;
 import com.airbnb.spinaltap.mysql.event.BinlogEvent;
 import com.airbnb.spinaltap.mysql.event.DeleteEvent;
 import com.airbnb.spinaltap.mysql.event.QueryEvent;
@@ -18,18 +14,18 @@ import com.airbnb.spinaltap.mysql.event.UpdateEvent;
 import com.airbnb.spinaltap.mysql.event.WriteEvent;
 import com.airbnb.spinaltap.mysql.event.XidEvent;
 import com.airbnb.spinaltap.mysql.exception.InvalidBinlogPositionException;
-import com.airbnb.spinaltap.mysql.schema.CachedMysqlSchemaStore;
-import com.airbnb.spinaltap.mysql.schema.LatestMysqlSchemaStore;
-import com.airbnb.spinaltap.mysql.schema.MysqlSchemaDatabase;
-import com.airbnb.spinaltap.mysql.schema.MysqlSchemaStore;
-import com.airbnb.spinaltap.mysql.schema.MysqlSchemaStoreManager;
-import com.airbnb.spinaltap.mysql.schema.MysqlSchemaTracker;
-import com.airbnb.spinaltap.mysql.schema.MysqlSchemaUtil;
-import com.airbnb.spinaltap.mysql.schema.MysqlTableSchema;
-import com.airbnb.spinaltap.mysql.schema.SchemaStore;
 import com.airbnb.spinaltap.mysql.schema.SchemaTracker;
-import com.airbnb.spinaltap.mysql.validator.EventOrderValidator;
-import com.airbnb.spinaltap.mysql.validator.MutationSchemaValidator;
+
+import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
+
+import java.net.Socket;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
+
+import javax.validation.constraints.Min;
+
 import com.github.shyiko.mysql.binlog.BinaryLogClient;
 import com.github.shyiko.mysql.binlog.event.DeleteRowsEventData;
 import com.github.shyiko.mysql.binlog.event.Event;
@@ -41,17 +37,6 @@ import com.github.shyiko.mysql.binlog.event.UpdateRowsEventData;
 import com.github.shyiko.mysql.binlog.event.WriteRowsEventData;
 import com.github.shyiko.mysql.binlog.event.XidEventData;
 import com.google.common.base.Preconditions;
-import java.net.Socket;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.atomic.AtomicReference;
-import javax.validation.constraints.Min;
-import lombok.NonNull;
-import lombok.extern.slf4j.Slf4j;
-import org.skife.jdbi.v2.DBI;
 
 /**
  * Represents a {@link Source} implement that streams mutations from a MySQL source binlog.
@@ -65,93 +50,6 @@ public final class MysqlSource extends AbstractMysqlSource {
   private static final String INVALID_BINLOG_POSITION_ERROR_CODE = "1236";
 
   @NonNull private final BinaryLogClient client;
-
-  public static Source create(
-      @NonNull final String name,
-      @NonNull final String host,
-      @Min(0) final int port,
-      @Min(0) final int socketTimeoutInSeconds,
-      @NonNull final String user,
-      @NonNull final String password,
-      @Min(0) final long serverId,
-      @NonNull final List<String> tableNames,
-      @NonNull final Repository<SourceState> stateRepo,
-      @NonNull final Repository<Collection<SourceState>> stateHistoryRepo,
-      @NonNull final BinlogFilePos initialBinlogPosition,
-      final boolean isSchemaVersionEnabled,
-      @NonNull final MysqlSchemaStoreConfiguration schemaStoreConfig,
-      @NonNull final MysqlSourceMetrics metrics,
-      @Min(0) final long leaderEpoch) {
-    final DBI mysqlDBI = MysqlSchemaUtil.createMysqlDBI(host, port, user, password, null);
-
-    final BinaryLogClient client = new BinaryLogClient(host, port, user, password);
-    // Set different server_id for staging and production environment.
-    // Conflict occurs when more than one client of same server_id connect to a MySQL server.
-    client.setServerId(serverId);
-
-    DataSource dataSource = new DataSource(host, port, name);
-
-    StateRepository stateRepository = new StateRepository(name, stateRepo, metrics);
-    StateHistory stateHistory = new StateHistory(name, stateHistoryRepo, metrics);
-
-    LatestMysqlSchemaStore schemaReader = new LatestMysqlSchemaStore(name, mysqlDBI, metrics);
-    SchemaStore<MysqlTableSchema> schemaStore;
-    SchemaTracker schemaTracker;
-
-    if (isSchemaVersionEnabled) {
-      DBI schemaStoreDBI =
-          MysqlSchemaUtil.createMysqlDBI(
-              schemaStoreConfig.getHost(),
-              schemaStoreConfig.getPort(),
-              user,
-              password,
-              schemaStoreConfig.getDatabase());
-      MysqlSchemaStore mysqlSchemaStore =
-          new MysqlSchemaStore(
-              name, schemaStoreDBI, schemaStoreConfig.getArchiveDatabase(), metrics);
-
-      DBI schemaDatabaseDBI =
-          MysqlSchemaUtil.createMysqlDBI(
-              schemaStoreConfig.getHost(), schemaStoreConfig.getPort(), user, password, null);
-      MysqlSchemaDatabase schemaDatabase =
-          new MysqlSchemaDatabase(name, schemaDatabaseDBI, metrics);
-
-      if (!mysqlSchemaStore.isCreated()) {
-        MysqlSchemaStoreManager schemaStoreManager =
-            new MysqlSchemaStoreManager(name, schemaReader, mysqlSchemaStore, schemaDatabase);
-        schemaStoreManager.bootstrapAll();
-      }
-
-      schemaStore = new CachedMysqlSchemaStore(name, mysqlSchemaStore, metrics);
-      schemaTracker = new MysqlSchemaTracker(schemaStore, schemaDatabase);
-    } else {
-      schemaStore = schemaReader;
-      schemaTracker = (event) -> {};
-    }
-
-    TableCache tableCache = new TableCache(schemaStore);
-
-    MysqlSource source =
-        new MysqlSource(
-            name,
-            dataSource,
-            client,
-            new HashSet<>(tableNames),
-            tableCache,
-            stateRepository,
-            stateHistory,
-            initialBinlogPosition,
-            schemaTracker,
-            metrics,
-            new AtomicLong(leaderEpoch),
-            socketTimeoutInSeconds);
-
-    source.addEventValidator(new EventOrderValidator(metrics::outOfOrder));
-    source.addMutationValidator(new MutationOrderValidator(metrics::outOfOrder));
-    source.addMutationValidator(new MutationSchemaValidator(metrics::invalidSchema));
-
-    return source;
-  }
 
   MysqlSource(
       @NonNull final String name,
