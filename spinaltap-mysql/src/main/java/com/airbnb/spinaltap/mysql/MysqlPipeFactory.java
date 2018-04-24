@@ -14,6 +14,7 @@ import com.airbnb.spinaltap.common.pipe.Pipe;
 import com.airbnb.spinaltap.common.pipe.PipeMetrics;
 import com.airbnb.spinaltap.common.source.Source;
 import com.airbnb.spinaltap.common.util.StateRepositoryFactory;
+import com.airbnb.spinaltap.mysql.binlog_connector.BinaryLogConnectorSource;
 import com.airbnb.spinaltap.mysql.config.MysqlConfiguration;
 import com.airbnb.spinaltap.mysql.config.MysqlSchemaStoreConfiguration;
 import com.airbnb.spinaltap.mysql.mutation.MysqlKeyProvider;
@@ -30,7 +31,7 @@ import javax.validation.constraints.Min;
 
 import com.google.common.base.Preconditions;
 
-/** Represents a factory implement for {@link Pipe}s streaming from a {@link MysqlSource}. */
+/** Represents a factory implement for {@link Pipe}s streaming from a {@link BinaryLogConnectorSource}. */
 @Slf4j
 public final class MysqlPipeFactory extends AbstractPipeFactory<MysqlConfiguration> {
   public static final String DEFAULT_MYSQL_TOPIC_PREFIX = "spinaltap";

@@ -7,12 +7,14 @@ package com.airbnb.spinaltap.mysql;
 import com.airbnb.common.metrics.TaggedMetricRegistry;
 import com.airbnb.spinaltap.Mutation;
 import com.airbnb.spinaltap.common.source.SourceMetrics;
+import com.airbnb.spinaltap.mysql.binlog_connector.BinaryLogConnectorSource;
+
 import com.google.common.collect.ImmutableMap;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Responsible for metrics collection on operations of {@link MysqlSource} and associated
+ * Responsible for metrics collection on operations of {@link BinaryLogConnectorSource} and associated
  * components.
  */
 public class MysqlSourceMetrics extends SourceMetrics {

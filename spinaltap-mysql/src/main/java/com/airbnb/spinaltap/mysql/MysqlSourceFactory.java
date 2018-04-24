@@ -4,6 +4,12 @@ import com.airbnb.spinaltap.common.source.Source;
 import com.airbnb.spinaltap.common.source.SourceState;
 import com.airbnb.spinaltap.common.util.Repository;
 import com.airbnb.spinaltap.common.validator.MutationOrderValidator;
+import com.airbnb.spinaltap.mysql.DataSource;
+import com.airbnb.spinaltap.mysql.MysqlSourceMetrics;
+import com.airbnb.spinaltap.mysql.StateHistory;
+import com.airbnb.spinaltap.mysql.StateRepository;
+import com.airbnb.spinaltap.mysql.TableCache;
+import com.airbnb.spinaltap.mysql.binlog_connector.BinaryLogConnectorSource;
 import com.airbnb.spinaltap.mysql.config.MysqlConfiguration;
 import com.airbnb.spinaltap.mysql.config.MysqlSchemaStoreConfiguration;
 import com.airbnb.spinaltap.mysql.schema.CachedMysqlSchemaStore;
@@ -32,7 +38,7 @@ import com.github.shyiko.mysql.binlog.BinaryLogClient;
 import org.skife.jdbi.v2.DBI;
 
 /**
- * Represents a Factory for {@link MysqlSource}s.
+ * Represents a Factory for a {@link BinaryLogConnectorSource}.
  */
 @UtilityClass
 public class MysqlSourceFactory {
@@ -99,8 +105,8 @@ public class MysqlSourceFactory {
 
     final TableCache tableCache = new TableCache(schemaStore);
 
-    final MysqlSource source =
-        new MysqlSource(
+    final BinaryLogConnectorSource source =
+        new BinaryLogConnectorSource(
             name,
             dataSource,
             client,

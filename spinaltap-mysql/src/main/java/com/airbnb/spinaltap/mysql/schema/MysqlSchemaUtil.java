@@ -5,20 +5,25 @@
 package com.airbnb.spinaltap.mysql.schema;
 
 import com.airbnb.spinaltap.mysql.BinlogFilePos;
-import com.github.rholder.retry.Retryer;
-import com.github.rholder.retry.RetryerBuilder;
-import com.github.rholder.retry.StopStrategies;
-import com.github.rholder.retry.WaitStrategies;
-import com.mysql.jdbc.jdbc2.optional.MysqlConnectionPoolDataSource;
-import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
+
+import lombok.extern.slf4j.Slf4j;
+
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
-import lombok.extern.slf4j.Slf4j;
+
+import com.github.rholder.retry.Retryer;
+import com.github.rholder.retry.RetryerBuilder;
+import com.github.rholder.retry.StopStrategies;
+import com.github.rholder.retry.WaitStrategies;
+import com.mysql.jdbc.jdbc2.optional.MysqlConnectionPoolDataSource;
+import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.joda.time.DateTimeConstants;
 import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.Handle;
@@ -51,11 +56,12 @@ public class MysqlSchemaUtil {
 
   public static DBI createMysqlDBI(
       @NotNull final String host,
-      final int port,
+      @Min(0) final int port,
       @NotNull final String user,
       @NotNull final String password,
       final String database) {
-    MysqlDataSource dataSource = new MysqlConnectionPoolDataSource();
+    final MysqlDataSource dataSource = new MysqlConnectionPoolDataSource();
+
     dataSource.setUser(user);
     dataSource.setPassword(password);
     dataSource.setServerName(host);

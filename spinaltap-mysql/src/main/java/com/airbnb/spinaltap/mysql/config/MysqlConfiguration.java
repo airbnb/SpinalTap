@@ -6,22 +6,26 @@ package com.airbnb.spinaltap.mysql.config;
 
 import com.airbnb.spinaltap.common.config.DestinationConfiguration;
 import com.airbnb.spinaltap.mysql.BinlogFilePos;
-import com.airbnb.spinaltap.mysql.MysqlSource;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableMap;
-import java.util.List;
-import java.util.Map;
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
+import com.airbnb.spinaltap.mysql.binlog_connector.BinaryLogConnectorSource;
+
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+
+import java.util.List;
+import java.util.Map;
+
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableMap;
 import org.hibernate.validator.constraints.NotEmpty;
 
-/** Configuration for a Mysql Source */
+/** Configuration for a {@link com.airbnb.spinaltap.mysql.MysqlSource} */
 @Getter
 @Setter
 @ToString
@@ -84,7 +88,7 @@ public class MysqlConfiguration extends AbstractMysqlConfiguration {
   private boolean schemaVersionEnabled = DEFAULT_SCHEMA_VERSION_ENABLED;
 
   @JsonProperty("initial_binlog_position")
-  private BinlogFilePos initialBinlogFilePosition = MysqlSource.LATEST_BINLOG_POS;
+  private BinlogFilePos initialBinlogFilePosition = BinaryLogConnectorSource.LATEST_BINLOG_POS;
 
   @JsonProperty("large_message_enabled")
   private boolean largeMessageEnabled = DEFAULT_LARGE_MESSAGE_ENABLED;
