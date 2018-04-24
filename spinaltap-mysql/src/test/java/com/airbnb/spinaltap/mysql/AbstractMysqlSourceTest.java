@@ -4,8 +4,14 @@
  */
 package com.airbnb.spinaltap.mysql;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import com.airbnb.spinaltap.common.source.SourceState;
 import com.airbnb.spinaltap.common.util.Repository;
@@ -100,7 +106,7 @@ public class AbstractMysqlSourceTest {
 
   @Test
   public void testResetToLastValidState() throws Exception {
-    StateHistory stateHistory = new TestStateHistory();
+    StateHistory stateHistory = createTestStateHistory();
     TestSource source = new TestSource(stateHistory);
 
     SourceState savedState = mock(SourceState.class);
@@ -176,7 +182,7 @@ public class AbstractMysqlSourceTest {
 
   @Test
   public void testCommitCheckpoint() throws Exception {
-    StateHistory stateHistory = new TestStateHistory();
+    StateHistory stateHistory = createTestStateHistory();
     TestSource source = new TestSource(stateHistory);
 
     Row row = new Row(null, ImmutableMap.of());
@@ -208,16 +214,20 @@ public class AbstractMysqlSourceTest {
     assertEquals(stateHistory.removeLast(), source.getLastSavedState().get());
   }
 
+  private StateHistory createTestStateHistory() {
+    return new StateHistory("", 10, mock(Repository.class), mysqlMetrics);
+  }
+
   @Getter
   class TestSource extends AbstractMysqlSource {
     private boolean isConnected;
     private BinlogFilePos position;
 
-    public TestSource() {
-      this(new TestStateHistory());
+    TestSource() {
+      this(createTestStateHistory());
     }
 
-    public TestSource(StateHistory stateHistory) {
+    TestSource(StateHistory stateHistory) {
       super(
           SOURCE_NAME,
           DATA_SOURCE,
@@ -247,13 +257,6 @@ public class AbstractMysqlSourceTest {
 
     public boolean isConnected() {
       return isConnected;
-    }
-  }
-
-  class TestStateHistory extends StateHistory {
-    @SuppressWarnings("unchecked")
-    public TestStateHistory() {
-      super("", 10, mock(Repository.class), mysqlMetrics);
     }
   }
 }

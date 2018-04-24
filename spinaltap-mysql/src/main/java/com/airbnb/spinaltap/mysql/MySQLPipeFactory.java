@@ -22,11 +22,14 @@ import com.google.common.base.Preconditions;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Supplier;
+import javax.validation.constraints.Min;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
+/** Represents a factory implement for {@link Pipe}s streaming from a {@link MysqlSource}. */
 @Slf4j
-public class MySQLPipeFactory extends AbstractPipeFactory<MysqlConfiguration> {
-  public static final String MYSQL_JITNEY_TOPIC = "spinaltap";
+public final class MySQLPipeFactory extends AbstractPipeFactory<MysqlConfiguration> {
+  public static final String DEFAULT_MYSQL_TOPIC_PREFIX = "spinaltap";
 
   private final String mysqlUser;
   private final String mysqlPassword;
@@ -35,12 +38,12 @@ public class MySQLPipeFactory extends AbstractPipeFactory<MysqlConfiguration> {
   private final MysqlSchemaStoreConfiguration schemaStoreConfig;
 
   public MySQLPipeFactory(
-      String mysqlUser,
-      String mysqlPassword,
-      long mysqlServerId,
-      Supplier<DestinationBuilder<Mutation>> destinationBuilderSupplier,
-      MysqlSchemaStoreConfiguration schemaStoreConfig,
-      TaggedMetricRegistry metricRegistry) {
+      @NonNull final String mysqlUser,
+      @NonNull final String mysqlPassword,
+      @NonNull final long mysqlServerId,
+      @NonNull final Supplier<DestinationBuilder<Mutation>> destinationBuilderSupplier,
+      @NonNull final MysqlSchemaStoreConfiguration schemaStoreConfig,
+      @NonNull final TaggedMetricRegistry metricRegistry) {
     super(metricRegistry);
     this.mysqlUser = mysqlUser;
     this.mysqlPassword = mysqlPassword;
@@ -51,64 +54,72 @@ public class MySQLPipeFactory extends AbstractPipeFactory<MysqlConfiguration> {
 
   @Override
   public List<Pipe> createPipes(
-      MysqlConfiguration sourceConfig,
-      String partitionName,
-      StateRepositoryFactory repositoryFactory,
-      long leaderEpoch)
+      @NonNull final MysqlConfiguration sourceConfig,
+      @NonNull final String partitionName,
+      @NonNull final StateRepositoryFactory repositoryFactory,
+      @Min(0) final long leaderEpoch)
       throws Exception {
     return Collections.singletonList(
         create(sourceConfig, partitionName, repositoryFactory, leaderEpoch));
   }
 
   private Pipe create(
-      MysqlConfiguration sourceConfig,
-      String partitionName,
-      StateRepositoryFactory repositoryFactory,
-      long leaderEpoch)
+      final MysqlConfiguration sourceConfig,
+      final String partitionName,
+      final StateRepositoryFactory repositoryFactory,
+      final long leaderEpoch)
       throws Exception {
-    String sourceName = sourceConfig.getName();
-
-    Source source =
-        MysqlSource.create(
-            sourceName,
-            sourceConfig.getHost(),
-            sourceConfig.getPort(),
-            sourceConfig.getSocketTimeoutInSeconds(),
-            mysqlUser,
-            mysqlPassword,
-            // Use a different server_id for REPLICAS in case the same database is configured as
-            // both MASTER and REPLICA
-            mysqlServerId + sourceConfig.getHostRole().ordinal() * 100,
-            sourceConfig.getCanonicalTableNames(),
-            repositoryFactory.getStateRepository(sourceName, partitionName),
-            repositoryFactory.getStateHistoryRepository(sourceName, partitionName),
-            sourceConfig.getInitialBinlogFilePosition(),
-            sourceConfig.isSchemaVersionEnabled(),
-            schemaStoreConfig,
-            new MysqlSourceMetrics(sourceConfig.getName(), metricRegistry),
-            leaderEpoch);
-
-    DestinationConfiguration destConfig = sourceConfig.getDestinationConfiguration();
+    final Source source = createSource(sourceConfig, repositoryFactory, partitionName, leaderEpoch);
+    final DestinationConfiguration destinationConfig = sourceConfig.getDestinationConfiguration();
 
     Preconditions.checkState(
         !(sourceConfig.getHostRole().equals(MysqlConfiguration.HostRole.MIGRATION)
-            && destConfig.getPoolSize() > 0),
-        String.format("Destination pool size is not 0 for MIGRATION source %s", sourceName));
+            && destinationConfig.getPoolSize() > 0),
+        String.format(
+            "Destination pool size is not 0 for MIGRATION source %s", sourceConfig.getName()));
 
-    Destination destination =
-        destinationBuilderSupplier
-            .get()
-            .withTopicNamePrefix(MysqlConfiguration.MYSQL_TOPICS.get(sourceConfig.getHostRole()))
-            .withMapper(ThriftMutationMapper.create(getHostName()))
-            .withMetrics(new MysqlDestinationMetrics(sourceConfig.getName(), metricRegistry))
-            .withBuffer(destConfig.getBufferSize())
-            .withPool(destConfig.getPoolSize(), MysqlKeyProvider.INSTANCE)
-            .withValidation()
-            .withLargeMessage(sourceConfig.isLargeMessageEnabled())
-            .build();
+    final Destination destination = createDestination(sourceConfig, destinationConfig);
+    return new Pipe(source, destination, new PipeMetrics(source.getName(), metricRegistry));
+  }
 
-    PipeMetrics metrics = new PipeMetrics(source.getName(), metricRegistry);
+  private Source createSource(
+      final MysqlConfiguration configuration,
+      final StateRepositoryFactory repositoryFactory,
+      final String partitionName,
+      final long leaderEpoch) {
+    return MysqlSource.create(
+        configuration.getName(),
+        configuration.getHost(),
+        configuration.getPort(),
+        configuration.getSocketTimeoutInSeconds(),
+        mysqlUser,
+        mysqlPassword,
+        // Use a different server_id for REPLICAS in case the same database is configured as
+        // both MASTER and REPLICA
+        mysqlServerId + configuration.getHostRole().ordinal() * 100,
+        configuration.getCanonicalTableNames(),
+        repositoryFactory.getStateRepository(configuration.getName(), partitionName),
+        repositoryFactory.getStateHistoryRepository(configuration.getName(), partitionName),
+        configuration.getInitialBinlogFilePosition(),
+        configuration.isSchemaVersionEnabled(),
+        schemaStoreConfig,
+        new MysqlSourceMetrics(configuration.getName(), metricRegistry),
+        leaderEpoch);
+  }
 
-    return new Pipe(source, destination, metrics);
+  private Destination createDestination(
+      final MysqlConfiguration sourceConfiguration,
+      final DestinationConfiguration destinationConfiguration) {
+    return destinationBuilderSupplier
+        .get()
+        .withTopicNamePrefix(MysqlConfiguration.MYSQL_TOPICS.get(sourceConfiguration.getHostRole()))
+        .withMapper(ThriftMutationMapper.create(getHostName()))
+        .withMetrics(new MysqlDestinationMetrics(sourceConfiguration.getName(), metricRegistry))
+        .withBuffer(destinationConfiguration.getBufferSize())
+        .withPool(destinationConfiguration.getPoolSize(), MysqlKeyProvider.INSTANCE)
+        .withValidation()
+        .withLargeMessage(sourceConfiguration.isLargeMessageEnabled())
+        .withDelaySendMs(sourceConfiguration.getDelaySendMs())
+        .build();
   }
 }

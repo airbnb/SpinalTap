@@ -48,34 +48,43 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
+import javax.validation.constraints.Min;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.skife.jdbi.v2.DBI;
 
+/**
+ * Represents a {@link Source} implement that streams mutations from a MySQL source binlog.
+ *
+ * <p>The <a href="https://github.com/shyiko/mysql-binlog-connector-java">
+ * mysql-binlog-connector-java</a> open source library is used as the client to read and parse
+ * events from the binlog
+ */
 @Slf4j
-public class MysqlSource extends AbstractMysqlSource {
+public final class MysqlSource extends AbstractMysqlSource {
   private static final String INVALID_BINLOG_POSITION_ERROR_CODE = "1236";
 
-  private final BinaryLogClient client;
+  @NonNull private final BinaryLogClient client;
 
   public static Source create(
-      String name,
-      String host,
-      int port,
-      int socketTimeoutInSeconds,
-      String user,
-      String password,
-      long serverId,
-      List<String> tableNames,
-      Repository<SourceState> stateRepo,
-      Repository<Collection<SourceState>> stateHistoryRepo,
-      BinlogFilePos initialBinlogPosition,
-      boolean isSchemaVersionEnabled,
-      MysqlSchemaStoreConfiguration schemaStoreConfig,
-      MysqlSourceMetrics metrics,
-      long leaderEpoch) {
-    DBI mysqlDBI = MysqlSchemaUtil.createMysqlDBI(host, port, user, password, null);
+      @NonNull final String name,
+      @NonNull final String host,
+      @Min(0) final int port,
+      @Min(0) final int socketTimeoutInSeconds,
+      @NonNull final String user,
+      @NonNull final String password,
+      @Min(0) final long serverId,
+      @NonNull final List<String> tableNames,
+      @NonNull final Repository<SourceState> stateRepo,
+      @NonNull final Repository<Collection<SourceState>> stateHistoryRepo,
+      @NonNull final BinlogFilePos initialBinlogPosition,
+      final boolean isSchemaVersionEnabled,
+      @NonNull final MysqlSchemaStoreConfiguration schemaStoreConfig,
+      @NonNull final MysqlSourceMetrics metrics,
+      @Min(0) final long leaderEpoch) {
+    final DBI mysqlDBI = MysqlSchemaUtil.createMysqlDBI(host, port, user, password, null);
 
-    BinaryLogClient client = new BinaryLogClient(host, port, user, password);
+    final BinaryLogClient client = new BinaryLogClient(host, port, user, password);
     // Set different server_id for staging and production environment.
     // Conflict occurs when more than one client of same server_id connect to a MySQL server.
     client.setServerId(serverId);
@@ -145,18 +154,18 @@ public class MysqlSource extends AbstractMysqlSource {
   }
 
   MysqlSource(
-      String name,
-      DataSource dataSource,
-      BinaryLogClient client,
-      Set<String> tableNames,
-      TableCache tableCache,
-      StateRepository stateRepository,
-      StateHistory stateHistory,
-      BinlogFilePos initialBinlogFilePosition,
-      SchemaTracker schemaTracker,
-      MysqlSourceMetrics metrics,
-      AtomicLong currentLeaderEpoch,
-      int socketTimeoutInSeconds) {
+      @NonNull final String name,
+      @NonNull final DataSource dataSource,
+      @NonNull final BinaryLogClient client,
+      @NonNull final Set<String> tableNames,
+      @NonNull final TableCache tableCache,
+      @NonNull final StateRepository stateRepository,
+      @NonNull final StateHistory stateHistory,
+      @NonNull final BinlogFilePos initialBinlogFilePosition,
+      @NonNull final SchemaTracker schemaTracker,
+      @NonNull final MysqlSourceMetrics metrics,
+      @NonNull final AtomicLong currentLeaderEpoch,
+      @Min(0) final int socketTimeoutInSeconds) {
     super(
         name,
         dataSource,
@@ -172,7 +181,6 @@ public class MysqlSource extends AbstractMysqlSource {
         new AtomicReference<>());
 
     this.client = client;
-
     initializeClient(socketTimeoutInSeconds);
   }
 

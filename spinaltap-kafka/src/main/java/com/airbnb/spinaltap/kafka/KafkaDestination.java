@@ -12,6 +12,7 @@ import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
@@ -25,31 +26,30 @@ import org.apache.thrift.TSerializer;
 import org.apache.thrift.protocol.TBinaryProtocol;
 
 /**
- * Represents an implement of {@link com.airbnb.spinaltap.common.destination.Destination} using
+ * Represents an implement of {@link com.airbnb.spinaltap.common.destination.Destination} using <a
  * href="https://kafka.apache.org">Apache Kafka</a>.
  */
 @Slf4j
 public final class KafkaDestination<T extends TBase<?, ?>> extends AbstractDestination<T> {
+  private static final String DEFAULT_TOPIC_PREFIX = "spinaltap";
+
   private volatile boolean failed = false;
 
   private final String topicNamePrefix;
-
   private final KafkaProducer<byte[], byte[]> kafkaProducer;
-
   private final Callback callback = new SpinalTapPublishCallback();
-
   private final ThreadLocal<TSerializer> serializer =
       ThreadLocal.withInitial(() -> new TSerializer((new TBinaryProtocol.Factory())));
 
   public KafkaDestination(
-      String prefix,
-      KafkaProducerConfiguration producerConfig,
-      BatchMapper<Mutation<?>, T> mapper,
-      DestinationMetrics metrics,
-      long delaySendMs) {
+      final String prefix,
+      final KafkaProducerConfiguration producerConfig,
+      final BatchMapper<Mutation<?>, T> mapper,
+      final DestinationMetrics metrics,
+      final long delaySendMs) {
     super(mapper, metrics, delaySendMs);
 
-    topicNamePrefix = prefix == null ? "spinaltap" : prefix;
+    topicNamePrefix = Optional.ofNullable(prefix).orElse(DEFAULT_TOPIC_PREFIX);
     Properties props = new Properties();
     setKafkaDefaultConfigs(props, producerConfig.getBootstrapServers());
     kafkaProducer = new KafkaProducer<>(props);
@@ -73,10 +73,13 @@ public final class KafkaDestination<T extends TBase<?, ?>> extends AbstractDesti
   public void publish(List<T> messages) throws Exception {
     try {
       failed = false;
-      messages.forEach(msg -> kafkaProducer.send(transform(msg), callback));
+
+      messages.forEach(message -> kafkaProducer.send(transform(message), callback));
       kafkaProducer.flush();
-      if (!failed) return;
-      else throw new Exception("Error when sending event to Kafka.");
+
+      if (failed) {
+        throw new Exception("Error when sending event to Kafka.");
+      }
     } catch (Exception ex) {
       throw new Exception("Error when sending event to Kafka.");
     }
@@ -100,6 +103,7 @@ public final class KafkaDestination<T extends TBase<?, ?>> extends AbstractDesti
   private byte[] getKey(TBase<?, ?> event) {
     com.airbnb.jitney.event.spinaltap.v1.Mutation mutation =
         ((com.airbnb.jitney.event.spinaltap.v1.Mutation) event);
+
     Set<String> primaryKeys = mutation.getTable().getPrimaryKey();
     String tableName = mutation.getTable().getName();
     String databaseName = mutation.getTable().getDatabase();
@@ -116,17 +120,15 @@ public final class KafkaDestination<T extends TBase<?, ?>> extends AbstractDesti
    * The format of the topic for a table from source in database is as follows:
    * [source]-[database]-[table]
    */
-  private String getTopic(TBase<?, ?> event) {
+  private String getTopic(final TBase<?, ?> event) {
     com.airbnb.jitney.event.spinaltap.v1.Mutation mutation =
         ((com.airbnb.jitney.event.spinaltap.v1.Mutation) event);
-    String source = mutation.getDataSource().getHostname();
-    return topicNamePrefix
-        + "."
-        + source
-        + "-"
-        + mutation.getTable().getDatabase()
-        + "-"
-        + mutation.getTable().getName();
+    return String.format(
+        "%s.%s-%s-%s",
+        topicNamePrefix,
+        mutation.getDataSource().getHostname(),
+        mutation.getTable().getDatabase(),
+        mutation.getTable().getName());
   }
 
   /**
