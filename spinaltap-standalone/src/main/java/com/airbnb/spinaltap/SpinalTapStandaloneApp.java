@@ -19,7 +19,7 @@ import org.apache.curator.retry.ExponentialBackoffRetry;
 
 /** A standalone single-node application to run SpinalTap process. */
 @Slf4j
-public class SpinalTapStandaloneApp {
+public final class SpinalTapStandaloneApp {
   public static void main(String[] args) throws Exception {
     if (args.length != 1) {
       log.error("Usage: SpinalTapStandaloneApp <config.yaml>");

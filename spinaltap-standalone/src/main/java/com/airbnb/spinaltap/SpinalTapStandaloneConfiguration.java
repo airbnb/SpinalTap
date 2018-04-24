@@ -7,24 +7,14 @@ package com.airbnb.spinaltap;
 import com.airbnb.spinaltap.kafka.KafkaProducerConfiguration;
 import com.airbnb.spinaltap.mysql.config.MysqlConfiguration;
 import com.airbnb.spinaltap.mysql.config.MysqlSchemaStoreConfiguration;
-
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
-
-import java.util.List;
-
-import javax.validation.constraints.NotNull;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.List;
+import javax.validation.constraints.NotNull;
+import lombok.Data;
 
 /** Represents the {@link SpinalTapStandaloneApp} configuration. */
-@Getter
-@Setter
-@ToString
-@EqualsAndHashCode
+@Data
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class SpinalTapStandaloneConfiguration {
   public static final int DEFAULT_MYSQL_SERVER_ID = 65535;

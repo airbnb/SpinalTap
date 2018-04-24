@@ -24,8 +24,12 @@ import org.apache.thrift.TException;
 import org.apache.thrift.TSerializer;
 import org.apache.thrift.protocol.TBinaryProtocol;
 
+/**
+ * Represents an implement of {@link com.airbnb.spinaltap.common.destination.Destination} using
+ * href="https://kafka.apache.org">Apache Kafka</a>.
+ */
 @Slf4j
-public class KafkaDestination<T extends TBase<?, ?>> extends AbstractDestination<T> {
+public final class KafkaDestination<T extends TBase<?, ?>> extends AbstractDestination<T> {
   private volatile boolean failed = false;
 
   private final String topicNamePrefix;

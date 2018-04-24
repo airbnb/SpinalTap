@@ -6,12 +6,14 @@ package com.airbnb.spinaltap.kafka;
 
 import com.airbnb.spinaltap.common.destination.Destination;
 import com.airbnb.spinaltap.common.destination.DestinationBuilder;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.apache.thrift.TBase;
 
+/** Represents an implement of {@link DestinationBuilder} for {@link KafkaDestination}s. */
 @RequiredArgsConstructor
-public class KafkaDestinationBuilder<T extends TBase<?, ?>> extends DestinationBuilder<T> {
-  private final KafkaProducerConfiguration producerConfig;
+public final class KafkaDestinationBuilder<T extends TBase<?, ?>> extends DestinationBuilder<T> {
+  @NonNull private final KafkaProducerConfiguration producerConfig;
 
   @Override
   protected Destination createDestination() {
