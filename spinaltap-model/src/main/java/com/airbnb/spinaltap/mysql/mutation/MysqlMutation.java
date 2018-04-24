@@ -9,13 +9,14 @@ import com.airbnb.spinaltap.mysql.mutation.schema.Row;
 import java.util.Set;
 import lombok.ToString;
 
+/** Represents a MySQL {@link Mutation} derived from a binlog event. */
 @ToString(callSuper = true)
 public abstract class MysqlMutation extends Mutation<Row> {
   public MysqlMutation(MysqlMutationMetadata metadata, Mutation.Type type, Row row) {
     super(metadata, type, row);
   }
 
-  public Row getRow() {
+  public final Row getRow() {
     return getEntity();
   }
 
@@ -23,7 +24,7 @@ public abstract class MysqlMutation extends Mutation<Row> {
   public abstract Set<String> getChangedColumns();
 
   @Override
-  public MysqlMutationMetadata getMetadata() {
+  public final MysqlMutationMetadata getMetadata() {
     return (MysqlMutationMetadata) super.getMetadata();
   }
 }

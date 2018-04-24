@@ -6,8 +6,9 @@ package com.airbnb.spinaltap.mysql;
 
 import lombok.Value;
 
+/** Represents a MySQL Transaction boundary in the binlog. */
 @Value
-public final class Transaction {
+public class Transaction {
   private final long timestamp;
   private final long offset;
   private final BinlogFilePos position;
