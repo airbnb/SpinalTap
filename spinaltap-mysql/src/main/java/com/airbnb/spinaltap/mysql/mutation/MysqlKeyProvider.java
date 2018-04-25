@@ -9,21 +9,26 @@ import com.airbnb.spinaltap.common.util.KeyProvider;
 import com.airbnb.spinaltap.mysql.mutation.schema.Row;
 import com.airbnb.spinaltap.mysql.mutation.schema.Table;
 import com.google.common.base.Preconditions;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
 
+/** Represents a {@link KeyProvider} for {@link MysqlMutation}s. */
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class MysqlKeyProvider implements KeyProvider<Mutation<?>, String> {
   public static final MysqlKeyProvider INSTANCE = new MysqlKeyProvider();
 
   /**
-   * This is currently a replication of the logic to get the partition for a Mysql table mutation in
-   * {@link com.airbnb.jitney.helpers.SpinaltapHelper}
+   * @return the key for a {@link MysqlMutation} in the following format:
+   *     "[database_name][table_name][primary_key_value]".
    */
   @Override
-  public String get(Mutation<?> mutation) {
+  public String get(@NonNull final Mutation<?> mutation) {
     Preconditions.checkState(mutation instanceof MysqlMutation);
-    MysqlMutation mysqlMutation = (MysqlMutation) mutation;
 
-    Table table = mysqlMutation.getMetadata().getTable();
-    Row row = mysqlMutation.getRow();
+    final MysqlMutation mysqlMutation = (MysqlMutation) mutation;
+    final Table table = mysqlMutation.getMetadata().getTable();
+    final Row row = mysqlMutation.getRow();
 
     return String.format(
         "%s:%s:%s", table.getDatabase(), table.getName(), row.getPrimaryKeyValue());

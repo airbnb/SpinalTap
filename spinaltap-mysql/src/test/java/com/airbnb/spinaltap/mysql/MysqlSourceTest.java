@@ -4,6 +4,15 @@
  */
 package com.airbnb.spinaltap.mysql;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import com.airbnb.spinaltap.common.source.SourceState;
 import com.airbnb.spinaltap.common.util.Repository;
 import com.airbnb.spinaltap.mysql.binlog_connector.BinaryLogConnectorSource;
@@ -15,25 +24,13 @@ import com.airbnb.spinaltap.mysql.mutation.schema.Row;
 import com.airbnb.spinaltap.mysql.mutation.schema.Table;
 import com.airbnb.spinaltap.mysql.schema.MysqlSchemaTracker;
 import com.airbnb.spinaltap.mysql.schema.SchemaTracker;
-
-import lombok.Getter;
-
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Sets;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
-
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Sets;
+import lombok.Getter;
 import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 public class MysqlSourceTest {
   private static final String SOURCE_NAME = "test";
@@ -114,8 +111,7 @@ public class MysqlSourceTest {
     TestSource source = new TestSource(stateHistory);
 
     SourceState savedState = mock(SourceState.class);
-    SourceState earliestState =
-        new SourceState(0L, 0L, 0L, MysqlSource.EARLIEST_BINLOG_POS);
+    SourceState earliestState = new SourceState(0L, 0L, 0L, MysqlSource.EARLIEST_BINLOG_POS);
 
     when(stateRepository.read()).thenReturn(savedState);
 
@@ -180,8 +176,7 @@ public class MysqlSourceTest {
 
     source.onCommunicationError(new InvalidBinlogPositionException(""));
     assertEquals(
-        MysqlSource.EARLIEST_BINLOG_POS,
-        source.getLastSavedState().get().getLastPosition());
+        MysqlSource.EARLIEST_BINLOG_POS, source.getLastSavedState().get().getLastPosition());
   }
 
   @Test

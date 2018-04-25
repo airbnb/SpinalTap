@@ -1,3 +1,7 @@
+/**
+ * Copyright 2018 Airbnb. Licensed under Apache-2.0. See License in the project root for license
+ * information.
+ */
 package com.airbnb.spinaltap.mysql.binlog_connector;
 
 import com.airbnb.spinaltap.mysql.BinlogFilePos;
@@ -9,13 +13,6 @@ import com.airbnb.spinaltap.mysql.event.TableMapEvent;
 import com.airbnb.spinaltap.mysql.event.UpdateEvent;
 import com.airbnb.spinaltap.mysql.event.WriteEvent;
 import com.airbnb.spinaltap.mysql.event.XidEvent;
-
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
-
-import java.util.Optional;
-
 import com.github.shyiko.mysql.binlog.event.DeleteRowsEventData;
 import com.github.shyiko.mysql.binlog.event.Event;
 import com.github.shyiko.mysql.binlog.event.EventHeaderV4;
@@ -25,16 +22,21 @@ import com.github.shyiko.mysql.binlog.event.TableMapEventData;
 import com.github.shyiko.mysql.binlog.event.UpdateRowsEventData;
 import com.github.shyiko.mysql.binlog.event.WriteRowsEventData;
 import com.github.shyiko.mysql.binlog.event.XidEventData;
+import java.util.Optional;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
 
 /**
- * Represents a mapper that maps a {@link com.github.shyiko.mysql.binlog.event.Event} to a
- * {@link com.airbnb.spinaltap.mysql.event.BinlogEvent}.
+ * Represents a mapper that maps a {@link com.github.shyiko.mysql.binlog.event.Event} to a {@link
+ * com.airbnb.spinaltap.mysql.event.BinlogEvent}.
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class BinaryLogConnectorEventMapper {
   public static final BinaryLogConnectorEventMapper INSTANCE = new BinaryLogConnectorEventMapper();
 
-  public Optional<BinlogEvent> map(@NonNull Event event, @NonNull final BinlogFilePos position) {
+  public Optional<BinlogEvent> map(
+      @NonNull final Event event, @NonNull final BinlogFilePos position) {
     final EventHeaderV4 header = event.getHeader();
     final EventType eventType = header.getEventType();
     final long serverId = header.getServerId();
@@ -67,8 +69,7 @@ public final class BinaryLogConnectorEventMapper {
                   tableMapData.getColumnTypes()));
         case XID:
           final XidEventData xidData = event.getData();
-          return Optional.of(
-              new XidEvent(serverId, timestamp, position, xidData.getXid()));
+          return Optional.of(new XidEvent(serverId, timestamp, position, xidData.getXid()));
         case QUERY:
           final QueryEventData queryData = event.getData();
           return Optional.of(

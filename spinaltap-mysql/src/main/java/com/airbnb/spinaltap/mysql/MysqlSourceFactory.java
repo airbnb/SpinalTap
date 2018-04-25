@@ -1,14 +1,13 @@
+/**
+ * Copyright 2018 Airbnb. Licensed under Apache-2.0. See License in the project root for license
+ * information.
+ */
 package com.airbnb.spinaltap.mysql;
 
 import com.airbnb.spinaltap.common.source.Source;
 import com.airbnb.spinaltap.common.source.SourceState;
 import com.airbnb.spinaltap.common.util.Repository;
 import com.airbnb.spinaltap.common.validator.MutationOrderValidator;
-import com.airbnb.spinaltap.mysql.DataSource;
-import com.airbnb.spinaltap.mysql.MysqlSourceMetrics;
-import com.airbnb.spinaltap.mysql.StateHistory;
-import com.airbnb.spinaltap.mysql.StateRepository;
-import com.airbnb.spinaltap.mysql.TableCache;
 import com.airbnb.spinaltap.mysql.binlog_connector.BinaryLogConnectorSource;
 import com.airbnb.spinaltap.mysql.config.MysqlConfiguration;
 import com.airbnb.spinaltap.mysql.config.MysqlSchemaStoreConfiguration;
@@ -24,22 +23,16 @@ import com.airbnb.spinaltap.mysql.schema.SchemaStore;
 import com.airbnb.spinaltap.mysql.schema.SchemaTracker;
 import com.airbnb.spinaltap.mysql.validator.EventOrderValidator;
 import com.airbnb.spinaltap.mysql.validator.MutationSchemaValidator;
-
-import lombok.NonNull;
-import lombok.experimental.UtilityClass;
-
+import com.github.shyiko.mysql.binlog.BinaryLogClient;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.concurrent.atomic.AtomicLong;
-
 import javax.validation.constraints.Min;
-
-import com.github.shyiko.mysql.binlog.BinaryLogClient;
+import lombok.NonNull;
+import lombok.experimental.UtilityClass;
 import org.skife.jdbi.v2.DBI;
 
-/**
- * Represents a Factory for a {@link BinaryLogConnectorSource}.
- */
+/** Represents a Factory for a {@link BinaryLogConnectorSource}. */
 @UtilityClass
 public class MysqlSourceFactory {
   public static Source create(
@@ -64,7 +57,8 @@ public class MysqlSourceFactory {
 
     final DataSource dataSource = new DataSource(host, port, name);
 
-    final StateRepository stateRepository = new StateRepository(name, backingStateRepository, metrics);
+    final StateRepository stateRepository =
+        new StateRepository(name, backingStateRepository, metrics);
     final StateHistory stateHistory = new StateHistory(name, stateHistoryRepository, metrics);
 
     final LatestMysqlSchemaStore schemaReader = new LatestMysqlSchemaStore(name, mysqlDBI, metrics);

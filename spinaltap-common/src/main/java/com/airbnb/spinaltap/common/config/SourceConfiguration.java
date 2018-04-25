@@ -4,12 +4,15 @@
  */
 package com.airbnb.spinaltap.common.config;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
+
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /** Represents a {@code Source} configuration. */
 @Data
@@ -20,10 +23,10 @@ public class SourceConfiguration {
   private static int DEFAULT_PARTITIONS = 1;
 
   public SourceConfiguration(
-      String name,
-      String type,
-      String instanceTag,
-      DestinationConfiguration destinationConfiguration) {
+      @NonNull final String name,
+      final String type,
+      final String instanceTag,
+      @NonNull final DestinationConfiguration destinationConfiguration) {
     this.name = name;
     this.type = type;
     this.instanceGroupTag = instanceTag;

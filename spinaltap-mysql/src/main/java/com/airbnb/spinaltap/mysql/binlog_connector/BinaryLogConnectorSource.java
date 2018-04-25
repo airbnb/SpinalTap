@@ -5,34 +5,30 @@
 package com.airbnb.spinaltap.mysql.binlog_connector;
 
 import com.airbnb.spinaltap.common.source.Source;
-import com.airbnb.spinaltap.mysql.MysqlSource;
 import com.airbnb.spinaltap.mysql.BinlogFilePos;
 import com.airbnb.spinaltap.mysql.DataSource;
+import com.airbnb.spinaltap.mysql.MysqlSource;
 import com.airbnb.spinaltap.mysql.MysqlSourceMetrics;
 import com.airbnb.spinaltap.mysql.StateHistory;
 import com.airbnb.spinaltap.mysql.StateRepository;
 import com.airbnb.spinaltap.mysql.TableCache;
 import com.airbnb.spinaltap.mysql.exception.InvalidBinlogPositionException;
 import com.airbnb.spinaltap.mysql.schema.SchemaTracker;
-
-import lombok.NonNull;
-import lombok.extern.slf4j.Slf4j;
-
-import java.net.Socket;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.atomic.AtomicReference;
-
-import javax.validation.constraints.Min;
-
 import com.github.shyiko.mysql.binlog.BinaryLogClient;
 import com.github.shyiko.mysql.binlog.event.Event;
 import com.github.shyiko.mysql.binlog.event.EventHeaderV4;
 import com.google.common.base.Preconditions;
+import java.net.Socket;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
+import javax.validation.constraints.Min;
+import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 
 /**
- * Represents a {@link Source} implement based open source library
- * <a href="https://github.com/shyiko/mysql-binlog-connector-java">
+ * Represents a {@link Source} implement based on open-source library <a
+ * href="https://github.com/shyiko/mysql-binlog-connector-java">
  */
 @Slf4j
 public final class BinaryLogConnectorSource extends MysqlSource {
@@ -72,7 +68,7 @@ public final class BinaryLogConnectorSource extends MysqlSource {
   }
 
   /** Initializes the {@link BinaryLogClient}. */
-  private void initializeClient(int socketTimeoutInSeconds) {
+  private void initializeClient(final int socketTimeoutInSeconds) {
     client.setThreadFactory(
         runnable ->
             new Thread(
@@ -126,8 +122,8 @@ public final class BinaryLogConnectorSource extends MysqlSource {
     public void onEvent(Event event) {
       Preconditions.checkState(isStarted(), "Source is not started and should not process events");
 
-      EventHeaderV4 header = event.getHeader();
-      BinlogFilePos filePos =
+      final EventHeaderV4 header = event.getHeader();
+      final BinlogFilePos filePos =
           new BinlogFilePos(
               client.getBinlogFilename(), header.getPosition(), header.getNextPosition());
 

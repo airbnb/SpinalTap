@@ -16,6 +16,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
+import javax.validation.constraints.Min;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -26,20 +28,20 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @RequiredArgsConstructor
 public class TableCache {
-  private final SchemaStore<MysqlTableSchema> schemaStore;
+  @NonNull private final SchemaStore<MysqlTableSchema> schemaStore;
   private final Cache<Long, Table> tableCache = CacheBuilder.newBuilder().maximumSize(200).build();
 
   /**
    * @return the {@link Table} cache entry for the given table id if present, otherwise {@code null}
    */
-  public Table get(long tableId) {
+  public Table get(@Min(0) final long tableId) {
     return tableCache.getIfPresent(tableId);
   }
 
   /**
    * @return {@code True} if a cache entry exists for the given table id, otherwise {@code False}.
    */
-  public boolean contains(long tableId) {
+  public boolean contains(@Min(0) final long tableId) {
     return tableCache.getIfPresent(tableId) != null;
   }
 
@@ -53,11 +55,11 @@ public class TableCache {
    * @param columnTypes The list of columnd data types
    */
   public void addOrUpdate(
-      final long tableId,
-      final String tableName,
-      final String database,
-      final BinlogFilePos binlogFilePos,
-      final List<ColumnDataType> columnTypes)
+      @Min(0) final long tableId,
+      @NonNull final String tableName,
+      @NonNull final String database,
+      @NonNull final BinlogFilePos binlogFilePos,
+      @NonNull final List<ColumnDataType> columnTypes)
       throws Exception {
     final Table table = tableCache.getIfPresent(tableId);
 

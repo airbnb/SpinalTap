@@ -19,33 +19,35 @@ import com.airbnb.spinaltap.mysql.config.MysqlConfiguration;
 import com.airbnb.spinaltap.mysql.config.MysqlSchemaStoreConfiguration;
 import com.airbnb.spinaltap.mysql.mutation.MysqlKeyProvider;
 import com.airbnb.spinaltap.mysql.mutation.mapper.ThriftMutationMapper;
-
-import lombok.NonNull;
-import lombok.extern.slf4j.Slf4j;
-
+import com.google.common.base.Preconditions;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Supplier;
-
 import javax.validation.constraints.Min;
+import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 
-import com.google.common.base.Preconditions;
-
-/** Represents a factory implement for {@link Pipe}s streaming from a {@link BinaryLogConnectorSource}. */
+/**
+ * Represents a factory implement for {@link Pipe}s streaming from a {@link
+ * BinaryLogConnectorSource}.
+ */
 @Slf4j
 public final class MysqlPipeFactory extends AbstractPipeFactory<MysqlConfiguration> {
   public static final String DEFAULT_MYSQL_TOPIC_PREFIX = "spinaltap";
 
-  private final String mysqlUser;
-  private final String mysqlPassword;
+  @NonNull private final String mysqlUser;
+  @NonNull private final String mysqlPassword;
+
+  @Min(0)
   private final long mysqlServerId;
-  private final Supplier<DestinationBuilder<Mutation>> destinationBuilderSupplier;
-  private final MysqlSchemaStoreConfiguration schemaStoreConfig;
+
+  @NonNull private final Supplier<DestinationBuilder<Mutation>> destinationBuilderSupplier;
+  @NonNull private final MysqlSchemaStoreConfiguration schemaStoreConfig;
 
   public MysqlPipeFactory(
       @NonNull final String mysqlUser,
       @NonNull final String mysqlPassword,
-      @NonNull final long mysqlServerId,
+      @Min(0) final long mysqlServerId,
       @NonNull final Supplier<DestinationBuilder<Mutation>> destinationBuilderSupplier,
       @NonNull final MysqlSchemaStoreConfiguration schemaStoreConfig,
       @NonNull final TaggedMetricRegistry metricRegistry) {
@@ -57,6 +59,16 @@ public final class MysqlPipeFactory extends AbstractPipeFactory<MysqlConfigurati
     this.schemaStoreConfig = schemaStoreConfig;
   }
 
+  /**
+   * Creates the list of {@link Pipe}s for the {@link Source} constructed from the given {@link
+   * com.airbnb.spinaltap.common.config.SourceConfiguration}.
+   *
+   * @param sourceConfig The {@link com.airbnb.spinaltap.common.config.SourceConfiguration}.
+   * @param partitionName The partition name of the node streaming from the source.
+   * @param repositoryFactory The {@link StateRepositoryFactory} to create the source repositories.
+   * @param leaderEpoch The leader epoch for the node streaming from the source.
+   * @return the resulting {@link List} of {@link Pipe}s for the constructed {@link Source}.
+   */
   @Override
   public List<Pipe> createPipes(
       @NonNull final MysqlConfiguration sourceConfig,

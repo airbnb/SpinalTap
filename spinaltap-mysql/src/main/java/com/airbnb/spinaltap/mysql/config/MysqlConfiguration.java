@@ -7,25 +7,22 @@ package com.airbnb.spinaltap.mysql.config;
 import com.airbnb.spinaltap.common.config.DestinationConfiguration;
 import com.airbnb.spinaltap.mysql.BinlogFilePos;
 import com.airbnb.spinaltap.mysql.binlog_connector.BinaryLogConnectorSource;
-
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
-
-import java.util.List;
-import java.util.Map;
-
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
+import java.util.List;
+import java.util.Map;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.Setter;
+import lombok.ToString;
 import org.hibernate.validator.constraints.NotEmpty;
 
-/** Configuration for a {@link com.airbnb.spinaltap.mysql.MysqlSource} */
+/** Represents the configuration for a {@link com.airbnb.spinaltap.mysql.MysqlSource} */
 @Getter
 @Setter
 @ToString
@@ -46,12 +43,12 @@ public class MysqlConfiguration extends AbstractMysqlConfiguration {
           MysqlConfiguration.HostRole.MIGRATION, "spinaltap_mysql_migration");
 
   public MysqlConfiguration(
-      String name,
-      List<String> canonicalTableNames,
-      String host,
-      String hostRole,
-      int port,
-      DestinationConfiguration destinationConfiguration) {
+      @NonNull final String name,
+      @NonNull final List<String> canonicalTableNames,
+      @NonNull final String host,
+      @NonNull final String hostRole,
+      @Min(0) final int port,
+      @NonNull final DestinationConfiguration destinationConfiguration) {
     super(name, TYPE, INSTANCE_TAG, destinationConfiguration);
 
     this.canonicalTableNames = canonicalTableNames;
