@@ -6,19 +6,23 @@ package com.airbnb.spinaltap.mysql.schema;
 
 import com.airbnb.spinaltap.mysql.BinlogFilePos;
 import com.airbnb.spinaltap.mysql.event.QueryEvent;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+import java.util.Map;
+import java.util.Set;
+import java.util.regex.Pattern;
+
+import javax.validation.constraints.NotNull;
+
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Table;
 import com.google.common.collect.Tables;
-import java.util.Map;
-import java.util.Set;
-import java.util.regex.Pattern;
-import javax.validation.constraints.NotNull;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
-/** Tracks MySQL schema change */
+/** Represents a {@link SchemaTracker} that tracks MySQL schema change. */
 @Slf4j
 @RequiredArgsConstructor
 public class MysqlSchemaTracker implements SchemaTracker {

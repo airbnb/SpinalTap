@@ -4,14 +4,11 @@
  */
 package com.airbnb.spinaltap.mysql.schema;
 
+/**
+ * Responsible for archiving the {@link SchemaStore} for a
+ * {@link com.airbnb.spinaltap.common.source.Source} database.
+ */
 public interface SchemaStoreArchiver {
-  /** Archive all databases in a schema store */
   void archiveAll();
-
-  /**
-   * Archive schema store for database
-   *
-   * @param database
-   */
   void archive(String database);
 }
