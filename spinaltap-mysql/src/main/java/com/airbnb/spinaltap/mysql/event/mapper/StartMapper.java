@@ -12,18 +12,24 @@ import com.airbnb.spinaltap.mysql.event.StartEvent;
 import com.airbnb.spinaltap.mysql.mutation.MysqlMutation;
 import java.util.Collections;
 import java.util.List;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
 
+/**
+ * Represents a {@link com.airbnb.spinaltap.common.util.Mapper} that keeps track of binlog file
+ * starts detected on {@link StartEvent}s. This is used to clear the {@link TableCache}, to ensure
+ * table to tableId mapping remains consistent.
+ */
 @Slf4j
 @RequiredArgsConstructor
-class StartMapper implements Mapper<StartEvent, List<MysqlMutation>> {
-  private final DataSource dataSource;
-  private final TableCache tableCache;
-  private final MysqlSourceMetrics metrics;
+final class StartMapper implements Mapper<StartEvent, List<MysqlMutation>> {
+  @NonNull private final DataSource dataSource;
+  @NonNull private final TableCache tableCache;
+  @NonNull private final MysqlSourceMetrics metrics;
 
-  public List<MysqlMutation> map(StartEvent event) {
+  public List<MysqlMutation> map(@NonNull final StartEvent event) {
     log.info(
         "Started processing binlog file {} for host {} at {}",
         event.getBinlogFilePos().getFileName(),

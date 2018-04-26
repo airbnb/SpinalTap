@@ -18,22 +18,28 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
+import lombok.NonNull;
 
+/**
+ * Represents a {@link com.airbnb.spinaltap.common.util.Mapper} of a {@link WriteEvent}s to the
+ * corresponding list of {@link com.airbnb.spinaltap.mysql.mutation.MysqlMutation}s.
+ */
 class InsertMutationMapper extends MysqlMutationMapper<WriteEvent, MysqlInsertMutation> {
   InsertMutationMapper(
-      DataSource dataSource,
-      TableCache tableCache,
-      AtomicReference<Transaction> beginTransaction,
-      AtomicReference<Transaction> lastTransaction,
-      AtomicLong leaderEpoch) {
+      @NonNull final DataSource dataSource,
+      @NonNull final TableCache tableCache,
+      @NonNull final AtomicReference<Transaction> beginTransaction,
+      @NonNull final AtomicReference<Transaction> lastTransaction,
+      @NonNull final AtomicLong leaderEpoch) {
     super(dataSource, tableCache, beginTransaction, lastTransaction, leaderEpoch);
   }
 
   @Override
-  protected List<MysqlInsertMutation> mapEvent(Table table, WriteEvent event) {
-    List<Serializable[]> rows = event.getRows();
-    List<MysqlInsertMutation> mutations = new ArrayList<>();
-    Collection<ColumnMetadata> cols = table.getColumns().values();
+  protected List<MysqlInsertMutation> mapEvent(
+      @NonNull final Table table, @NonNull final WriteEvent event) {
+    final List<Serializable[]> rows = event.getRows();
+    final List<MysqlInsertMutation> mutations = new ArrayList<>();
+    final Collection<ColumnMetadata> cols = table.getColumns().values();
 
     for (int position = 0; position < rows.size(); position++) {
       mutations.add(
