@@ -5,10 +5,11 @@
 package com.airbnb.spinaltap.mysql.schema;
 
 /**
- * Responsible for bootstrapping the {@link SchemaStore} for a
- * {@link com.airbnb.spinaltap.common.source.Source} database.
+ * Responsible for bootstrapping the {@link SchemaStore} for a {@link
+ * com.airbnb.spinaltap.common.source.Source} database.
  */
 public interface SchemaStoreBootstrapper {
   void bootstrap(String database);
+
   void bootstrapAll();
 }

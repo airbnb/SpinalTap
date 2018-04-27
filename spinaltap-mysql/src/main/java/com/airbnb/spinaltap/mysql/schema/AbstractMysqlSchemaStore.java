@@ -6,15 +6,12 @@ package com.airbnb.spinaltap.mysql.schema;
 
 import com.airbnb.spinaltap.mysql.BinlogFilePos;
 import com.airbnb.spinaltap.mysql.MysqlSourceMetrics;
-
+import java.util.List;
+import javax.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
-import java.util.List;
-
-import javax.validation.constraints.NotNull;
 
 @Slf4j
 @RequiredArgsConstructor

@@ -9,15 +9,13 @@ import com.airbnb.spinaltap.mysql.Transaction;
 import com.airbnb.spinaltap.mysql.event.QueryEvent;
 import com.airbnb.spinaltap.mysql.mutation.MysqlMutation;
 import com.airbnb.spinaltap.mysql.schema.SchemaTracker;
-
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Represents a {@link com.airbnb.spinaltap.common.util.Mapper} that keeps track of {@link

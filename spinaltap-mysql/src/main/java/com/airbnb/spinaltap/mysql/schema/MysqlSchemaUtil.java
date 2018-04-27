@@ -5,26 +5,22 @@
 package com.airbnb.spinaltap.mysql.schema;
 
 import com.airbnb.spinaltap.mysql.BinlogFilePos;
-
-import lombok.experimental.UtilityClass;
-import lombok.extern.slf4j.Slf4j;
-
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
-
 import com.github.rholder.retry.Retryer;
 import com.github.rholder.retry.RetryerBuilder;
 import com.github.rholder.retry.StopStrategies;
 import com.github.rholder.retry.WaitStrategies;
 import com.mysql.jdbc.jdbc2.optional.MysqlConnectionPoolDataSource;
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
+import lombok.experimental.UtilityClass;
+import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTimeConstants;
 import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.Handle;

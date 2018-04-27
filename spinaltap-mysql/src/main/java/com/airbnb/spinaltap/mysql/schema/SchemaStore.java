@@ -5,16 +5,12 @@
 package com.airbnb.spinaltap.mysql.schema;
 
 import com.airbnb.spinaltap.mysql.BinlogFilePos;
-
+import com.google.common.collect.Table;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import com.google.common.collect.Table;
-
-/**
- * Represents a store for table schemas.
- */
+/** Represents a store for table schemas. */
 public interface SchemaStore<T> {
   /**
    * Create and save schema into {@link SchemaStore}, schema version will be generated automatically
@@ -48,7 +44,7 @@ public interface SchemaStore<T> {
   /** Get latest schema version for a table */
   int getLatestVersion(String database, String table);
 
-  /** Get all table schemas*/
+  /** Get all table schemas */
   Table<String, String, TreeMap<Integer, T>> getAll();
 
   /** Get all schemas for a table */

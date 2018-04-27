@@ -5,10 +5,11 @@
 package com.airbnb.spinaltap.mysql.schema;
 
 /**
- * Responsible for archiving the {@link SchemaStore} for a
- * {@link com.airbnb.spinaltap.common.source.Source} database.
+ * Responsible for archiving the {@link SchemaStore} for a {@link
+ * com.airbnb.spinaltap.common.source.Source} database.
  */
 public interface SchemaStoreArchiver {
   void archiveAll();
+
   void archive(String database);
 }

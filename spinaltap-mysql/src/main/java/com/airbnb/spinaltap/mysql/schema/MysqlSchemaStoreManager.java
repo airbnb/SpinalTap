@@ -4,16 +4,13 @@
  */
 package com.airbnb.spinaltap.mysql.schema;
 
+import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableSet;
+import java.util.Set;
+import javax.validation.constraints.NotNull;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
-import java.util.Set;
-
-import javax.validation.constraints.NotNull;
-
-import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableSet;
 
 @Slf4j
 @RequiredArgsConstructor

@@ -7,12 +7,9 @@ package com.airbnb.spinaltap.mysql.schema;
 import com.airbnb.spinaltap.mysql.MysqlSourceMetrics;
 import com.airbnb.spinaltap.mysql.config.MysqlConfiguration;
 import com.airbnb.spinaltap.mysql.config.MysqlSchemaStoreConfiguration;
-
+import javax.validation.constraints.NotNull;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-
-import javax.validation.constraints.NotNull;
-
 import org.skife.jdbi.v2.DBI;
 
 @RequiredArgsConstructor
