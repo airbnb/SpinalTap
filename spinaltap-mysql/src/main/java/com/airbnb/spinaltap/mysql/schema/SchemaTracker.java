@@ -9,7 +9,7 @@ import com.airbnb.spinaltap.mysql.event.QueryEvent;
 /**
  * Responsible for keeping track of schema changes on databases of a {@link
  * com.airbnb.spinaltap.common.source.Source}, by processing DDL statement from {@link QueryEvent}s
- * updating the schema version if needed.
+ * and updating the schema version if needed.
  */
 @FunctionalInterface
 public interface SchemaTracker {

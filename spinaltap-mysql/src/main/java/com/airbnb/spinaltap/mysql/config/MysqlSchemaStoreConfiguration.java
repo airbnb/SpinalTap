@@ -10,7 +10,7 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import lombok.Data;
 
-/** Represents configuration for a {@link com.airbnb.spinaltap.mysql.schema.MysqlSchemaStore}. */
+/** Represents the configuration for a {@link com.airbnb.spinaltap.mysql.schema.MysqlSchemaStore} */
 @Data
 public class MysqlSchemaStoreConfiguration {
   @NotNull @JsonProperty private String host;

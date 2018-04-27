@@ -24,9 +24,9 @@ import lombok.RequiredArgsConstructor;
 
 /**
  * Base {@link Mapper} implement that maps a {@link MysqlMutation} to its corresponding thrift
- * {@link Mutation} form
+ * {@link Mutation} form.
  *
- * @param <T> The {@link MysqlMutation} type
+ * @param <T> The {@link MysqlMutation} type.
  */
 @RequiredArgsConstructor
 public abstract class ThriftMutationMapper<T extends MysqlMutation>

@@ -81,7 +81,7 @@ public final class StateHistory {
   }
 
   /**
-   * Pops the last N most recently added {@link StateHistory} entries from the history.
+   * Removes the last N most recently added {@link StateHistory} entries from the history.
    *
    * @param count the number of records to remove.
    * @return the last removed {@link SourceState}.

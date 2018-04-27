@@ -14,8 +14,8 @@ import lombok.RequiredArgsConstructor;
 
 /**
  * Represents a {@link com.airbnb.spinaltap.common.util.Filter} for {@link BinlogEvent}s based on
- * the database/table the belong to. This ensures that mutations are propagated only for events for
- * the {@link com.airbnb.spinaltap.common.source.Source} database tables subscribed to.
+ * the database table they belong to. This is used to ensure that mutations are propagated only for
+ * events for the table the {@link com.airbnb.spinaltap.common.source.Source} is subscribed to.
  */
 @RequiredArgsConstructor
 final class TableFilter extends MysqlEventFilter {

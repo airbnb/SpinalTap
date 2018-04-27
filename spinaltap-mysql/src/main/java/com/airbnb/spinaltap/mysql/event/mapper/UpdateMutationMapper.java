@@ -27,7 +27,8 @@ import lombok.NonNull;
 
 /**
  * Represents a {@link com.airbnb.spinaltap.common.util.Mapper} of a {@link UpdateEvent}s to the
- * corresponding list of {@link com.airbnb.spinaltap.mysql.mutation.MysqlMutation}s.
+ * corresponding list of {@link com.airbnb.spinaltap.mysql.mutation.MysqlMutation}s corresponding to
+ * each row change in the event.
  */
 final class UpdateMutationMapper extends MysqlMutationMapper<UpdateEvent, MysqlMutation> {
   UpdateMutationMapper(

@@ -7,7 +7,6 @@ package com.airbnb.spinaltap.mysql;
 import com.airbnb.common.metrics.TaggedMetricRegistry;
 import com.airbnb.spinaltap.Mutation;
 import com.airbnb.spinaltap.common.destination.DestinationMetrics;
-import com.airbnb.spinaltap.mysql.binlog_connector.BinaryLogConnectorSource;
 import com.airbnb.spinaltap.mysql.mutation.MysqlMutationMetadata;
 import com.google.common.base.Preconditions;
 import java.util.HashMap;
@@ -15,9 +14,9 @@ import java.util.Map;
 import lombok.NonNull;
 
 /**
- * Responsible for metrics collection on operations of the {@link
+ * Responsible for metrics collection on operations for {@link
  * com.airbnb.spinaltap.common.destination.Destination} and associated components for a given {@link
- * BinaryLogConnectorSource}.
+ * MysqlSource}.
  */
 public final class MysqlDestinationMetrics extends DestinationMetrics {
   private static final String DATABASE_NAME_TAG = "database_name";

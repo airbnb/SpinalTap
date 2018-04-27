@@ -37,8 +37,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Base {@link com.airbnb.spinaltap.common.util.Mapper} implement of {@link BinlogEvent}s to {@link
- * com.airbnb.spinaltap.mysql.mutation.MysqlMutation}s.
+ * Base {@link com.airbnb.spinaltap.common.util.Mapper} implement that maps a {@link BinlogEvent}s
+ * to its corresponding {@link com.airbnb.spinaltap.mysql.mutation.MysqlMutation}s.
  */
 @Slf4j
 @RequiredArgsConstructor

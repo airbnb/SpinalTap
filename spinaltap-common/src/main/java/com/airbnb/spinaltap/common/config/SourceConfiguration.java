@@ -4,15 +4,13 @@
  */
 package com.airbnb.spinaltap.common.config;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
-
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 /** Represents a {@code Source} configuration. */
 @Data

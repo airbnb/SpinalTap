@@ -21,8 +21,9 @@ import java.util.concurrent.atomic.AtomicReference;
 import lombok.NonNull;
 
 /**
- * Represents a {@link com.airbnb.spinaltap.common.util.Mapper} of a {@link WriteEvent}s to the
- * corresponding list of {@link com.airbnb.spinaltap.mysql.mutation.MysqlMutation}s.
+ * Represents a {@link com.airbnb.spinaltap.common.util.Mapper} of a {@link WriteEvent} to a list of
+ * {@link com.airbnb.spinaltap.mysql.mutation.MysqlMutation}s corresponding to each row change in
+ * the event.
  */
 class InsertMutationMapper extends MysqlMutationMapper<WriteEvent, MysqlInsertMutation> {
   InsertMutationMapper(

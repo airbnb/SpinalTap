@@ -32,7 +32,7 @@ import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.skife.jdbi.v2.DBI;
 
-/** Represents a Factory for a {@link BinaryLogConnectorSource}. */
+/** Represents a factory for a {@link MysqlSource}. */
 @UtilityClass
 public class MysqlSourceFactory {
   public static Source create(

@@ -4,7 +4,6 @@
  */
 package com.airbnb.spinaltap.mysql.binlog_connector;
 
-import com.airbnb.spinaltap.common.source.Source;
 import com.airbnb.spinaltap.mysql.BinlogFilePos;
 import com.airbnb.spinaltap.mysql.DataSource;
 import com.airbnb.spinaltap.mysql.MysqlSource;
@@ -27,8 +26,8 @@ import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Represents a {@link Source} implement based on open-source library <a
- * href="https://github.com/shyiko/mysql-binlog-connector-java">
+ * Represents a {@link MysqlSource} implement based on open-source library <a
+ * href="https://github.com/shyiko/mysql-binlog-connector-java">.
  */
 @Slf4j
 public final class BinaryLogConnectorSource extends MysqlSource {

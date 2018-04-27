@@ -12,8 +12,9 @@ import lombok.RequiredArgsConstructor;
 
 /**
  * Represents a {@link com.airbnb.spinaltap.common.util.Filter} for duplicate {@link BinlogEvent}s
- * that have already been streamed. This is determined by comparing against the offset of the last
- * marked {@link SourceState} checkpoint
+ * that have already been streamed. This is used for server-side de-duplication, by comparing
+ * against the offset of the last marked {@link SourceState} checkpoint and disregarding any events
+ * that are received with an offset before that watermark.
  */
 @RequiredArgsConstructor
 public final class DuplicateFilter extends MysqlEventFilter {
