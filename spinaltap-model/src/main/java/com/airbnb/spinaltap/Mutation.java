@@ -15,9 +15,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
 /**
- * Base class which represents an entity change
+ * Base class which represents a data entity change (mutation).
  *
- * @param <T>
+ * @param <T> The data entity type (ex: Row, Record, etc...)
  */
 @Getter
 @ToString
@@ -66,9 +66,9 @@ public abstract class Mutation<T> {
 
   // For use by subclasses that implement a mutation with type UPDATE.
   protected static Set<String> getUpdatedColumns(
-      Map<String, ?> previousValues, Map<String, ?> currentValues) {
-    Set<String> previousColumns = previousValues.keySet();
-    Set<String> currentColumns = currentValues.keySet();
+      final Map<String, ?> previousValues, final Map<String, ?> currentValues) {
+    final Set<String> previousColumns = previousValues.keySet();
+    final Set<String> currentColumns = currentValues.keySet();
 
     return ImmutableSet.<String>builder()
         .addAll(Sets.symmetricDifference(currentColumns, previousColumns))

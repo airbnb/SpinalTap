@@ -17,7 +17,9 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
+import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTimeConstants;
 import org.skife.jdbi.v2.DBI;
@@ -26,6 +28,7 @@ import org.skife.jdbi.v2.StatementContext;
 import org.skife.jdbi.v2.tweak.ResultSetMapper;
 
 @Slf4j
+@UtilityClass
 public class MysqlSchemaUtil {
   static final Retryer<Void> VOID_RETRYER = createRetryer();
   static final Retryer<Boolean> BOOLEAN_RETRYER = createRetryer();
@@ -51,11 +54,12 @@ public class MysqlSchemaUtil {
 
   public static DBI createMysqlDBI(
       @NotNull final String host,
-      final int port,
+      @Min(0) final int port,
       @NotNull final String user,
       @NotNull final String password,
       final String database) {
-    MysqlDataSource dataSource = new MysqlConnectionPoolDataSource();
+    final MysqlDataSource dataSource = new MysqlConnectionPoolDataSource();
+
     dataSource.setUser(user);
     dataSource.setPassword(password);
     dataSource.setServerName(host);
@@ -87,7 +91,7 @@ public class MysqlSchemaUtil {
         0, source, database, table, new BinlogFilePos(0), sql, 0, columnInfoList, null);
   }
 
-  static String escapeBackQuote(@NotNull String name) {
+  static String escapeBackQuote(@NotNull final String name) {
     // MySQL allows backquote in database/table name, but need to escape it in DDL
     return name.replace("`", "``");
   }
@@ -95,10 +99,10 @@ public class MysqlSchemaUtil {
   static class ColumnMapper implements ResultSetMapper<ColumnInfo> {
     public ColumnInfo map(int index, ResultSet resultSet, StatementContext context)
         throws SQLException {
-      String table = resultSet.getString("TABLE_NAME");
-      String name = resultSet.getString("COLUMN_NAME");
-      String key = resultSet.getString("COLUMN_KEY");
-      String type = resultSet.getString("COLUMN_TYPE");
+      final String table = resultSet.getString("TABLE_NAME");
+      final String name = resultSet.getString("COLUMN_NAME");
+      final String key = resultSet.getString("COLUMN_KEY");
+      final String type = resultSet.getString("COLUMN_TYPE");
 
       log.debug(
           "Mapping column with table {}, name {}, key {} and column type {}",

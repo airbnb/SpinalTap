@@ -4,333 +4,211 @@
  */
 package com.airbnb.spinaltap.mysql;
 
-import com.airbnb.spinaltap.common.source.Source;
+import com.airbnb.spinaltap.Mutation;
+import com.airbnb.spinaltap.common.source.AbstractDataStoreSource;
 import com.airbnb.spinaltap.common.source.SourceState;
-import com.airbnb.spinaltap.common.util.Repository;
-import com.airbnb.spinaltap.common.validator.MutationOrderValidator;
-import com.airbnb.spinaltap.mysql.config.MysqlSchemaStoreConfiguration;
 import com.airbnb.spinaltap.mysql.event.BinlogEvent;
-import com.airbnb.spinaltap.mysql.event.DeleteEvent;
-import com.airbnb.spinaltap.mysql.event.QueryEvent;
-import com.airbnb.spinaltap.mysql.event.StartEvent;
-import com.airbnb.spinaltap.mysql.event.TableMapEvent;
-import com.airbnb.spinaltap.mysql.event.UpdateEvent;
-import com.airbnb.spinaltap.mysql.event.WriteEvent;
-import com.airbnb.spinaltap.mysql.event.XidEvent;
+import com.airbnb.spinaltap.mysql.event.filter.MysqlEventFilter;
+import com.airbnb.spinaltap.mysql.event.mapper.MysqlMutationMapper;
 import com.airbnb.spinaltap.mysql.exception.InvalidBinlogPositionException;
-import com.airbnb.spinaltap.mysql.schema.CachedMysqlSchemaStore;
-import com.airbnb.spinaltap.mysql.schema.LatestMysqlSchemaStore;
-import com.airbnb.spinaltap.mysql.schema.MysqlSchemaDatabase;
-import com.airbnb.spinaltap.mysql.schema.MysqlSchemaStore;
-import com.airbnb.spinaltap.mysql.schema.MysqlSchemaStoreManager;
-import com.airbnb.spinaltap.mysql.schema.MysqlSchemaTracker;
-import com.airbnb.spinaltap.mysql.schema.MysqlSchemaUtil;
-import com.airbnb.spinaltap.mysql.schema.MysqlTableSchema;
-import com.airbnb.spinaltap.mysql.schema.SchemaStore;
+import com.airbnb.spinaltap.mysql.mutation.MysqlMutation;
+import com.airbnb.spinaltap.mysql.mutation.MysqlMutationMetadata;
 import com.airbnb.spinaltap.mysql.schema.SchemaTracker;
-import com.airbnb.spinaltap.mysql.validator.EventOrderValidator;
-import com.airbnb.spinaltap.mysql.validator.MutationSchemaValidator;
-import com.github.shyiko.mysql.binlog.BinaryLogClient;
-import com.github.shyiko.mysql.binlog.event.DeleteRowsEventData;
-import com.github.shyiko.mysql.binlog.event.Event;
-import com.github.shyiko.mysql.binlog.event.EventHeaderV4;
-import com.github.shyiko.mysql.binlog.event.EventType;
-import com.github.shyiko.mysql.binlog.event.QueryEventData;
-import com.github.shyiko.mysql.binlog.event.TableMapEventData;
-import com.github.shyiko.mysql.binlog.event.UpdateRowsEventData;
-import com.github.shyiko.mysql.binlog.event.WriteRowsEventData;
-import com.github.shyiko.mysql.binlog.event.XidEventData;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
-import java.net.Socket;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
+import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
-import org.skife.jdbi.v2.DBI;
 
+/**
+ * Base implement of a MySQL {@link com.airbnb.spinaltap.common.source.Source} that streams events
+ * from a given binlog for a specified database host, and transforms them to {@link Mutation}s.
+ */
 @Slf4j
-public class MysqlSource extends AbstractMysqlSource {
-  private static final String INVALID_BINLOG_POSITION_ERROR_CODE = "1236";
+public abstract class MysqlSource extends AbstractDataStoreSource<BinlogEvent> {
+  /** Represents the latest binlog position in the mysql-binlog-connector client. */
+  public static final BinlogFilePos LATEST_BINLOG_POS = new BinlogFilePos(null, 0, 0);
 
-  private final BinaryLogClient client;
+  /** Represents the earliest binlog position in the mysql-binlog-connector client. */
+  public static final BinlogFilePos EARLIEST_BINLOG_POS = new BinlogFilePos("", 4, 4);
 
-  public static Source create(
-      String name,
-      String host,
-      int port,
-      int socketTimeoutInSeconds,
-      String user,
-      String password,
-      long serverId,
-      List<String> tableNames,
-      Repository<SourceState> stateRepo,
-      Repository<Collection<SourceState>> stateHistoryRepo,
-      BinlogFilePos initialBinlogPosition,
-      boolean isSchemaVersionEnabled,
-      MysqlSchemaStoreConfiguration schemaStoreConfig,
-      MysqlSourceMetrics metrics,
-      long leaderEpoch) {
-    DBI mysqlDBI = MysqlSchemaUtil.createMysqlDBI(host, port, user, password, null);
+  /** The backoff rate when conducting rollback in the {@link StateHistory}. */
+  private static final int STATE_ROLLBACK_BACKOFF_RATE = 2;
 
-    BinaryLogClient client = new BinaryLogClient(host, port, user, password);
-    // Set different server_id for staging and production environment.
-    // Conflict occurs when more than one client of same server_id connect to a MySQL server.
-    client.setServerId(serverId);
-
-    DataSource dataSource = new DataSource(host, port, name);
-
-    StateRepository stateRepository = new StateRepository(name, stateRepo, metrics);
-    StateHistory stateHistory = new StateHistory(name, stateHistoryRepo, metrics);
-
-    LatestMysqlSchemaStore schemaReader = new LatestMysqlSchemaStore(name, mysqlDBI, metrics);
-    SchemaStore<MysqlTableSchema> schemaStore;
-    SchemaTracker schemaTracker;
-
-    if (isSchemaVersionEnabled) {
-      DBI schemaStoreDBI =
-          MysqlSchemaUtil.createMysqlDBI(
-              schemaStoreConfig.getHost(),
-              schemaStoreConfig.getPort(),
-              user,
-              password,
-              schemaStoreConfig.getDatabase());
-      MysqlSchemaStore mysqlSchemaStore =
-          new MysqlSchemaStore(
-              name, schemaStoreDBI, schemaStoreConfig.getArchiveDatabase(), metrics);
-
-      DBI schemaDatabaseDBI =
-          MysqlSchemaUtil.createMysqlDBI(
-              schemaStoreConfig.getHost(), schemaStoreConfig.getPort(), user, password, null);
-      MysqlSchemaDatabase schemaDatabase =
-          new MysqlSchemaDatabase(name, schemaDatabaseDBI, metrics);
-
-      if (!mysqlSchemaStore.isCreated()) {
-        MysqlSchemaStoreManager schemaStoreManager =
-            new MysqlSchemaStoreManager(name, schemaReader, mysqlSchemaStore, schemaDatabase);
-        schemaStoreManager.bootstrapAll();
-      }
-
-      schemaStore = new CachedMysqlSchemaStore(name, mysqlSchemaStore, metrics);
-      schemaTracker = new MysqlSchemaTracker(schemaStore, schemaDatabase);
-    } else {
-      schemaStore = schemaReader;
-      schemaTracker = (event) -> {};
-    }
-
-    TableCache tableCache = new TableCache(schemaStore);
-
-    MysqlSource source =
-        new MysqlSource(
-            name,
-            dataSource,
-            client,
-            new HashSet<>(tableNames),
-            tableCache,
-            stateRepository,
-            stateHistory,
-            initialBinlogPosition,
-            schemaTracker,
-            metrics,
-            new AtomicLong(leaderEpoch),
-            socketTimeoutInSeconds);
-
-    source.addEventValidator(new EventOrderValidator(metrics::outOfOrder));
-    source.addMutationValidator(new MutationOrderValidator(metrics::outOfOrder));
-    source.addMutationValidator(new MutationSchemaValidator(metrics::invalidSchema));
-
-    return source;
-  }
-
-  MysqlSource(
-      String name,
-      DataSource dataSource,
-      BinaryLogClient client,
-      Set<String> tableNames,
-      TableCache tableCache,
-      StateRepository stateRepository,
-      StateHistory stateHistory,
-      BinlogFilePos initialBinlogFilePosition,
-      SchemaTracker schemaTracker,
-      MysqlSourceMetrics metrics,
-      AtomicLong currentLeaderEpoch,
-      int socketTimeoutInSeconds) {
-    super(
-        name,
-        dataSource,
-        tableNames,
-        tableCache,
-        stateRepository,
-        stateHistory,
-        initialBinlogFilePosition,
-        schemaTracker,
-        metrics,
-        currentLeaderEpoch,
-        new AtomicReference<>(),
-        new AtomicReference<>());
-
-    this.client = client;
-
-    initializeClient(socketTimeoutInSeconds);
-  }
-
-  private void initializeClient(int socketTimeoutInSeconds) {
-    client.setThreadFactory(
-        runnable ->
-            new Thread(
-                runnable,
-                String.format(
-                    "binlog-client-%s-%s-%d",
-                    name, getDataSource().getHost(), getDataSource().getPort())));
-
-    client.setSocketFactory(
-        () -> {
-          Socket socket = new Socket();
-          try {
-            if (socketTimeoutInSeconds > 0) {
-              socket.setSoTimeout(socketTimeoutInSeconds * 1000);
-            }
-          } catch (Exception ex) {
-            throw new RuntimeException(ex);
-          }
-          return socket;
-        });
-
-    client.setKeepAlive(false);
-    client.registerEventListener(new BinlogEventListener());
-    client.registerLifecycleListener(new BinlogClientLifeCycleListener());
-  }
-
-  @Override
-  protected void connect() throws Exception {
-    client.connect();
-  }
-
-  @Override
-  protected void disconnect() throws Exception {
-    client.disconnect();
-  }
-
-  @Override
-  protected boolean isConnected() {
-    return client.isConnected();
-  }
-
-  @Override
-  public void setPosition(BinlogFilePos pos) {
-    log.info("Setting binlog position for source {} to {}", name, pos);
-
-    client.setBinlogFilename(pos.getFileName());
-    client.setBinlogPosition(pos.getNextPosition());
-  }
-
-  public static BinlogEvent toBinlogEvent(Event event, BinlogFilePos filePos) {
-    EventHeaderV4 header = event.getHeader();
-    EventType eventType = header.getEventType();
-
-    long serverId = header.getServerId();
-    long timestamp = header.getTimestamp();
-
-    if (EventType.isWrite(eventType)) {
-      WriteRowsEventData data = event.getData();
-      return new WriteEvent(data.getTableId(), serverId, timestamp, filePos, data.getRows());
-    } else if (EventType.isUpdate(eventType)) {
-      UpdateRowsEventData data = event.getData();
-      return new UpdateEvent(data.getTableId(), serverId, timestamp, filePos, data.getRows());
-    } else if (EventType.isDelete(eventType)) {
-      DeleteRowsEventData data = event.getData();
-      return new DeleteEvent(data.getTableId(), serverId, timestamp, filePos, data.getRows());
-    } else {
-      switch (eventType) {
-        case TABLE_MAP:
-          TableMapEventData tableMapData = event.getData();
-          return new TableMapEvent(
-              tableMapData.getTableId(),
-              serverId,
-              timestamp,
-              filePos,
-              tableMapData.getDatabase(),
-              tableMapData.getTable(),
-              tableMapData.getColumnTypes());
-        case XID:
-          XidEventData xidData = event.getData();
-          return new XidEvent(serverId, timestamp, filePos, xidData.getXid());
-        case QUERY:
-          QueryEventData queryData = event.getData();
-          return new QueryEvent(
-              serverId, timestamp, filePos, queryData.getDatabase(), queryData.getSql());
-        case FORMAT_DESCRIPTION:
-          return new StartEvent(serverId, timestamp, filePos);
-        default:
-          return null;
-      }
-    }
-  }
-
-  class BinlogEventListener implements BinaryLogClient.EventListener {
-    public void onEvent(Event event) {
-      Preconditions.checkState(isStarted(), "Source is not started and should not process events");
-
-      EventHeaderV4 header = event.getHeader();
-      BinlogFilePos filePos =
-          new BinlogFilePos(
-              client.getBinlogFilename(), header.getPosition(), header.getNextPosition());
-
-      BinlogEvent binlogEvent = toBinlogEvent(event, filePos);
-      if (binlogEvent != null) {
-        processEvent(binlogEvent);
-      }
-    }
-  }
+  /** The {@link DataSource} representing the database host the source is streaming events from. */
+  @NonNull @Getter private final DataSource dataSource;
 
   /**
-   * Lifecycle listener methods are called synchronized in BinaryLogClient. We should not enter
-   * critical sections in SpinalTap code path to avoid deadlocks
+   * The {@link TableCache} tracking {@link com.airbnb.spinaltap.mysql.mutation.schema.Table}
+   * metadata for the streamed source events.
    */
-  class BinlogClientLifeCycleListener implements BinaryLogClient.LifecycleListener {
-    public void onConnect(BinaryLogClient client) {
-      log.info("Connected to source {}.", name);
-      metrics.clientConnected();
+  @NonNull private final TableCache tableCache;
+
+  /** The {@link StateRepository} where the {@link SourceState} is committed to. */
+  @NonNull private final StateRepository stateRepository;
+
+  /** The initial {@link BinlogFilePos} to start streaming from for the source. */
+  @NonNull private final BinlogFilePos initialBinlogFilePosition;
+
+  @NonNull protected final MysqlSourceMetrics metrics;
+
+  /** The last checkpointed {@link SourceState} for the source. */
+  @NonNull
+  @VisibleForTesting
+  @Getter(AccessLevel.PACKAGE)
+  private AtomicReference<SourceState> lastSavedState;
+
+  /** The last MySQL {@link Transaction} seen so far from the streamed events. */
+  @NonNull
+  @VisibleForTesting
+  @Getter(AccessLevel.PACKAGE)
+  private AtomicReference<Transaction> lastTransaction;
+
+  /** The leader epoch of the current node processing the source stream. */
+  @NonNull private final AtomicLong currentLeaderEpoch;
+
+  /** The {@link StateHistory} of checkpointed {@link SourceState}s. */
+  @NonNull
+  @VisibleForTesting
+  @Getter(AccessLevel.PACKAGE)
+  private final StateHistory stateHistory;
+
+  /** The number of {@link SourceState} entries to remove from {@link StateHistory} on rollback. */
+  private final AtomicInteger stateRollbackCount = new AtomicInteger(1);
+
+  public MysqlSource(
+      @NonNull final String name,
+      @NonNull final DataSource dataSource,
+      @NonNull final Set<String> tableNames,
+      @NonNull final TableCache tableCache,
+      @NonNull final StateRepository stateRepository,
+      @NonNull final StateHistory stateHistory,
+      @NonNull final BinlogFilePos initialBinlogFilePosition,
+      @NonNull final SchemaTracker schemaTracker,
+      @NonNull final MysqlSourceMetrics metrics,
+      @NonNull final AtomicLong currentLeaderEpoch,
+      @NonNull final AtomicReference<Transaction> lastTransaction,
+      @NonNull final AtomicReference<SourceState> lastSavedState) {
+    super(
+        name,
+        metrics,
+        MysqlMutationMapper.create(
+            dataSource,
+            tableCache,
+            schemaTracker,
+            currentLeaderEpoch,
+            new AtomicReference<>(),
+            lastTransaction,
+            metrics),
+        MysqlEventFilter.create(tableCache, tableNames, lastSavedState));
+
+    this.dataSource = dataSource;
+    this.tableCache = tableCache;
+    this.stateRepository = stateRepository;
+    this.stateHistory = stateHistory;
+    this.metrics = metrics;
+    this.currentLeaderEpoch = currentLeaderEpoch;
+    this.lastTransaction = lastTransaction;
+    this.lastSavedState = lastSavedState;
+    this.initialBinlogFilePosition = initialBinlogFilePosition;
+  }
+
+  public abstract void setPosition(BinlogFilePos pos);
+
+  /** Initializes the source and prepares to start streaming. */
+  protected void initialize() {
+    tableCache.clear();
+
+    SourceState state = getSavedState();
+
+    lastSavedState.set(state);
+    lastTransaction.set(
+        new Transaction(state.getLastTimestamp(), state.getLastOffset(), state.getLastPosition()));
+
+    setPosition(state.getLastPosition());
+  }
+
+  /** Resets to the last valid {@link SourceState} recorded in the {@link StateHistory}. */
+  void resetToLastValidState() {
+    if (stateHistory.size() >= stateRollbackCount.get()) {
+      final SourceState newState = stateHistory.removeLast(stateRollbackCount.get());
+      saveState(newState);
+
+      metrics.resetSourcePosition();
+      log.info("Reset source {} position to {}.", name, newState.getLastPosition());
+
+      stateRollbackCount.accumulateAndGet(
+          STATE_ROLLBACK_BACKOFF_RATE, (value, rate) -> value * rate);
+
+    } else {
+      stateHistory.clear();
+      saveState(getEarliestState());
+
+      metrics.resetEarliestPosition();
+      log.info("Reset source {} position to earliest.", name);
+    }
+  }
+
+  private SourceState getEarliestState() {
+    return new SourceState(0L, 0L, currentLeaderEpoch.get(), EARLIEST_BINLOG_POS);
+  }
+
+  protected void onDeserializationError(final Exception ex) {
+    metrics.deserializationFailure(ex);
+
+    // Fail on deserialization errors and restart source from last checkpoint
+    throw new RuntimeException(ex);
+  }
+
+  protected void onCommunicationError(final Exception ex) {
+    metrics.communicationFailure(ex);
+
+    if (ex instanceof InvalidBinlogPositionException) {
+      resetToLastValidState();
+    }
+  }
+
+  /** Checkpoints the {@link SourceState} for the source at the given {@link Mutation} position. */
+  public void commitCheckpoint(final Mutation<?> mutation) {
+    final SourceState savedState = lastSavedState.get();
+    if (mutation == null || savedState == null) {
+      return;
     }
 
-    public void onCommunicationFailure(BinaryLogClient client, Exception ex) {
-      log.error(
-          String.format(
-              "Communication failure from source %s, binlogFile=%s, binlogPos=%s",
-              name, client.getBinlogFilename(), client.getBinlogPosition()),
-          ex);
+    Preconditions.checkState(mutation instanceof MysqlMutation);
+    final MysqlMutationMetadata metadata = ((MysqlMutation) mutation).getMetadata();
 
-      if (ex.getMessage().startsWith(INVALID_BINLOG_POSITION_ERROR_CODE)) {
-        ex =
-            new InvalidBinlogPositionException(
-                String.format(
-                    "Invalid position %s in binlog file %s",
-                    client.getBinlogPosition(), client.getBinlogFilename()));
-      }
-
-      onCommunicationError(ex);
+    // Make sure we are saving at a higher watermark
+    if (savedState.getLastOffset() >= metadata.getId()) {
+      return;
     }
 
-    public void onEventDeserializationFailure(BinaryLogClient client, Exception ex) {
-      log.error(
-          String.format(
-              "Deserialization failure from source %s, BinlogFile=%s, binlogPos=%s",
-              name, client.getBinlogFilename(), client.getBinlogPosition()),
-          ex);
+    final SourceState newState =
+        new SourceState(
+            metadata.getTimestamp(),
+            metadata.getId(),
+            currentLeaderEpoch.get(),
+            metadata.getLastTransaction().getPosition());
 
-      onDeserializationError(ex);
-    }
+    saveState(newState);
 
-    public void onDisconnect(BinaryLogClient client) {
-      log.info(
-          "Disconnected from source {}. BinlogFile={}, binlogPos={}",
-          name,
-          client.getBinlogFilename(),
-          client.getBinlogPosition());
-      metrics.clientDisconnected();
-      started.set(false);
-    }
+    stateHistory.add(newState);
+    stateRollbackCount.set(1);
+  }
+
+  void saveState(@NonNull final SourceState state) {
+    stateRepository.save(state);
+    lastSavedState.set(state);
+  }
+
+  SourceState getSavedState() {
+    return Optional.ofNullable(stateRepository.read())
+        .orElse(new SourceState(0L, 0L, currentLeaderEpoch.get(), initialBinlogFilePosition));
   }
 }

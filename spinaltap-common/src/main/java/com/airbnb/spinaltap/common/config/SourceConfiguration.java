@@ -10,6 +10,7 @@ import javax.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 
 /** Represents a {@code Source} configuration. */
 @Data
@@ -20,10 +21,10 @@ public class SourceConfiguration {
   private static int DEFAULT_PARTITIONS = 1;
 
   public SourceConfiguration(
-      String name,
-      String type,
-      String instanceTag,
-      DestinationConfiguration destinationConfiguration) {
+      @NonNull final String name,
+      final String type,
+      final String instanceTag,
+      @NonNull final DestinationConfiguration destinationConfiguration) {
     this.name = name;
     this.type = type;
     this.instanceGroupTag = instanceTag;

@@ -9,12 +9,14 @@ import com.airbnb.spinaltap.common.util.StateRepositoryFactory;
 import com.airbnb.spinaltap.common.util.ZookeeperRepository;
 import com.fasterxml.jackson.core.type.TypeReference;
 import java.util.Collection;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.apache.curator.framework.CuratorFramework;
 
+/** Represents an implement of {@link StateRepositoryFactory} in Zookeeper. */
 @RequiredArgsConstructor
-public class ZookeeperRepositoryFactory implements StateRepositoryFactory {
-  private final CuratorFramework zkClient;
+public final class ZookeeperRepositoryFactory implements StateRepositoryFactory {
+  @NonNull private final CuratorFramework zkClient;
 
   @Override
   public ZookeeperRepository<SourceState> getStateRepository(String sourceName, String parition) {

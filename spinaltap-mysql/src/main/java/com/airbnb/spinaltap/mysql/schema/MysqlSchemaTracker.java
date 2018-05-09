@@ -18,7 +18,7 @@ import javax.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-/** Tracks MySQL schema change */
+/** Represents a {@link SchemaTracker} that tracks MySQL schema change. */
 @Slf4j
 @RequiredArgsConstructor
 public class MysqlSchemaTracker implements SchemaTracker {

@@ -8,7 +8,7 @@ import com.airbnb.spinaltap.Mutation;
 import com.airbnb.spinaltap.mysql.mutation.schema.Row;
 import java.util.Set;
 
-public class MysqlDeleteMutation extends MysqlMutation {
+public final class MysqlDeleteMutation extends MysqlMutation {
   public MysqlDeleteMutation(MysqlMutationMetadata metadata, Row row) {
     super(metadata, Mutation.Type.DELETE, row);
   }

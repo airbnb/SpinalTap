@@ -7,8 +7,9 @@ package com.airbnb.spinaltap.mysql.mutation.schema;
 import java.io.Serializable;
 import lombok.Value;
 
+/** Represents a MySQL column. */
 @Value
-public final class Column {
+public class Column {
   private final ColumnMetadata metadata;
   private final Serializable value;
 }

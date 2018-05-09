@@ -8,16 +8,21 @@ import com.airbnb.jitney.event.spinaltap.v1.Mutation;
 import com.airbnb.jitney.event.spinaltap.v1.MutationType;
 import com.airbnb.spinaltap.mysql.mutation.MysqlMutationMetadata;
 import com.airbnb.spinaltap.mysql.mutation.MysqlUpdateMutation;
+import lombok.NonNull;
 
+/**
+ * Represents a {@link com.airbnb.spinaltap.common.util.Mapper} that maps a {@link
+ * MysqlUpdateMutation} to its corresponding thrift {@link Mutation} form.
+ */
 class UpdateMutationMapper extends ThriftMutationMapper<MysqlUpdateMutation> {
-  public UpdateMutationMapper(String sourceId) {
+  public UpdateMutationMapper(final String sourceId) {
     super(sourceId);
   }
 
-  public Mutation map(MysqlUpdateMutation mutation) {
-    MysqlMutationMetadata metadata = mutation.getMetadata();
+  public Mutation map(@NonNull final MysqlUpdateMutation mutation) {
+    final MysqlMutationMetadata metadata = mutation.getMetadata();
 
-    Mutation thriftMutation =
+    final Mutation thriftMutation =
         new Mutation(
             MutationType.UPDATE,
             metadata.getTimestamp(),
