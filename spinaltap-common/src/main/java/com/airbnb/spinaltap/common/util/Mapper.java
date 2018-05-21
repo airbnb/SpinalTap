@@ -5,17 +5,18 @@
 package com.airbnb.spinaltap.common.util;
 
 /**
- * Responsible for mapping between objects
+ * Responsible for mapping between objects.
  *
- * @param <T> The mapped from object type
- * @param <R> The mapped to object type
+ * @param <T> The mapped from object type.
+ * @param <R> The mapped to object type.
  */
+@FunctionalInterface
 public interface Mapper<T, R> {
   /**
-   * Maps an object to another
+   * Maps an object to another.
    *
-   * @param object the object to map
-   * @return the resulting mapped object
+   * @param object the object to map.
+   * @return the resulting mapped object.
    */
   R map(T object);
 }

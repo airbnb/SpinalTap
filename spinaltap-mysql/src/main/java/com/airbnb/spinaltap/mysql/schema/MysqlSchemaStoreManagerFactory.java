@@ -8,34 +8,37 @@ import com.airbnb.spinaltap.mysql.MysqlSourceMetrics;
 import com.airbnb.spinaltap.mysql.config.MysqlConfiguration;
 import com.airbnb.spinaltap.mysql.config.MysqlSchemaStoreConfiguration;
 import javax.validation.constraints.NotNull;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.skife.jdbi.v2.DBI;
 
 @RequiredArgsConstructor
 public class MysqlSchemaStoreManagerFactory {
-  private final String mysqlUser;
-  private final String mysqlPassword;
-  private final MysqlSchemaStoreConfiguration schemaStoreConfiguration;
+  @NonNull private final String mysqlUser;
+  @NonNull private final String mysqlPassword;
+  @NonNull private final MysqlSchemaStoreConfiguration schemaStoreConfiguration;
 
   public MysqlSchemaStoreManager create(
       @NotNull final String source,
       @NotNull final MysqlConfiguration mysqlConfiguration,
       @NotNull final MysqlSourceMetrics metrics) {
-    DBI schemaReaderDBI =
+    final DBI schemaReaderDBI =
         MysqlSchemaUtil.createMysqlDBI(
             mysqlConfiguration.getHost(),
             mysqlConfiguration.getPort(),
             mysqlUser,
             mysqlPassword,
             null);
-    DBI schemaStoreDBI =
+
+    final DBI schemaStoreDBI =
         MysqlSchemaUtil.createMysqlDBI(
             schemaStoreConfiguration.getHost(),
             schemaStoreConfiguration.getPort(),
             mysqlUser,
             mysqlPassword,
             schemaStoreConfiguration.getDatabase());
-    DBI schemaDatabaseDBI =
+
+    final DBI schemaDatabaseDBI =
         MysqlSchemaUtil.createMysqlDBI(
             schemaStoreConfiguration.getHost(),
             schemaStoreConfiguration.getPort(),
@@ -53,14 +56,15 @@ public class MysqlSchemaStoreManagerFactory {
 
   public SchemaStoreArchiver createArchiver(
       @NotNull final String source, @NotNull final MysqlSourceMetrics metrics) {
-    DBI schemaStoreDBI =
+    final DBI schemaStoreDBI =
         MysqlSchemaUtil.createMysqlDBI(
             schemaStoreConfiguration.getHost(),
             schemaStoreConfiguration.getPort(),
             mysqlUser,
             mysqlPassword,
             schemaStoreConfiguration.getDatabase());
-    DBI schemaDatabaseDBI =
+
+    final DBI schemaDatabaseDBI =
         MysqlSchemaUtil.createMysqlDBI(
             schemaStoreConfiguration.getHost(),
             schemaStoreConfiguration.getPort(),

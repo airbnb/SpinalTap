@@ -8,14 +8,19 @@ import com.airbnb.jitney.event.spinaltap.v1.Mutation;
 import com.airbnb.jitney.event.spinaltap.v1.MutationType;
 import com.airbnb.spinaltap.mysql.mutation.MysqlDeleteMutation;
 import com.airbnb.spinaltap.mysql.mutation.MysqlMutationMetadata;
+import lombok.NonNull;
 
+/**
+ * Represents a {@link com.airbnb.spinaltap.common.util.Mapper} that maps a {@link
+ * MysqlDeleteMutation} to its corresponding thrift {@link Mutation} form.
+ */
 class DeleteMutationMapper extends ThriftMutationMapper<MysqlDeleteMutation> {
-  public DeleteMutationMapper(String sourceId) {
+  public DeleteMutationMapper(final String sourceId) {
     super(sourceId);
   }
 
-  public Mutation map(MysqlDeleteMutation mutation) {
-    MysqlMutationMetadata metadata = mutation.getMetadata();
+  public Mutation map(@NonNull final MysqlDeleteMutation mutation) {
+    final MysqlMutationMetadata metadata = mutation.getMetadata();
 
     return new Mutation(
         MutationType.DELETE,

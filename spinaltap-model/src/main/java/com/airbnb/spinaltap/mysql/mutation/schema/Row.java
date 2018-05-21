@@ -7,13 +7,14 @@ package com.airbnb.spinaltap.mysql.mutation.schema;
 import com.google.common.collect.ImmutableMap;
 import lombok.Value;
 
+/** Represents a MySQL row. */
 @Value
 public final class Row {
   private final Table table;
   private final ImmutableMap<String, Column> columns;
 
   @SuppressWarnings("unchecked")
-  public <T> T getValue(String columnName) {
+  public <T> T getValue(final String columnName) {
     return (T) columns.get(columnName).getValue();
   }
 
@@ -22,21 +23,21 @@ public final class Row {
       return null;
     }
 
-    StringBuilder value = new StringBuilder();
+    final StringBuilder value = new StringBuilder();
     table
         .getPrimaryKey()
         .get()
         .getColumns()
         .keySet()
-        .forEach(
-            key -> {
-              value.append(columns.get(key).getValue());
-            });
+        .stream()
+        .map(columns::get)
+        .map(Column::getValue)
+        .forEach(value::append);
 
     return value.toString();
   }
 
-  public boolean containsColumn(String columnName) {
+  public boolean containsColumn(final String columnName) {
     return columns.containsKey(columnName);
   }
 }

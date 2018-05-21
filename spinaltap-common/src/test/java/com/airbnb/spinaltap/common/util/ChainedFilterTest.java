@@ -4,31 +4,31 @@
  */
 package com.airbnb.spinaltap.common.util;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
 public class ChainedFilterTest {
-
   @Test
-  public void testFilter() throws Exception {
+  public void testFailingFilter() throws Exception {
     Filter<Integer> filter =
-        new ChainedFilter.Builder<Integer>()
-            .addFilter((num) -> true)
-            .addFilter((num) -> false)
-            .build();
+        ChainedFilter.<Integer>builder().addFilter(num -> true).addFilter(num -> false).build();
 
     assertFalse(filter.apply(1));
+  }
 
-    filter =
-        new ChainedFilter.Builder<Integer>()
-            .addFilter((num) -> true)
-            .addFilter((num) -> true)
-            .build();
+  @Test
+  public void testPassingFilter() throws Exception {
+    Filter<Integer> filter =
+        ChainedFilter.<Integer>builder().addFilter(num -> true).addFilter(num -> true).build();
 
     assertTrue(filter.apply(1));
+  }
 
-    filter = new ChainedFilter.Builder<Integer>().build();
+  @Test
+  public void testEmptyFilter() throws Exception {
+    Filter<Integer> filter = ChainedFilter.<Integer>builder().build();
 
     assertTrue(filter.apply(1));
   }

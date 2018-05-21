@@ -5,7 +5,16 @@
 package com.airbnb.spinaltap.common.util;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.joda.JodaModule;
+import lombok.experimental.UtilityClass;
 
+/** Utility class for json operations and components. */
+@UtilityClass
 public class JsonUtil {
-  public static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+  /** The {@link ObjectMapper} used for json SerDe. */
+  public ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+
+  static {
+    OBJECT_MAPPER.registerModule(new JodaModule());
+  }
 }

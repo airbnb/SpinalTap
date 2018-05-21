@@ -5,18 +5,15 @@
 package com.airbnb.spinaltap.kafka;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.Getter;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
-@Getter
-@Setter
+/** Represents the Kafka producer configuration used in {@link KafkaDestination}. */
+@Data
 @NoArgsConstructor
+@AllArgsConstructor
 public class KafkaProducerConfiguration {
   @JsonProperty("bootstrap_servers")
   private String bootstrapServers;
-
-  public KafkaProducerConfiguration(String bootstrapServers) {
-    this.bootstrapServers = bootstrapServers;
-  }
 }

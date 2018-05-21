@@ -15,27 +15,61 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeoutException;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Responsible for managing a collection of {@link Pipe}s for a set of resources.
+ *
+ * <p>A resource is typically associated with a data source, ex: a MySQL database
+ */
 @Slf4j
 @NoArgsConstructor
 public class PipeManager {
   private static final long CHECK_STOPPED_WAIT_MILLISEC = 1000L;
   private static final int CHECK_STOPPED_WAIT_TIMEOUT_SECONDS = 30;
+  /**
+   * Mapped table of [Resource][Partition][Pipes]. In other words, registered resource will have a
+   * set of partitions, each of which will have a collection of {@link Pipe}s registered.
+   */
   private final Table<String, String, List<Pipe>> pipeTable =
       Tables.newCustomTable(Maps.newConcurrentMap(), Maps::newConcurrentMap);
 
   private final Executor executor = Executors.newSingleThreadExecutor();
 
-  public void addPipe(String name, Pipe pipe) {
+  /**
+   * Registers a pipe for the given resource.
+   *
+   * @param name the resource name
+   * @param pipe the pipe
+   */
+  public void addPipe(@NonNull final String name, @NonNull final Pipe pipe) {
     addPipe(name, getDefaultPartition(name), pipe);
   }
 
-  public void addPipe(String name, String partition, Pipe pipe) {
+  /**
+   * Registers a {@link Pipe} for the given resource partition
+   *
+   * @param name The resource name
+   * @param partition the partition name
+   * @param pipe the {@link Pipe}
+   */
+  public void addPipe(
+      @NonNull final String name, @NonNull final String partition, @NonNull final Pipe pipe) {
     addPipes(name, partition, Collections.singletonList(pipe));
   }
 
-  public void addPipes(String name, String partition, List<Pipe> pipes) {
+  /**
+   * Registers a list of {@link Pipe}s for the give resource partition
+   *
+   * @param name The resource name
+   * @param partition the partition name
+   * @param pipes the list of {@link Pipe}s
+   */
+  public void addPipes(
+      @NonNull final String name,
+      @NonNull final String partition,
+      @NonNull final List<Pipe> pipes) {
     log.debug("Adding pipes for {} / {}", name, partition);
 
     pipes.forEach(Pipe::start);
@@ -44,15 +78,17 @@ public class PipeManager {
     log.info("Added pipes for {} / {}", name, partition);
   }
 
-  private static String getDefaultPartition(String name) {
+  private static String getDefaultPartition(final String name) {
     return String.format("%s_%d", name, 0);
   }
 
-  public boolean contains(String name) {
+  /** @return whether the given resource is registered. */
+  public boolean contains(@NonNull final String name) {
     return pipeTable.containsRow(name);
   }
 
-  public boolean contains(String name, String partition) {
+  /** @return whether the given resource partition is registered. */
+  public boolean contains(@NonNull final String name, @NonNull final String partition) {
     return pipeTable.contains(name, partition);
   }
 
@@ -60,14 +96,21 @@ public class PipeManager {
     return pipeTable.isEmpty();
   }
 
-  public Set<String> getPartitions(String name) {
+  /** @return all partitions for a given registered resource. */
+  public Set<String> getPartitions(@NonNull final String name) {
     return pipeTable.row(name).keySet();
   }
 
-  public void removePipe(String name, String partition) {
+  /**
+   * Removes a resource partition.
+   *
+   * @param name the resource
+   * @param partition the partition
+   */
+  public void removePipe(@NonNull final String name, @NonNull final String partition) {
     log.debug("Removing pipes for {} / {}", name, partition);
 
-    List<Pipe> pipes = pipeTable.get(name, partition);
+    final List<Pipe> pipes = pipeTable.get(name, partition);
     if (pipes == null || pipes.isEmpty()) {
       log.info("Pipes do not exist for {} / {}", name, partition);
       return;
@@ -85,27 +128,14 @@ public class PipeManager {
     log.info("Removed pipes for {} / {}", name, partition);
   }
 
-  public void executeAsync(Runnable operation) {
+  public void executeAsync(@NonNull final Runnable operation) {
     executor.execute(operation);
   }
 
+  /** Starts all {@link Pipe}s for all managed resources. */
   public void start() throws Exception {
     log.debug("Starting pipe manager");
 
-    startPipes();
-
-    log.info("Started pipe manager");
-  }
-
-  public void stop() {
-    log.debug("Stopping pipe manager");
-
-    stopPipes();
-
-    log.info("Stopped pipe manager");
-  }
-
-  public void startPipes() {
     pipeTable
         .values()
         .parallelStream()
@@ -118,9 +148,14 @@ public class PipeManager {
                 log.error("Failed to start pipe " + pipe.getName(), ex);
               }
             });
+
+    log.info("Started pipe manager");
   }
 
-  public void stopPipes() {
+  /** Starts all {@link Pipe}s for all managed resources. */
+  public void stop() {
+    log.debug("Stopping pipe manager");
+
     pipeTable
         .values()
         .parallelStream()
@@ -133,6 +168,8 @@ public class PipeManager {
                 log.error("Failed to stop pipe " + pipe.getName(), ex);
               }
             });
+
+    log.info("Stopped pipe manager");
   }
 
   public boolean allPipesStopped() {

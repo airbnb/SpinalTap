@@ -6,7 +6,6 @@ package com.airbnb.spinaltap.mysql.schema;
 
 import com.airbnb.spinaltap.mysql.MysqlSourceMetrics;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import java.util.List;
@@ -75,7 +74,6 @@ public class MysqlSchemaDatabase {
               "Failed to apply DDL Statement to source: %s database: %s. (SQL: %s. Exception: %s)",
               source, database, ddl, ex));
       metrics.schemaDatabaseApplyDDLFailure(database, ex);
-      Throwables.throwIfUnchecked(ex);
       throw new RuntimeException(ex);
     }
   }
@@ -98,7 +96,6 @@ public class MysqlSchemaDatabase {
           String.format(
               "Failed to create database %s (Exception: %s)",
               getSchemaDatabaseName(source, database), ex));
-      Throwables.throwIfUnchecked(ex);
       throw new RuntimeException(ex);
     }
   }
@@ -123,7 +120,6 @@ public class MysqlSchemaDatabase {
           });
     } catch (Exception ex) {
       log.error(String.format("Failed to drop database %s. (Exception: %s)", database, ex));
-      Throwables.throwIfUnchecked(ex);
       throw new RuntimeException(ex);
     }
   }
@@ -142,7 +138,6 @@ public class MysqlSchemaDatabase {
                       .list());
     } catch (Exception ex) {
       log.error(String.format("Failed to fetch schema for database: %s", database), ex);
-      Throwables.throwIfUnchecked(ex);
       throw new RuntimeException(ex);
     }
     Map<String, MysqlTableSchema> allTableSchemaMap = Maps.newHashMap();
@@ -177,7 +172,6 @@ public class MysqlSchemaDatabase {
       return MysqlSchemaUtil.createTableSchema(source, database, table, "", columnInfoList);
     } catch (Exception ex) {
       log.error(String.format("Failed to fetch schema for table %s, db %s", table, database), ex);
-      Throwables.throwIfUnchecked(ex);
       throw new RuntimeException(ex);
     }
   }
@@ -197,7 +191,6 @@ public class MysqlSchemaDatabase {
     } catch (Exception ex) {
       log.error(
           String.format("Failed to list databases for source: %s (Exception: %s)", source, ex));
-      Throwables.throwIfUnchecked(ex);
       throw new RuntimeException(ex);
     }
   }

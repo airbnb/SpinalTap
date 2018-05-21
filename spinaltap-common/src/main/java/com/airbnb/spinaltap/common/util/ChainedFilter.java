@@ -6,21 +6,36 @@ package com.airbnb.spinaltap.common.util;
 
 import java.util.ArrayList;
 import java.util.List;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
+/**
+ * Represents a chain of {@link Filter}s, where all {@link Filter} conditions need to pass.
+ *
+ * @param <T> the filtered object type.
+ */
 @RequiredArgsConstructor
 public class ChainedFilter<T> implements Filter<T> {
-  private final List<Filter<T>> filters;
+  @NonNull private final List<Filter<T>> filters;
 
   public static <T> Builder<T> builder() {
     return new Builder<>();
   }
 
-  public boolean apply(T object) {
+  /**
+   * Applies the filters on the object.
+   *
+   * @param object the object to filter.
+   * @return {@code true} if all filter conditions pass, {@code false} otherwise.
+   */
+  public boolean apply(final T object) {
     return filters.stream().allMatch(filter -> filter.apply(object));
   }
 
-  public static class Builder<T> {
+  @NoArgsConstructor(access = AccessLevel.PRIVATE)
+  public static final class Builder<T> {
     private final List<Filter<T>> filters = new ArrayList<>();
 
     public Builder<T> addFilter(Filter<T> filter) {

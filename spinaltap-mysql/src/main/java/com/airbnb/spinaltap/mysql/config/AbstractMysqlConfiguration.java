@@ -6,18 +6,21 @@ package com.airbnb.spinaltap.mysql.config;
 
 import com.airbnb.spinaltap.common.config.DestinationConfiguration;
 import com.airbnb.spinaltap.common.config.SourceConfiguration;
+import com.airbnb.spinaltap.mysql.MysqlSource;
 import java.util.List;
+import lombok.NonNull;
 
+/** Represents the base configuration for a {@link MysqlSource}. */
 public abstract class AbstractMysqlConfiguration extends SourceConfiguration {
   public AbstractMysqlConfiguration(
-      String name,
-      String type,
-      String instanceTag,
-      DestinationConfiguration destinationConfiguration) {
+      @NonNull final String name,
+      final String type,
+      final String instanceTag,
+      @NonNull final DestinationConfiguration destinationConfiguration) {
     super(name, type, instanceTag, destinationConfiguration);
   }
 
-  public AbstractMysqlConfiguration(String type, String instanceTag) {
+  public AbstractMysqlConfiguration(final String type, final String instanceTag) {
     super(type, instanceTag);
   }
 

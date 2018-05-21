@@ -16,53 +16,76 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
+import javax.validation.constraints.Min;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-/** Caches table schema and information used during transformation of mysql events to Mutations. */
+/**
+ * Represents an in-memory cache for storing table schema and metadata used during the
+ * transformation of MySQL binlog events to {@link com.airbnb.spinaltap.Mutation}s.
+ */
 @Slf4j
 @RequiredArgsConstructor
 public class TableCache {
-  private final SchemaStore<MysqlTableSchema> schemaStore;
+  @NonNull private final SchemaStore<MysqlTableSchema> schemaStore;
   private final Cache<Long, Table> tableCache = CacheBuilder.newBuilder().maximumSize(200).build();
 
-  /** Gets the cached table entry for table ID, returns {@code null} if not present */
-  public Table get(long tableId) {
+  /**
+   * @return the {@link Table} cache entry for the given table id if present, otherwise {@code null}
+   */
+  public Table get(@Min(0) final long tableId) {
     return tableCache.getIfPresent(tableId);
   }
 
-  public boolean contains(long tableId) {
+  /**
+   * @return {@code True} if a cache entry exists for the given table id, otherwise {@code False}.
+   */
+  public boolean contains(@Min(0) final long tableId) {
     return tableCache.getIfPresent(tableId) != null;
   }
 
+  /**
+   * Adds or replaces (if already exists) a {@link Table} entry in the cache for the given table id.
+   *
+   * @param tableId The table id
+   * @param tableName The table name
+   * @param database The database name
+   * @param binlogFilePos The binlog file position
+   * @param columnTypes The list of columnd data types
+   */
   public void addOrUpdate(
-      long tableId,
-      String tableName,
-      String database,
-      BinlogFilePos binlogFilePos,
-      List<ColumnDataType> columnTypes)
+      @Min(0) final long tableId,
+      @NonNull final String tableName,
+      @NonNull final String database,
+      @NonNull final BinlogFilePos binlogFilePos,
+      @NonNull final List<ColumnDataType> columnTypes)
       throws Exception {
-    Table table = tableCache.getIfPresent(tableId);
+    final Table table = tableCache.getIfPresent(tableId);
 
     if (table == null || !validTable(table, tableName, database, columnTypes)) {
-      table = fetchTable(tableId, database, tableName, binlogFilePos, columnTypes);
-      tableCache.put(tableId, table);
+      tableCache.put(tableId, fetchTable(tableId, database, tableName, binlogFilePos, columnTypes));
     }
   }
 
-  /** Clear the cache */
+  /** Clears the cache by invalidating all entries. */
   public void clear() {
     tableCache.invalidateAll();
   }
 
+  /** Checks whether the table representation is valid */
   private boolean validTable(
-      Table table, String tableName, String databaseName, List<ColumnDataType> columnTypes) {
+      final Table table,
+      final String tableName,
+      final String databaseName,
+      final List<ColumnDataType> columnTypes) {
     return table.getName().equals(tableName)
         && table.getDatabase().equals(databaseName)
         && columnsMatch(table, columnTypes);
   }
 
-  private boolean columnsMatch(Table table, List<ColumnDataType> columnTypes) {
+  /** Checks whether the {@link Table} schema matches the given column schema. */
+  private boolean columnsMatch(final Table table, final List<ColumnDataType> columnTypes) {
     return table
         .getColumns()
         .values()
@@ -73,15 +96,15 @@ public class TableCache {
   }
 
   private Table fetchTable(
-      long tableId,
-      String databaseName,
-      String tableName,
-      BinlogFilePos binlogFilePos,
-      List<ColumnDataType> columnTypes)
+      final long tableId,
+      final String databaseName,
+      final String tableName,
+      final BinlogFilePos binlogFilePos,
+      final List<ColumnDataType> columnTypes)
       throws Exception {
-    List<ColumnInfo> tableSchema =
+    final List<ColumnInfo> tableSchema =
         schemaStore.query(databaseName, tableName, binlogFilePos).getColumnInfo();
-    Iterator<ColumnInfo> schemaIterator = tableSchema.iterator();
+    final Iterator<ColumnInfo> schemaIterator = tableSchema.iterator();
 
     if (tableSchema.size() != columnTypes.size()) {
       log.error(
@@ -90,7 +113,7 @@ public class TableCache {
           columnTypes.size());
     }
 
-    List<ColumnMetadata> columnMetadata = new ArrayList<>();
+    final List<ColumnMetadata> columnMetadata = new ArrayList<>();
     for (int position = 0; position < columnTypes.size() && schemaIterator.hasNext(); position++) {
       ColumnInfo colInfo = schemaIterator.next();
       columnMetadata.add(
@@ -98,7 +121,7 @@ public class TableCache {
               colInfo.getName(), columnTypes.get(position), colInfo.isPrimaryKey(), position));
     }
 
-    List<String> primaryColumns =
+    final List<String> primaryColumns =
         tableSchema
             .stream()
             .filter(ColumnInfo::isPrimaryKey)

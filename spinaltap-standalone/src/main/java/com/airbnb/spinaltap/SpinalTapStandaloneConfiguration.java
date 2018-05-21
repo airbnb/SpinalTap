@@ -11,15 +11,10 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 import javax.validation.constraints.NotNull;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.Data;
 
-@Getter
-@Setter
-@ToString
-@EqualsAndHashCode
+/** Represents the {@link SpinalTapStandaloneApp} configuration. */
+@Data
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class SpinalTapStandaloneConfiguration {
   public static final int DEFAULT_MYSQL_SERVER_ID = 65535;
@@ -36,6 +31,16 @@ public class SpinalTapStandaloneConfiguration {
   @JsonProperty("kafka-config")
   private KafkaProducerConfiguration kafkaProducerConfig;
 
+  /**
+   * Note: The user should have following grants on the source databases:
+   *
+   * <ul>
+   *   <li>SELECT
+   *   <li>REPLICATION SLAVE
+   *   <li>REPLICATION CLIENT
+   *   <li>SHOW VIEW
+   * </ul>
+   */
   @NotNull
   @JsonProperty("mysql-user")
   private String mysqlUser;

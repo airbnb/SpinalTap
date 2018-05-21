@@ -13,12 +13,18 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Represents a {@link com.airbnb.spinaltap.common.util.Mapper} that keeps track of {@link
+ * QueryEvent}s. This is used to detect schema changes from DDL statements, and mark BEGIN
+ * statements.
+ */
 @Slf4j
 @RequiredArgsConstructor
-class QueryMapper implements Mapper<QueryEvent, List<MysqlMutation>> {
+final class QueryMapper implements Mapper<QueryEvent, List<MysqlMutation>> {
   private static final String BEGIN_STATEMENT = "BEGIN";
   private static final Pattern TABLE_DDL_SQL_PATTERN =
       Pattern.compile("^(ALTER|CREATE|DROP|RENAME)\\s+TABLE", Pattern.CASE_INSENSITIVE);
@@ -31,7 +37,7 @@ class QueryMapper implements Mapper<QueryEvent, List<MysqlMutation>> {
   private final AtomicReference<Transaction> beginTransaction;
   private final SchemaTracker schemaTracker;
 
-  public List<MysqlMutation> map(QueryEvent event) {
+  public List<MysqlMutation> map(@NonNull final QueryEvent event) {
     if (isTransactionBegin(event)) {
       beginTransaction.set(
           new Transaction(event.getTimestamp(), event.getOffset(), event.getBinlogFilePos()));
@@ -44,12 +50,12 @@ class QueryMapper implements Mapper<QueryEvent, List<MysqlMutation>> {
     return Collections.emptyList();
   }
 
-  private boolean isTransactionBegin(QueryEvent event) {
+  private boolean isTransactionBegin(final QueryEvent event) {
     return event.getSql().equals(BEGIN_STATEMENT);
   }
 
-  private boolean isDDLStatement(QueryEvent event) {
-    String sql = event.getSql();
+  private boolean isDDLStatement(final QueryEvent event) {
+    final String sql = event.getSql();
     return TABLE_DDL_SQL_PATTERN.matcher(sql).find()
         || INDEX_DDL_SQL_PATTERN.matcher(sql).find()
         || DATABASE_DDL_SQL_PATTERN.matcher(sql).find();

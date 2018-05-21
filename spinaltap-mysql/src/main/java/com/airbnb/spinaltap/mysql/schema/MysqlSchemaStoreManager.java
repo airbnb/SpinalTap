@@ -8,6 +8,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
 import java.util.Set;
 import javax.validation.constraints.NotNull;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -16,10 +17,11 @@ import lombok.extern.slf4j.Slf4j;
 public class MysqlSchemaStoreManager implements SchemaStoreBootstrapper, SchemaStoreArchiver {
   private static final Set<String> SYSTEM_DATABASES =
       ImmutableSet.of("mysql", "information_schema", "performance_schema");
-  private final String source;
-  private final LatestMysqlSchemaStore schemaReader;
-  private final MysqlSchemaStore schemaStore;
-  private final MysqlSchemaDatabase schemaDatabase;
+
+  @NonNull private final String source;
+  @NonNull private final LatestMysqlSchemaStore schemaReader;
+  @NonNull private final MysqlSchemaStore schemaStore;
+  @NonNull private final MysqlSchemaDatabase schemaDatabase;
 
   public void bootstrap(@NotNull final String database) {
     Preconditions.checkState(

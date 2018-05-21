@@ -23,9 +23,11 @@ public class MysqlMutationMetadata extends Mutation.Metadata {
   private final long serverId;
   private final Transaction beginTransaction;
   private final Transaction lastTransaction;
+
+  /** The leader epoch of the node resource processing the event. */
   private final long leaderEpoch;
 
-  /** The mutation row position in the binlog event */
+  /** The mutation row position in the given binlog event. */
   private final int eventRowPosition;
 
   public MysqlMutationMetadata(

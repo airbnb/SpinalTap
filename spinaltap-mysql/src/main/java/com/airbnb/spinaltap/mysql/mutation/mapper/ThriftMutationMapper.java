@@ -19,23 +19,31 @@ import com.airbnb.spinaltap.mysql.mutation.schema.Row;
 import com.google.common.collect.ImmutableMap;
 import java.nio.ByteBuffer;
 import java.util.Map;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
+/**
+ * Base {@link Mapper} implement that maps a {@link MysqlMutation} to its corresponding thrift
+ * {@link Mutation} form.
+ *
+ * @param <T> The {@link MysqlMutation} type.
+ */
 @RequiredArgsConstructor
 public abstract class ThriftMutationMapper<T extends MysqlMutation>
     implements Mapper<T, com.airbnb.jitney.event.spinaltap.v1.Mutation> {
   protected final String sourceId;
 
-  public static Mapper<com.airbnb.spinaltap.Mutation<?>, Mutation> create(String sourceId) {
-    return new ClassBasedMapper.Builder<com.airbnb.spinaltap.Mutation<?>, Mutation>()
+  public static Mapper<com.airbnb.spinaltap.Mutation<?>, Mutation> create(final String sourceId) {
+    return ClassBasedMapper.<com.airbnb.spinaltap.Mutation<?>, Mutation>builder()
         .addMapper(MysqlInsertMutation.class, new InsertMutationMapper(sourceId))
         .addMapper(MysqlUpdateMutation.class, new UpdateMutationMapper(sourceId))
         .addMapper(MysqlDeleteMutation.class, new DeleteMutationMapper(sourceId))
         .build();
   }
 
-  protected static BinlogHeader createBinlogHeader(MysqlMutationMetadata metadata, byte typeCode) {
-    BinlogHeader header =
+  protected static BinlogHeader createBinlogHeader(
+      @NonNull final MysqlMutationMetadata metadata, final byte typeCode) {
+    final BinlogHeader header =
         new BinlogHeader(
             metadata.getFilePos().toString(),
             metadata.getServerId(),
@@ -54,8 +62,9 @@ public abstract class ThriftMutationMapper<T extends MysqlMutation>
     return header;
   }
 
-  protected static Map<String, ByteBuffer> transformToEntity(Row row) {
-    ImmutableMap.Builder<String, ByteBuffer> builder = ImmutableMap.builder();
+  protected static Map<String, ByteBuffer> transformToEntity(@NonNull final Row row) {
+    final ImmutableMap.Builder<String, ByteBuffer> builder = ImmutableMap.builder();
+
     for (Column column : row.getColumns().values()) {
       builder.put(
           column.getMetadata().getName(),

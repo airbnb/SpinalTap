@@ -5,22 +5,20 @@
 package com.airbnb.spinaltap.common.util;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.joda.JodaModule;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.apache.curator.framework.CuratorFramework;
 
+/**
+ * {@link Repository} implement with Zookeeper as backing store for objects.
+ *
+ * @param <T> the object type.
+ */
 @RequiredArgsConstructor
 public class ZookeeperRepository<T> implements Repository<T> {
-  private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
-
-  private final CuratorFramework zkClient;
-  private final String path;
-  private final TypeReference<? extends T> propertyClass;
-
-  static {
-    OBJECT_MAPPER.registerModule(new JodaModule());
-  }
+  @NonNull private final CuratorFramework zkClient;
+  @NonNull private final String path;
+  @NonNull private final TypeReference<? extends T> propertyClass;
 
   @Override
   public boolean exists() throws Exception {
@@ -32,12 +30,12 @@ public class ZookeeperRepository<T> implements Repository<T> {
     zkClient
         .create()
         .creatingParentsIfNeeded()
-        .forPath(path, OBJECT_MAPPER.writeValueAsBytes(data));
+        .forPath(path, JsonUtil.OBJECT_MAPPER.writeValueAsBytes(data));
   }
 
   @Override
   public void set(T data) throws Exception {
-    zkClient.setData().forPath(path, OBJECT_MAPPER.writeValueAsBytes(data));
+    zkClient.setData().forPath(path, JsonUtil.OBJECT_MAPPER.writeValueAsBytes(data));
   }
 
   @Override
@@ -52,6 +50,6 @@ public class ZookeeperRepository<T> implements Repository<T> {
   @Override
   public T get() throws Exception {
     byte[] value = zkClient.getData().forPath(path);
-    return OBJECT_MAPPER.readValue(value, propertyClass);
+    return JsonUtil.OBJECT_MAPPER.readValue(value, propertyClass);
   }
 }

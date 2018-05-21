@@ -4,8 +4,10 @@
  */
 package com.airbnb.spinaltap.mysql;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
 
 import com.airbnb.spinaltap.common.source.SourceState;
 import com.airbnb.spinaltap.common.util.Repository;
@@ -117,7 +119,7 @@ public class StateHistoryTest {
   public class TestRepository implements Repository<Collection<SourceState>> {
     private List<SourceState> states;
 
-    public TestRepository(SourceState... states) {
+    TestRepository(SourceState... states) {
       this(Arrays.asList(states));
     }
 

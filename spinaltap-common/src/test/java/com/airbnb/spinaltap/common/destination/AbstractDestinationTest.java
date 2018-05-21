@@ -17,7 +17,6 @@ import com.airbnb.spinaltap.Mutation;
 import com.airbnb.spinaltap.common.exception.DestinationException;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
 import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
@@ -28,7 +27,14 @@ public class AbstractDestinationTest {
   private final Destination.Listener listener = mock(Destination.Listener.class);
   private final DestinationMetrics metrics = mock(DestinationMetrics.class);
 
-  TestDestination destination;
+  private final Mutation<?> firstMutation = mock(Mutation.class);
+  private final Mutation<?> secondMutation = mock(Mutation.class);
+  private final Mutation<?> thirdMutation = mock(Mutation.class);
+
+  private final List<Mutation<?>> mutations =
+      ImmutableList.of(firstMutation, secondMutation, thirdMutation);
+
+  private TestDestination destination;
 
   @Before
   public void setUp() throws Exception {
@@ -38,29 +44,24 @@ public class AbstractDestinationTest {
 
   @Test
   public void testSend() throws Exception {
-    Mutation<?> firstMutation = mock(Mutation.class);
-    Mutation<?> secondMutation = mock(Mutation.class);
-    Mutation<?> thirdMutation = mock(Mutation.class);
     Mutation.Metadata metadata = mock(Mutation.Metadata.class);
     when(firstMutation.getMetadata()).thenReturn(metadata);
     when(secondMutation.getMetadata()).thenReturn(metadata);
     when(thirdMutation.getMetadata()).thenReturn(metadata);
     when(metadata.getTimestamp()).thenReturn(0L);
 
-    List<Mutation<?>> mutations = ImmutableList.of(firstMutation, secondMutation, thirdMutation);
-
     destination.send(mutations);
 
     assertEquals(3, destination.getPublishedMutations());
     assertEquals(thirdMutation, destination.getLastPublishedMutation());
 
-    verify(metrics, times(1)).publishSucceeded(mutations);
-    verify(listener, times(1)).onSend(mutations);
+    verify(metrics).publishSucceeded(mutations);
+    verify(listener).onSend(mutations);
   }
 
   @Test
   public void testSendEmptyMutationList() throws Exception {
-    destination.send(Lists.newArrayList());
+    destination.send(ImmutableList.of());
 
     assertEquals(0, destination.getPublishedMutations());
     assertNull(destination.getLastPublishedMutation());
@@ -69,15 +70,14 @@ public class AbstractDestinationTest {
 
   @Test(expected = DestinationException.class)
   public void testSendFailure() throws Exception {
-    Mutation<?> mutation = mock(Mutation.class);
     Mutation.Metadata metadata = mock(Mutation.Metadata.class);
-    when(mutation.getMetadata()).thenReturn(metadata);
+    when(firstMutation.getMetadata()).thenReturn(metadata);
     when(metadata.getTimestamp()).thenReturn(0L);
 
     destination.setFailPublish(true);
 
     try {
-      destination.send(ImmutableList.of(mutation, mutation));
+      destination.send(ImmutableList.of(firstMutation, secondMutation));
     } catch (Exception ex) {
       assertNull(destination.getLastPublishedMutation());
       verify(metrics, times(2)).publishFailed(any(Mutation.class), any(RuntimeException.class));
@@ -88,14 +88,13 @@ public class AbstractDestinationTest {
 
   @Test
   public void testOpen() throws Exception {
-    Mutation<?> mutation = mock(Mutation.class);
     Mutation.Metadata metadata = mock(Mutation.Metadata.class);
-    when(mutation.getMetadata()).thenReturn(metadata);
+    when(firstMutation.getMetadata()).thenReturn(metadata);
     when(metadata.getTimestamp()).thenReturn(0L);
 
-    destination.send(ImmutableList.of(mutation));
+    destination.send(ImmutableList.of(firstMutation));
 
-    assertEquals(mutation, destination.getLastPublishedMutation());
+    assertEquals(firstMutation, destination.getLastPublishedMutation());
 
     destination.open();
 
@@ -118,12 +117,12 @@ public class AbstractDestinationTest {
 
     @VisibleForTesting
     @Override
-    public void publish(List<Mutation<?>> mutations) {
+    public void publish(List<Mutation<?>> MUTATIONS) {
       if (failPublish) {
         throw new RuntimeException();
       }
 
-      publishedMutations += mutations.size();
+      publishedMutations += MUTATIONS.size();
     }
   }
 }

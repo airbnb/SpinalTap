@@ -8,18 +8,28 @@ import com.airbnb.spinaltap.common.util.Mapper;
 import com.airbnb.spinaltap.mysql.TableCache;
 import com.airbnb.spinaltap.mysql.event.TableMapEvent;
 import com.airbnb.spinaltap.mysql.mutation.MysqlMutation;
-import com.google.common.base.Throwables;
 import java.util.Collections;
 import java.util.List;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Represents a {@link com.airbnb.spinaltap.common.util.Mapper} that keeps track of {@link
+ * com.airbnb.spinaltap.mysql.mutation.schema.Table} information from {@link TableMapEvent}s, which
+ * will be appended as metadata to streamed {@link MysqlMutation}s.
+ */
 @Slf4j
 @RequiredArgsConstructor
-class TableMapMapper implements Mapper<TableMapEvent, List<MysqlMutation>> {
-  private final TableCache tableCache;
+final class TableMapMapper implements Mapper<TableMapEvent, List<MysqlMutation>> {
+  @NonNull private final TableCache tableCache;
 
-  public List<MysqlMutation> map(TableMapEvent event) {
+  /**
+   * Updates the {@link TableCache} with {@link com.airbnb.spinaltap.mysql.mutation.schema.Table}
+   * information corresponding to the {@link TableMapEvent}. To maintain consistency, any errors
+   * will be propagated if the cache update fails.
+   */
+  public List<MysqlMutation> map(@NonNull final TableMapEvent event) {
     try {
       tableCache.addOrUpdate(
           event.getTableId(),
@@ -29,7 +39,6 @@ class TableMapMapper implements Mapper<TableMapEvent, List<MysqlMutation>> {
           event.getColumnTypes());
     } catch (Exception ex) {
       log.error("Failed to process table map event: " + event, ex);
-      Throwables.throwIfUnchecked(ex);
       throw new RuntimeException(ex);
     }
 

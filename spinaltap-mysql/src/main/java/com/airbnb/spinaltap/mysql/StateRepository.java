@@ -6,19 +6,20 @@ package com.airbnb.spinaltap.mysql;
 
 import com.airbnb.spinaltap.common.source.SourceState;
 import com.airbnb.spinaltap.common.util.Repository;
-import com.google.common.base.Throwables;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+/** Represents a repository for a {@link SourceState} record. */
 @Slf4j
 @RequiredArgsConstructor
 public class StateRepository {
-  private final String sourceName;
-  private final Repository<SourceState> repository;
-  private final MysqlSourceMetrics metrics;
+  @NonNull private final String sourceName;
+  @NonNull private final Repository<SourceState> repository;
+  @NonNull private final MysqlSourceMetrics metrics;
 
-  /** Saves the source state to the repository. Creates a new entry if one does not exist */
-  public void save(SourceState state) {
+  /** Saves or updates the {@link SourceState} record in the repository */
+  public void save(@NonNull final SourceState state) {
     try {
       repository.update(
           state,
@@ -33,7 +34,6 @@ public class StateRepository {
     } catch (Exception ex) {
       log.error("Failed to save state for source " + sourceName, ex);
       metrics.stateSaveFailure(ex);
-      Throwables.throwIfUnchecked(ex);
       throw new RuntimeException(ex);
     }
 
@@ -41,7 +41,7 @@ public class StateRepository {
     metrics.stateSave();
   }
 
-  /** Reads the source state from the repository. Returns a new state if one does not exist */
+  /** @return the {@link SourceState} record present in the repository. */
   public SourceState read() {
     SourceState state = null;
 
@@ -54,7 +54,6 @@ public class StateRepository {
     } catch (Exception ex) {
       log.error("Failed to read state for source " + sourceName, ex);
       metrics.stateReadFailure(ex);
-      Throwables.throwIfUnchecked(ex);
       throw new RuntimeException(ex);
     }
 

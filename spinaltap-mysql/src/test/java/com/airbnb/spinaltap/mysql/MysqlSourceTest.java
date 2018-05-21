@@ -4,11 +4,18 @@
  */
 package com.airbnb.spinaltap.mysql;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import com.airbnb.spinaltap.common.source.SourceState;
 import com.airbnb.spinaltap.common.util.Repository;
+import com.airbnb.spinaltap.mysql.binlog_connector.BinaryLogConnectorSource;
 import com.airbnb.spinaltap.mysql.exception.InvalidBinlogPositionException;
 import com.airbnb.spinaltap.mysql.mutation.MysqlInsertMutation;
 import com.airbnb.spinaltap.mysql.mutation.MysqlMutation;
@@ -25,7 +32,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import lombok.Getter;
 import org.junit.Test;
 
-public class AbstractMysqlSourceTest {
+public class MysqlSourceTest {
   private static final String SOURCE_NAME = "test";
   private static final DataSource DATA_SOURCE = new DataSource("test_host", 1, "test");
   private static final Set<String> TABLE_NAMES =
@@ -38,7 +45,7 @@ public class AbstractMysqlSourceTest {
   private final TableCache tableCache = mock(TableCache.class);
   private final MysqlSourceMetrics mysqlMetrics = mock(MysqlSourceMetrics.class);
   private final StateRepository stateRepository = mock(StateRepository.class);
-  private final AbstractMysqlSource.Listener listener = mock(AbstractMysqlSource.Listener.class);
+  private final MysqlSource.Listener listener = mock(MysqlSource.Listener.class);
   private final SchemaTracker schemaTracker = mock(MysqlSchemaTracker.class);
 
   @Test
@@ -95,17 +102,16 @@ public class AbstractMysqlSourceTest {
 
     assertEquals(0L, state.getLastOffset());
     assertEquals(0L, state.getLastTimestamp());
-    assertEquals(AbstractMysqlSource.LATEST_BINLOG_POS, state.getLastPosition());
+    assertEquals(MysqlSource.LATEST_BINLOG_POS, state.getLastPosition());
   }
 
   @Test
   public void testResetToLastValidState() throws Exception {
-    StateHistory stateHistory = new TestStateHistory();
+    StateHistory stateHistory = createTestStateHistory();
     TestSource source = new TestSource(stateHistory);
 
     SourceState savedState = mock(SourceState.class);
-    SourceState earliestState =
-        new SourceState(0L, 0L, 0L, AbstractMysqlSource.EARLIEST_BINLOG_POS);
+    SourceState earliestState = new SourceState(0L, 0L, 0L, MysqlSource.EARLIEST_BINLOG_POS);
 
     when(stateRepository.read()).thenReturn(savedState);
 
@@ -170,13 +176,12 @@ public class AbstractMysqlSourceTest {
 
     source.onCommunicationError(new InvalidBinlogPositionException(""));
     assertEquals(
-        AbstractMysqlSource.EARLIEST_BINLOG_POS,
-        source.getLastSavedState().get().getLastPosition());
+        MysqlSource.EARLIEST_BINLOG_POS, source.getLastSavedState().get().getLastPosition());
   }
 
   @Test
   public void testCommitCheckpoint() throws Exception {
-    StateHistory stateHistory = new TestStateHistory();
+    StateHistory stateHistory = createTestStateHistory();
     TestSource source = new TestSource(stateHistory);
 
     Row row = new Row(null, ImmutableMap.of());
@@ -208,16 +213,20 @@ public class AbstractMysqlSourceTest {
     assertEquals(stateHistory.removeLast(), source.getLastSavedState().get());
   }
 
+  private StateHistory createTestStateHistory() {
+    return new StateHistory("", 10, mock(Repository.class), mysqlMetrics);
+  }
+
   @Getter
-  class TestSource extends AbstractMysqlSource {
+  class TestSource extends MysqlSource {
     private boolean isConnected;
     private BinlogFilePos position;
 
-    public TestSource() {
-      this(new TestStateHistory());
+    TestSource() {
+      this(createTestStateHistory());
     }
 
-    public TestSource(StateHistory stateHistory) {
+    TestSource(StateHistory stateHistory) {
       super(
           SOURCE_NAME,
           DATA_SOURCE,
@@ -225,7 +234,7 @@ public class AbstractMysqlSourceTest {
           tableCache,
           stateRepository,
           stateHistory,
-          MysqlSource.LATEST_BINLOG_POS,
+          BinaryLogConnectorSource.LATEST_BINLOG_POS,
           schemaTracker,
           mysqlMetrics,
           new AtomicLong(0L),
@@ -247,13 +256,6 @@ public class AbstractMysqlSourceTest {
 
     public boolean isConnected() {
       return isConnected;
-    }
-  }
-
-  class TestStateHistory extends StateHistory {
-    @SuppressWarnings("unchecked")
-    public TestStateHistory() {
-      super("", 10, mock(Repository.class), mysqlMetrics);
     }
   }
 }

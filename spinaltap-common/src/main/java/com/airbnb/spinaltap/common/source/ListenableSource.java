@@ -7,21 +7,27 @@ package com.airbnb.spinaltap.common.source;
 import com.airbnb.spinaltap.Mutation;
 import java.util.ArrayList;
 import java.util.List;
+import lombok.NonNull;
 
+/**
+ * Base {@link Source} implement using <a
+ * href="https://en.wikipedia.org/wiki/Observer_pattern">observer pattern</a> to allow listening to
+ * streamed events and subscribe to lifecycle change notifications.
+ */
 abstract class ListenableSource<E extends SourceEvent> implements Source {
   private final List<Listener> listeners = new ArrayList<>();
 
   @Override
-  public void addListener(Listener listener) {
+  public void addListener(@NonNull final Listener listener) {
     listeners.add(listener);
   }
 
   @Override
-  public void removeListener(Listener listener) {
+  public void removeListener(@NonNull final Listener listener) {
     listeners.remove(listener);
   }
 
-  protected void notifyMutations(List<? extends Mutation<?>> mutations) {
+  protected void notifyMutations(final List<? extends Mutation<?>> mutations) {
     if (!mutations.isEmpty()) {
       listeners.forEach(listener -> listener.onMutation(mutations));
     }

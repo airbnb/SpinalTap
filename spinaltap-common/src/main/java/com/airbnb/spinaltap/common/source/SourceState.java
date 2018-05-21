@@ -13,6 +13,14 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
+/**
+ * Represents the state of a {@link Source}, based on the last {@link SourceEvent} streamed. This is
+ * used to mark the checkpoint for the {@link Source}, which will help indicate what position to
+ * point to in the changelog on restart.
+ *
+ * <p>At the moment, the implement is coupled to binlog event state and therefore confined to {@code
+ * MysqlSource} usage.
+ */
 @Getter
 @ToString
 @EqualsAndHashCode
@@ -20,8 +28,22 @@ import lombok.ToString;
 @AllArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class SourceState {
+  /** The timestamp of the last streamed {@link SourceEvent} in the changelog. */
   @JsonProperty private long lastTimestamp;
+
+  /** The offset of the last streamed {@link SourceEvent} in the changelog. */
   @JsonProperty private long lastOffset;
+
+  /**
+   * The leader epoch for the {@code Source}. The epoch acts as a high watermark, and is typically
+   * incremented on leader election.
+   *
+   * <p>Note: This is only applicable if a cluster solution is employed. It is is used to mitigate
+   * network partition (split brain) scenarios, and avoid having two cluster nodes concurrently
+   * streaming from the same {@link Source}.
+   */
   @JsonProperty private long currentLeaderEpoch;
+
+  /** The {@link BinlogFilePos} of the last streamed {@link SourceEvent} in the changelog. */
   @JsonProperty private BinlogFilePos lastPosition;
 }
