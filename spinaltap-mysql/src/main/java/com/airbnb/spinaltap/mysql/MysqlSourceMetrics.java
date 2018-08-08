@@ -42,6 +42,16 @@ public class MysqlSourceMetrics extends SourceMetrics {
   private static final String SCHEMA_DATABASE_APPLY_DDL_FAILURE_METRIC =
       MYSQL_PREFIX + ".schema_database.apply.ddl.failure.count";
 
+  private static final String DDL_HISTORY_STORE_GET_SUCCESS_METRIC =
+      MYSQL_PREFIX + ".ddl_history_store.get.success.count";
+  private static final String DDL_HISTORY_STORE_GET_FAILURE_METRIC =
+      MYSQL_PREFIX + ".ddl_history_store.get.failure.count";
+
+  private static final String DDL_HISTORY_STORE_PUT_SUCCESS_METRIC =
+      MYSQL_PREFIX + ".ddl_history_store.put.success.count";
+  private static final String DDL_HISTORY_STORE_PUT_FAILURE_METRIC =
+      MYSQL_PREFIX + ".ddl_history_store.put.failure.count";
+
   private static final String INVALID_SCHEMA_METRIC = MYSQL_PREFIX + ".table.invalid_schema.count";
   private static final String BINLOG_FILE_START_METRIC = MYSQL_PREFIX + ".binlog_file.start.count";
 
@@ -117,6 +127,22 @@ public class MysqlSourceMetrics extends SourceMetrics {
         SCHEMA_DATABASE_APPLY_DDL_FAILURE_METRIC,
         error,
         ImmutableMap.of(DATABASE_NAME_TAG, database));
+  }
+
+  public void ddlHistoryStorePutSuccess() {
+    inc(DDL_HISTORY_STORE_PUT_SUCCESS_METRIC);
+  }
+
+  public void ddlHistoryStorePutFailure(final Throwable error) {
+    incError(DDL_HISTORY_STORE_PUT_FAILURE_METRIC, error);
+  }
+
+  public void ddlHistoryStoreGetSuccess() {
+    inc(DDL_HISTORY_STORE_GET_SUCCESS_METRIC);
+  }
+
+  public void ddlHistoryStoreGetFailure(final Throwable error) {
+    incError(DDL_HISTORY_STORE_GET_FAILURE_METRIC, error);
   }
 
   public void invalidSchema(final Mutation<?> mutation) {

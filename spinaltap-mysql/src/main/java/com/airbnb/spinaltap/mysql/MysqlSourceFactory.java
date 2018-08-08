@@ -13,6 +13,7 @@ import com.airbnb.spinaltap.mysql.config.MysqlConfiguration;
 import com.airbnb.spinaltap.mysql.config.MysqlSchemaStoreConfiguration;
 import com.airbnb.spinaltap.mysql.schema.CachedMysqlSchemaStore;
 import com.airbnb.spinaltap.mysql.schema.LatestMysqlSchemaStore;
+import com.airbnb.spinaltap.mysql.schema.MysqlDDLHistoryStore;
 import com.airbnb.spinaltap.mysql.schema.MysqlSchemaDatabase;
 import com.airbnb.spinaltap.mysql.schema.MysqlSchemaStore;
 import com.airbnb.spinaltap.mysql.schema.MysqlSchemaStoreManager;
@@ -84,14 +85,26 @@ public class MysqlSourceFactory {
       final MysqlSchemaDatabase schemaDatabase =
           new MysqlSchemaDatabase(name, schemaDatabaseDBI, metrics);
 
+      final DBI ddlHistoryStoreDBI =
+          MysqlSchemaUtil.createMysqlDBI(
+              schemaStoreConfig.getHost(),
+              schemaStoreConfig.getPort(),
+              user,
+              password,
+              schemaStoreConfig.getDdlHistoryStoreDatabase());
+      final MysqlDDLHistoryStore ddlHistoryStore =
+          new MysqlDDLHistoryStore(
+              name, ddlHistoryStoreDBI, schemaStoreConfig.getArchiveDatabase(), metrics);
+
       if (!mysqlSchemaStore.isCreated()) {
         MysqlSchemaStoreManager schemaStoreManager =
-            new MysqlSchemaStoreManager(name, schemaReader, mysqlSchemaStore, schemaDatabase);
+            new MysqlSchemaStoreManager(
+                name, schemaReader, mysqlSchemaStore, schemaDatabase, ddlHistoryStore);
         schemaStoreManager.bootstrapAll();
       }
 
       schemaStore = new CachedMysqlSchemaStore(name, mysqlSchemaStore, metrics);
-      schemaTracker = new MysqlSchemaTracker(schemaStore, schemaDatabase);
+      schemaTracker = new MysqlSchemaTracker(schemaStore, schemaDatabase, ddlHistoryStore);
     } else {
       schemaStore = schemaReader;
       schemaTracker = (event) -> {};

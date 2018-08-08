@@ -22,6 +22,7 @@ public class MysqlSchemaStoreManager implements SchemaStoreBootstrapper, SchemaS
   @NonNull private final LatestMysqlSchemaStore schemaReader;
   @NonNull private final MysqlSchemaStore schemaStore;
   @NonNull private final MysqlSchemaDatabase schemaDatabase;
+  @NonNull private final MysqlDDLHistoryStore ddlHistoryStore;
 
   public void bootstrap(@NotNull final String database) {
     Preconditions.checkState(
@@ -51,6 +52,7 @@ public class MysqlSchemaStoreManager implements SchemaStoreBootstrapper, SchemaS
             "%s seems to be bootstrapped already. Please archive it first if you would like to bootstrap again.",
             source));
 
+    ddlHistoryStore.create();
     schemaStore.create();
     schemaReader.listAllDatabases().forEach(this::bootstrap);
   }
@@ -70,5 +72,6 @@ public class MysqlSchemaStoreManager implements SchemaStoreBootstrapper, SchemaS
     log.info("Archiving schema store for {}", source);
     schemaDatabase.dropDatabases();
     schemaStore.archive();
+    ddlHistoryStore.archive();
   }
 }

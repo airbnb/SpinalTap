@@ -46,12 +46,22 @@ public class MysqlSchemaStoreManagerFactory {
             mysqlPassword,
             null);
 
+    final DBI ddlHistoryStoreDBI =
+        MysqlSchemaUtil.createMysqlDBI(
+            schemaStoreConfiguration.getHost(),
+            schemaStoreConfiguration.getPort(),
+            mysqlUser,
+            mysqlPassword,
+            schemaStoreConfiguration.getDdlHistoryStoreDatabase());
+
     return new MysqlSchemaStoreManager(
         source,
         new LatestMysqlSchemaStore(source, schemaReaderDBI, metrics),
         new MysqlSchemaStore(
             source, schemaStoreDBI, schemaStoreConfiguration.getArchiveDatabase(), metrics),
-        new MysqlSchemaDatabase(source, schemaDatabaseDBI, metrics));
+        new MysqlSchemaDatabase(source, schemaDatabaseDBI, metrics),
+        new MysqlDDLHistoryStore(
+            source, ddlHistoryStoreDBI, schemaStoreConfiguration.getArchiveDatabase(), metrics));
   }
 
   public SchemaStoreArchiver createArchiver(
@@ -72,11 +82,21 @@ public class MysqlSchemaStoreManagerFactory {
             mysqlPassword,
             null);
 
+    final DBI ddlHistoryStoreDBI =
+        MysqlSchemaUtil.createMysqlDBI(
+            schemaStoreConfiguration.getHost(),
+            schemaStoreConfiguration.getPort(),
+            mysqlUser,
+            mysqlPassword,
+            schemaStoreConfiguration.getDdlHistoryStoreDatabase());
+
     return new MysqlSchemaStoreManager(
         source,
         null,
         new MysqlSchemaStore(
             source, schemaStoreDBI, schemaStoreConfiguration.getArchiveDatabase(), metrics),
-        new MysqlSchemaDatabase(source, schemaDatabaseDBI, metrics));
+        new MysqlSchemaDatabase(source, schemaDatabaseDBI, metrics),
+        new MysqlDDLHistoryStore(
+            source, ddlHistoryStoreDBI, schemaStoreConfiguration.getArchiveDatabase(), metrics));
   }
 }

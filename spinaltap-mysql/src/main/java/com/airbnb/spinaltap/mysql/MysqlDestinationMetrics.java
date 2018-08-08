@@ -18,7 +18,7 @@ import lombok.NonNull;
  * com.airbnb.spinaltap.common.destination.Destination} and associated components for a given {@link
  * MysqlSource}.
  */
-public final class MysqlDestinationMetrics extends DestinationMetrics {
+public class MysqlDestinationMetrics extends DestinationMetrics {
   private static final String DATABASE_NAME_TAG = "database_name";
   private static final String TABLE_NAME_TAG = "table_name";
 
