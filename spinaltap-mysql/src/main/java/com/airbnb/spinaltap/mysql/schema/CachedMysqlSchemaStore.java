@@ -17,6 +17,11 @@ import javax.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.skife.jdbi.v2.DBI;
 
+/**
+ * Represents a cached implementation of {@link com.airbnb.spinaltap.mysql.schema.SchemaStore}. This
+ * class acts as a proxy for {@link com.airbnb.spinaltap.mysql.schema.MysqlSchemaStore} and caches
+ * the schema information in memory
+ */
 @Slf4j
 public class CachedMysqlSchemaStore extends AbstractMysqlSchemaStore
     implements SchemaStore<MysqlTableSchema> {

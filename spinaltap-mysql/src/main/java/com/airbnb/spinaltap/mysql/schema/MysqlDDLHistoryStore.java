@@ -16,6 +16,7 @@ import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.Handle;
 import org.skife.jdbi.v2.util.StringColumnMapper;
 
+/** Represents a MySQL table to keep track of all processed DDL statements */
 @Slf4j
 @RequiredArgsConstructor
 public class MysqlDDLHistoryStore {

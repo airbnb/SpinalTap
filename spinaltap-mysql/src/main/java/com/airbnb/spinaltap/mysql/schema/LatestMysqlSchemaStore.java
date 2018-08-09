@@ -21,6 +21,10 @@ import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.Handle;
 import org.skife.jdbi.v2.util.StringColumnMapper;
 
+/**
+ * Represents the current(latest) snapshot of MySQL schema. Schema queries will hit MySQL
+ * information_schema.
+ */
 @Slf4j
 public class LatestMysqlSchemaStore extends AbstractMysqlSchemaStore
     implements SchemaStore<MysqlTableSchema> {

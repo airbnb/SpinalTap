@@ -12,6 +12,11 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Represents an implementation of {@link com.airbnb.spinaltap.mysql.schema.SchemaStoreBootstrapper}
+ * and {@link com.airbnb.spinaltap.mysql.schema.SchemaStoreArchiver} which bootstraps and archives
+ * schema stores.
+ */
 @Slf4j
 @RequiredArgsConstructor
 public class MysqlSchemaStoreManager implements SchemaStoreBootstrapper, SchemaStoreArchiver {

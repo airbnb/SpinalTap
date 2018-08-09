@@ -169,7 +169,8 @@ public class MysqlSchemaTrackerTest {
     when(schemaStore.getAll()).thenReturn(allTableSchemaInStore);
     when(schemaDatabase.fetchTableSchema(DATABASE_NAME)).thenReturn(tableSchemaMapInSchemaDatabase);
 
-    SchemaTracker schemaTracker = new MysqlSchemaTracker(schemaStore, schemaDatabase, ddlHistoryStore);
+    SchemaTracker schemaTracker =
+        new MysqlSchemaTracker(schemaStore, schemaDatabase, ddlHistoryStore);
 
     schemaTracker.processDDLStatement(queryEvent);
 
@@ -211,7 +212,8 @@ public class MysqlSchemaTrackerTest {
     when(schemaStore.getAll()).thenReturn(allTableSchemaInStore);
     when(schemaDatabase.fetchTableSchema(DATABASE_NAME)).thenReturn(tableSchemaMapInSchemaDatabase);
 
-    SchemaTracker schemaTracker = new MysqlSchemaTracker(schemaStore, schemaDatabase, ddlHistoryStore);
+    SchemaTracker schemaTracker =
+        new MysqlSchemaTracker(schemaStore, schemaDatabase, ddlHistoryStore);
 
     schemaTracker.processDDLStatement(queryEvent);
 
@@ -269,7 +271,8 @@ public class MysqlSchemaTrackerTest {
     when(schemaStore.getAll()).thenReturn(allTableSchemaInStore);
     when(schemaDatabase.fetchTableSchema(DATABASE_NAME)).thenReturn(tableSchemaMapInSchemaDatabase);
 
-    SchemaTracker schemaTracker = new MysqlSchemaTracker(schemaStore, schemaDatabase, ddlHistoryStore);
+    SchemaTracker schemaTracker =
+        new MysqlSchemaTracker(schemaStore, schemaDatabase, ddlHistoryStore);
 
     schemaTracker.processDDLStatement(queryEvent);
 
@@ -311,7 +314,8 @@ public class MysqlSchemaTrackerTest {
     when(schemaStore.getAll()).thenReturn(allTableSchemaInStore);
     when(schemaDatabase.fetchTableSchema(DATABASE_NAME)).thenReturn(tableSchemaMapInSchemaDatabase);
 
-    SchemaTracker schemaTracker = new MysqlSchemaTracker(schemaStore, schemaDatabase, ddlHistoryStore);
+    SchemaTracker schemaTracker =
+        new MysqlSchemaTracker(schemaStore, schemaDatabase, ddlHistoryStore);
 
     schemaTracker.processDDLStatement(queryEvent);
 
@@ -383,7 +387,8 @@ public class MysqlSchemaTrackerTest {
     when(schemaStore.getAll()).thenReturn(allTableSchemaInStore);
     when(schemaDatabase.fetchTableSchema(DATABASE_NAME)).thenReturn(tableSchemaMapInSchemaDatabase);
 
-    SchemaTracker schemaTracker = new MysqlSchemaTracker(schemaStore, schemaDatabase, ddlHistoryStore);
+    SchemaTracker schemaTracker =
+        new MysqlSchemaTracker(schemaStore, schemaDatabase, ddlHistoryStore);
 
     schemaTracker.processDDLStatement(queryEvent);
 
@@ -436,7 +441,8 @@ public class MysqlSchemaTrackerTest {
     QueryEvent queryEvent =
         new QueryEvent(0, 0, binlogFilePos, DATABASE2_NAME, "CREATE DATABASE `database2`");
 
-    SchemaTracker schemaTracker = new MysqlSchemaTracker(schemaStore, schemaDatabase, ddlHistoryStore);
+    SchemaTracker schemaTracker =
+        new MysqlSchemaTracker(schemaStore, schemaDatabase, ddlHistoryStore);
 
     schemaTracker.processDDLStatement(queryEvent);
 
@@ -489,7 +495,8 @@ public class MysqlSchemaTrackerTest {
     QueryEvent queryEvent =
         new QueryEvent(0, 0, binlogFilePos, DATABASE2_NAME, "DROP DATABASE `database1`");
 
-    SchemaTracker schemaTracker = new MysqlSchemaTracker(schemaStore, schemaDatabase, ddlHistoryStore);
+    SchemaTracker schemaTracker =
+        new MysqlSchemaTracker(schemaStore, schemaDatabase, ddlHistoryStore);
 
     schemaTracker.processDDLStatement(queryEvent);
 

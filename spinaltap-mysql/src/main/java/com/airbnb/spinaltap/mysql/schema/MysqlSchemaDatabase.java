@@ -26,6 +26,11 @@ import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.Handle;
 import org.skife.jdbi.v2.util.StringColumnMapper;
 
+/**
+ * Snapshots of MySQL tables. DDL statements in binlog are transformed and applied to tables in
+ * MySQL schema database. Updated table schemas are fetched from schema database and put into the
+ * schema store.
+ */
 @Slf4j
 public class MysqlSchemaDatabase {
   private static final char DELIMITER = '/';

@@ -23,6 +23,10 @@ import org.skife.jdbi.v2.Handle;
 import org.skife.jdbi.v2.util.IntegerColumnMapper;
 import org.skife.jdbi.v2.util.StringColumnMapper;
 
+/**
+ * Represents an implementation of {@link com.airbnb.spinaltap.mysql.schema.SchemaStore} which
+ * stores the schema history in MySQL table
+ */
 @Slf4j
 public class MysqlSchemaStore extends AbstractMysqlSchemaStore
     implements SchemaStore<MysqlTableSchema> {
