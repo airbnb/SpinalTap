@@ -13,6 +13,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+/** Base class for MySQL schema stores */
 @Slf4j
 @RequiredArgsConstructor
 @Getter

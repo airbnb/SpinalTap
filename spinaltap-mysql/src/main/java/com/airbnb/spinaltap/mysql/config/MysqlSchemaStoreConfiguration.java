@@ -7,22 +7,26 @@ package com.airbnb.spinaltap.mysql.config;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
 import lombok.Data;
+import lombok.NonNull;
 
 /** Represents the configuration for a {@link com.airbnb.spinaltap.mysql.schema.MysqlSchemaStore} */
 @Data
 public class MysqlSchemaStoreConfiguration {
-  @NotNull @JsonProperty private String host;
+  @NonNull @JsonProperty private String host;
 
   @Min(0)
   @Max(65535)
   @JsonProperty
   private int port;
 
-  @NotNull @JsonProperty private String database;
+  @NonNull @JsonProperty private String database = "schema_store";
 
-  @NotNull
+  @NonNull
   @JsonProperty("archive-database")
-  private String archiveDatabase;
+  private String archiveDatabase = "schema_store_archives";
+
+  @NonNull
+  @JsonProperty("ddl-history-store-database")
+  private String ddlHistoryStoreDatabase = "ddl_history_store";
 }
