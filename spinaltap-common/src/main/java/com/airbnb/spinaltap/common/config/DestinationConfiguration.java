@@ -9,14 +9,21 @@ import javax.validation.constraints.Min;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 
 /** Represents a {@link com.airbnb.spinaltap.common.destination.Destination} configuration. */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class DestinationConfiguration {
+  public static final String DEFAULT_TYPE = "kafka";
   public static final int DEFAULT_BUFFER_SIZE = 0;
   public static final int DEFAULT_POOL_SIZE = 0;
+
+  /** The destination type. Default to "kafka". */
+  @NonNull
+  @JsonProperty("type")
+  private String type = DEFAULT_TYPE;
 
   /**
    * The buffer size. If greater than 0, a {@link

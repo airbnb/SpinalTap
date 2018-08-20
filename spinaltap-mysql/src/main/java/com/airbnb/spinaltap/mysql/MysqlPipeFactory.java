@@ -21,7 +21,7 @@ import com.airbnb.spinaltap.mysql.mutation.mapper.ThriftMutationMapper;
 import com.google.common.base.Preconditions;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.Supplier;
+import java.util.Map;
 import javax.validation.constraints.Min;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -37,21 +37,21 @@ public final class MysqlPipeFactory extends AbstractPipeFactory<MysqlConfigurati
   @Min(0)
   private final long mysqlServerId;
 
-  @NonNull private final Supplier<DestinationBuilder<Mutation>> destinationBuilderSupplier;
+  @NonNull private final Map<String, DestinationBuilder<Mutation>> destinationBuilderMap;
   @NonNull private final MysqlSchemaStoreConfiguration schemaStoreConfig;
 
   public MysqlPipeFactory(
       @NonNull final String mysqlUser,
       @NonNull final String mysqlPassword,
       @Min(0) final long mysqlServerId,
-      @NonNull final Supplier<DestinationBuilder<Mutation>> destinationBuilderSupplier,
+      @NonNull final Map<String, DestinationBuilder<Mutation>> destinationBuilderMap,
       @NonNull final MysqlSchemaStoreConfiguration schemaStoreConfig,
       @NonNull final TaggedMetricRegistry metricRegistry) {
     super(metricRegistry);
     this.mysqlUser = mysqlUser;
     this.mysqlPassword = mysqlPassword;
     this.mysqlServerId = mysqlServerId;
-    this.destinationBuilderSupplier = destinationBuilderSupplier;
+    this.destinationBuilderMap = destinationBuilderMap;
     this.schemaStoreConfig = schemaStoreConfig;
   }
 
@@ -117,8 +117,12 @@ public final class MysqlPipeFactory extends AbstractPipeFactory<MysqlConfigurati
   private Destination createDestination(
       final MysqlConfiguration sourceConfiguration,
       final DestinationConfiguration destinationConfiguration) {
-    return destinationBuilderSupplier
-        .get()
+    DestinationBuilder<Mutation> destinationBuilder =
+        Preconditions.checkNotNull(
+            destinationBuilderMap.get(destinationConfiguration.getType()),
+            String.format(
+                "destination builder is not found for %s.", destinationConfiguration.getType()));
+    return destinationBuilder
         .withTopicNamePrefix(MysqlConfiguration.MYSQL_TOPICS.get(sourceConfiguration.getHostRole()))
         .withMapper(ThriftMutationMapper.create(getHostName()))
         .withMetrics(new MysqlDestinationMetrics(sourceConfiguration.getName(), metricRegistry))
