@@ -11,6 +11,7 @@ import com.airbnb.spinaltap.mysql.MysqlPipeFactory;
 import com.airbnb.spinaltap.mysql.config.MysqlConfiguration;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import com.google.common.collect.ImmutableMap;
 import java.io.File;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.curator.framework.CuratorFramework;
@@ -52,7 +53,7 @@ public final class SpinalTapStandaloneApp {
         config.getMysqlUser(),
         config.getMysqlPassword(),
         config.getMysqlServerId(),
-        () -> new KafkaDestinationBuilder<>(config.getKafkaProducerConfig()),
+        ImmutableMap.of("kafka", new KafkaDestinationBuilder<>(config.getKafkaProducerConfig())),
         config.getMysqlSchemaStoreConfig(),
         new TaggedMetricRegistry());
   }
