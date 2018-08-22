@@ -9,7 +9,6 @@ import javax.validation.constraints.Min;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.NonNull;
 
 /** Represents a {@link com.airbnb.spinaltap.common.destination.Destination} configuration. */
 @Data
