@@ -21,7 +21,6 @@ public class DestinationConfiguration {
   public static final int DEFAULT_POOL_SIZE = 0;
 
   /** The destination type. Default to "kafka". */
-  @NonNull
   @JsonProperty("type")
   private String type = DEFAULT_TYPE;
 
