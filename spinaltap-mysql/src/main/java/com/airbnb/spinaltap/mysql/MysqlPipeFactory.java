@@ -22,6 +22,7 @@ import com.google.common.base.Preconditions;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 import javax.validation.constraints.Min;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -37,21 +38,24 @@ public final class MysqlPipeFactory extends AbstractPipeFactory<MysqlConfigurati
   @Min(0)
   private final long mysqlServerId;
 
-  @NonNull private final Map<String, DestinationBuilder<Mutation>> destinationBuilderMap;
+  @NonNull
+  private final Map<String, Supplier<DestinationBuilder<Mutation>>> destinationBuilderSupplierMap;
+
   @NonNull private final MysqlSchemaStoreConfiguration schemaStoreConfig;
 
   public MysqlPipeFactory(
       @NonNull final String mysqlUser,
       @NonNull final String mysqlPassword,
       @Min(0) final long mysqlServerId,
-      @NonNull final Map<String, DestinationBuilder<Mutation>> destinationBuilderMap,
+      @NonNull
+          final Map<String, Supplier<DestinationBuilder<Mutation>>> destinationBuilderSupplierMap,
       @NonNull final MysqlSchemaStoreConfiguration schemaStoreConfig,
       @NonNull final TaggedMetricRegistry metricRegistry) {
     super(metricRegistry);
     this.mysqlUser = mysqlUser;
     this.mysqlPassword = mysqlPassword;
     this.mysqlServerId = mysqlServerId;
-    this.destinationBuilderMap = destinationBuilderMap;
+    this.destinationBuilderSupplierMap = destinationBuilderSupplierMap;
     this.schemaStoreConfig = schemaStoreConfig;
   }
 
@@ -117,12 +121,13 @@ public final class MysqlPipeFactory extends AbstractPipeFactory<MysqlConfigurati
   private Destination createDestination(
       final MysqlConfiguration sourceConfiguration,
       final DestinationConfiguration destinationConfiguration) {
-    DestinationBuilder<Mutation> destinationBuilder =
+    Supplier<DestinationBuilder<Mutation>> destinationBuilderSupplier =
         Preconditions.checkNotNull(
-            destinationBuilderMap.get(destinationConfiguration.getType()),
+            destinationBuilderSupplierMap.get(destinationConfiguration.getType()),
             String.format(
                 "destination builder is not found for %s.", destinationConfiguration.getType()));
-    return destinationBuilder
+    return destinationBuilderSupplier
+        .get()
         .withTopicNamePrefix(MysqlConfiguration.MYSQL_TOPICS.get(sourceConfiguration.getHostRole()))
         .withMapper(ThriftMutationMapper.create(getHostName()))
         .withMetrics(new MysqlDestinationMetrics(sourceConfiguration.getName(), metricRegistry))
