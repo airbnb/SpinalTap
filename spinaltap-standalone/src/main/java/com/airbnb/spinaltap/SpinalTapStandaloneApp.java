@@ -53,7 +53,8 @@ public final class SpinalTapStandaloneApp {
         config.getMysqlUser(),
         config.getMysqlPassword(),
         config.getMysqlServerId(),
-        ImmutableMap.of("kafka", new KafkaDestinationBuilder<>(config.getKafkaProducerConfig())),
+        ImmutableMap.of(
+            "kafka", () -> new KafkaDestinationBuilder<>(config.getKafkaProducerConfig())),
         config.getMysqlSchemaStoreConfig(),
         new TaggedMetricRegistry());
   }
