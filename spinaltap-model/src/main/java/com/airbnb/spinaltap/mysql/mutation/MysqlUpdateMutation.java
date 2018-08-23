@@ -13,14 +13,16 @@ import java.io.Serializable;
 import java.util.Map;
 import java.util.Set;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.ToString;
 
 @Getter
 @ToString(callSuper = true)
-public class MysqlUpdateMutation extends MysqlMutation {
+public final class MysqlUpdateMutation extends MysqlMutation {
   private final Row previousRow;
 
-  public MysqlUpdateMutation(MysqlMutationMetadata metadata, Row previousRow, Row row) {
+  public MysqlUpdateMutation(
+      final MysqlMutationMetadata metadata, final Row previousRow, final Row row) {
     super(metadata, Mutation.Type.UPDATE, row);
 
     this.previousRow = previousRow;
@@ -37,7 +39,7 @@ public class MysqlUpdateMutation extends MysqlMutation {
   }
 
   @VisibleForTesting
-  static Map<String, Serializable> asColumnValues(Row row) {
+  static Map<String, Serializable> asColumnValues(@NonNull final Row row) {
     return Maps.transformValues(row.getColumns(), Column::getValue);
   }
 }

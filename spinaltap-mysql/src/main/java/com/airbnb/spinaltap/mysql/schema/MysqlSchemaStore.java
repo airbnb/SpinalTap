@@ -8,7 +8,6 @@ import com.airbnb.spinaltap.mysql.BinlogFilePos;
 import com.airbnb.spinaltap.mysql.MysqlSourceMetrics;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
-import com.google.common.base.Throwables;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Table;
 import com.google.common.collect.Tables;
@@ -24,6 +23,10 @@ import org.skife.jdbi.v2.Handle;
 import org.skife.jdbi.v2.util.IntegerColumnMapper;
 import org.skife.jdbi.v2.util.StringColumnMapper;
 
+/**
+ * Represents an implementation of {@link com.airbnb.spinaltap.mysql.schema.SchemaStore} which
+ * stores the schema history in MySQL table
+ */
 @Slf4j
 public class MysqlSchemaStore extends AbstractMysqlSchemaStore
     implements SchemaStore<MysqlTableSchema> {
@@ -109,7 +112,6 @@ public class MysqlSchemaStore extends AbstractMysqlSchemaStore
     } catch (Exception ex) {
       log.error("Failed to put schema {}.", schema);
       metrics.schemaStorePutFailure(schema.getDatabase(), schema.getTable(), ex);
-      Throwables.throwIfUnchecked(ex);
       throw new RuntimeException(ex);
     }
   }
@@ -145,7 +147,6 @@ public class MysqlSchemaStore extends AbstractMysqlSchemaStore
               database, table, version),
           ex);
       metrics.schemaStoreGetFailure(database, table, ex);
-      Throwables.throwIfUnchecked(ex);
       throw new RuntimeException(ex);
     }
   }
@@ -166,7 +167,6 @@ public class MysqlSchemaStore extends AbstractMysqlSchemaStore
     } catch (Exception ex) {
       log.error(
           String.format("Failed to get schema change at binlog position: %s", binlogFilePos), ex);
-      Throwables.throwIfUnchecked(ex);
       throw new RuntimeException(ex);
     }
   }
@@ -192,7 +192,6 @@ public class MysqlSchemaStore extends AbstractMysqlSchemaStore
               database, table),
           ex);
       metrics.schemaStoreGetFailure(database, table, ex);
-      Throwables.throwIfUnchecked(ex);
       throw new RuntimeException(ex);
     }
   }
@@ -221,7 +220,6 @@ public class MysqlSchemaStore extends AbstractMysqlSchemaStore
               database, table),
           ex);
       metrics.schemaStoreGetFailure(database, table, ex);
-      Throwables.throwIfUnchecked(ex);
       throw new RuntimeException(ex);
     }
   }
@@ -242,7 +240,6 @@ public class MysqlSchemaStore extends AbstractMysqlSchemaStore
                       .list());
     } catch (Exception ex) {
       log.error(String.format("Failed to get all schema for source: %s", source), ex);
-      Throwables.throwIfUnchecked(ex);
       throw new RuntimeException(ex);
     }
 
@@ -283,7 +280,6 @@ public class MysqlSchemaStore extends AbstractMysqlSchemaStore
           String.format("Failed to get all schema for database: %s table: %s", database, table),
           ex);
       metrics.schemaStoreGetFailure(database, table, ex);
-      Throwables.throwIfUnchecked(ex);
       throw new RuntimeException(ex);
     }
 
@@ -309,7 +305,6 @@ public class MysqlSchemaStore extends AbstractMysqlSchemaStore
                       .first());
     } catch (Exception ex) {
       log.error(String.format("Failed to check if %s:%s exists in schema store.", database, table));
-      Throwables.throwIfUnchecked(ex);
       throw new RuntimeException(ex);
     }
   }
@@ -325,7 +320,6 @@ public class MysqlSchemaStore extends AbstractMysqlSchemaStore
       log.error(
           String.format(
               "Failed to create schema store for source: %s. (Exception: %s)", source, ex));
-      Throwables.throwIfUnchecked(ex);
       throw new RuntimeException(ex);
     }
   }
@@ -345,7 +339,6 @@ public class MysqlSchemaStore extends AbstractMysqlSchemaStore
           String.format(
               "Failed to check if schema store table exists for source %s (Exception: %s)",
               source, ex));
-      Throwables.throwIfUnchecked(ex);
       throw new RuntimeException(ex);
     }
   }
@@ -366,7 +359,6 @@ public class MysqlSchemaStore extends AbstractMysqlSchemaStore
       log.error(
           String.format(
               "Failed to archive schema store for source: %s. (Exception: %s)", source, ex));
-      Throwables.throwIfUnchecked(ex);
       throw new RuntimeException(ex);
     }
   }
@@ -396,7 +388,6 @@ public class MysqlSchemaStore extends AbstractMysqlSchemaStore
           String.format(
               "Failed to create archive table for source: %s database: %s (Exception: %s)",
               source, database, ex));
-      Throwables.throwIfUnchecked(ex);
       throw new RuntimeException(ex);
     }
   }
@@ -419,7 +410,6 @@ public class MysqlSchemaStore extends AbstractMysqlSchemaStore
           String.format(
               "Failed to insert into archive table for source: %s database: %s (Exception: %s)",
               source, database, ex));
-      Throwables.throwIfUnchecked(ex);
       throw new RuntimeException(ex);
     }
   }
@@ -437,7 +427,6 @@ public class MysqlSchemaStore extends AbstractMysqlSchemaStore
           String.format(
               "Failed to delete schema store rows for source: %s database: %s (Exception: %s)",
               source, database, ex));
-      Throwables.throwIfUnchecked(ex);
       throw new RuntimeException(ex);
     }
   }
@@ -447,7 +436,6 @@ public class MysqlSchemaStore extends AbstractMysqlSchemaStore
       return OBJECT_MAPPER.readValue(schemaInfo, MysqlTableSchema.class);
     } catch (Exception ex) {
       log.error("Failed to deserialize schema json string.");
-      Throwables.throwIfUnchecked(ex);
       throw new RuntimeException(ex);
     }
   }

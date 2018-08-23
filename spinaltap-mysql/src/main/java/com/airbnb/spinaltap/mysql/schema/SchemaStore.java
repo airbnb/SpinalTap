@@ -10,16 +10,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+/** Represents a store for table schemas. */
 public interface SchemaStore<T> {
   /**
-   * Create and save schema into schema store, schema version will be generated automatically
-   *
-   * @param database
-   * @param table
-   * @param binlogFilePos
-   * @param timestamp
-   * @param sql
-   * @param columnInfoList
+   * Create and save schema into {@link SchemaStore}, schema version will be generated automatically
    */
   void put(
       String database,
@@ -29,94 +23,33 @@ public interface SchemaStore<T> {
       String sql,
       List<ColumnInfo> columnInfoList);
 
-  /**
-   * Save schema into schema store
-   *
-   * @param schema
-   * @throws Exception
-   */
+  /** Save schema into {@link SchemaStore} */
   void put(T schema) throws Exception;
 
-  /**
-   * Query table schema by binlogFilePos
-   *
-   * @param database
-   * @param table
-   * @param binlogFilePos
-   * @throws Exception
-   */
+  /** Query table schema by {@link BinlogFilePos} */
   T query(String database, String table, BinlogFilePos binlogFilePos);
 
-  /**
-   * Get table schema by schema version
-   *
-   * @param database
-   * @param table
-   * @param version
-   * @throws Exception
-   */
+  /** Get table schema by schema version */
   T get(String database, String table, int version);
 
-  /**
-   * Get table schema by BinlogFilePos, return null if not found
-   *
-   * @param binlogFilePos
-   * @return
-   */
+  /** Get table schema by BinlogFilePos, return null if not found */
   T get(BinlogFilePos binlogFilePos);
 
-  /**
-   * Get latest schema for a table
-   *
-   * @param database
-   * @param table
-   * @throws Exception
-   */
+  /** Get latest schema for a table */
   T getLatest(String database, String table);
 
-  /**
-   * Get all latest table schemas for a database
-   *
-   * @param database
-   * @return
-   * @throws Exception
-   */
+  /** Get all latest table schemas for a database */
   Map<String, T> getLatest(String database);
 
-  /**
-   * Get latest schema version for a table
-   *
-   * @param database
-   * @param table
-   * @return
-   * @throws Exception
-   */
+  /** Get latest schema version for a table */
   int getLatestVersion(String database, String table);
 
-  /**
-   * Get all table schemas
-   *
-   * @return Table<database, table, TreeMap<version, schema>>
-   * @throws Exception
-   */
+  /** Get all table schemas */
   Table<String, String, TreeMap<Integer, T>> getAll();
 
-  /**
-   * Get all schemas for a table
-   *
-   * @param database
-   * @param table
-   * @return
-   * @throws Exception
-   */
+  /** Get all schemas for a table */
   TreeMap<Integer, T> getAll(String database, String table);
 
-  /**
-   * Check if a table exists in schema store
-   *
-   * @param database
-   * @param table
-   * @return
-   */
+  /** Check if a table exists in schema store */
   boolean exists(String database, String table);
 }

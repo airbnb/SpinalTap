@@ -9,15 +9,17 @@ import com.airbnb.spinaltap.mysql.MysqlSourceMetrics;
 import java.util.List;
 import javax.validation.constraints.NotNull;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+/** Base class for MySQL schema stores */
 @Slf4j
 @RequiredArgsConstructor
 @Getter
 public abstract class AbstractMysqlSchemaStore {
-  protected final String source;
-  protected final MysqlSourceMetrics metrics;
+  @NonNull protected final String source;
+  @NonNull protected final MysqlSourceMetrics metrics;
 
   public void put(
       @NotNull final String database,

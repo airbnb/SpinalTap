@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 import lombok.Getter;
 import lombok.Value;
 
+/** Represents a MySQL table. */
 @Value
 public final class Table {
   private final long id;

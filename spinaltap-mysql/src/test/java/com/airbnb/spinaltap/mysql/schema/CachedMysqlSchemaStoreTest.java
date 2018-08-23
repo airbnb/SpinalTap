@@ -220,18 +220,33 @@ public class CachedMysqlSchemaStoreTest {
     assertNull(cachedMysqlSchemaStore.get(new BinlogFilePos(557, 1200, 1250)));
   }
 
-  @Test(expected = IllegalArgumentException.class)
-  public void testGetByInvalidVersion() throws Exception {
-    cachedMysqlSchemaStore.get(DATABASE_NAME, "table1", 4);
+  @Test(expected = RuntimeException.class)
+  public void testGetByInvalidVersion() throws RuntimeException {
+    try {
+      cachedMysqlSchemaStore.get(DATABASE_NAME, "table1", 4);
+    } catch (RuntimeException ex) {
+      throw ex;
+    }
+    fail("Runtime exception expected.");
   }
 
-  @Test(expected = NullPointerException.class)
-  public void testGetByInvalidTable() throws Exception {
-    cachedMysqlSchemaStore.get(DATABASE_NAME, "table3", 1);
+  @Test(expected = RuntimeException.class)
+  public void testGetByInvalidTable() throws RuntimeException {
+    try {
+      cachedMysqlSchemaStore.get(DATABASE_NAME, "table3", 1);
+    } catch (RuntimeException ex) {
+      throw ex;
+    }
+    fail("Runtime exception expected.");
   }
 
-  @Test(expected = NullPointerException.class)
-  public void testQueryByInvalidBinlogPosition() throws Exception {
-    cachedMysqlSchemaStore.query(DATABASE_NAME, "table1", new BinlogFilePos(1, 2, 4));
+  @Test(expected = RuntimeException.class)
+  public void testQueryByInvalidBinlogPosition() throws RuntimeException {
+    try {
+      cachedMysqlSchemaStore.query(DATABASE_NAME, "table1", new BinlogFilePos(1, 2, 4));
+    } catch (RuntimeException ex) {
+      throw ex;
+    }
+    fail("Runtime exception expected.");
   }
 }

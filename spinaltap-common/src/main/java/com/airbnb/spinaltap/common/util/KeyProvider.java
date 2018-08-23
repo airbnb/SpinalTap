@@ -5,17 +5,18 @@
 package com.airbnb.spinaltap.common.util;
 
 /**
- * Responsible for providing a key for an object
+ * Responsible for providing a key for an object.
  *
- * @param <T> The object type
- * @param <T> The key type
+ * @param <T> The object type.
+ * @param <T> The key type.
  */
+@FunctionalInterface
 public interface KeyProvider<T, R> {
   /**
-   * Gets the key for an object
+   * Gets the key for an object.
    *
-   * @param object the object to get the key
-   * @return the string key
+   * @param object the object to get the key for.
+   * @return the resulting key.
    */
   R get(T object);
 }

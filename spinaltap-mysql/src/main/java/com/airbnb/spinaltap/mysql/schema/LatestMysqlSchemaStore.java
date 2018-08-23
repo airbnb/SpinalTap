@@ -6,7 +6,6 @@ package com.airbnb.spinaltap.mysql.schema;
 
 import com.airbnb.spinaltap.mysql.BinlogFilePos;
 import com.airbnb.spinaltap.mysql.MysqlSourceMetrics;
-import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Table;
@@ -22,6 +21,10 @@ import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.Handle;
 import org.skife.jdbi.v2.util.StringColumnMapper;
 
+/**
+ * Represents the current(latest) snapshot of MySQL schema. Schema queries will hit MySQL
+ * information_schema.
+ */
 @Slf4j
 public class LatestMysqlSchemaStore extends AbstractMysqlSchemaStore
     implements SchemaStore<MysqlTableSchema> {
@@ -94,7 +97,6 @@ public class LatestMysqlSchemaStore extends AbstractMysqlSchemaStore
     } catch (Exception ex) {
       log.error(String.format("Failed to fetch schema for table %s, db %s", table, database), ex);
       metrics.schemaStoreGetFailure(database, table, ex);
-      Throwables.throwIfUnchecked(ex);
       throw new RuntimeException(ex);
     }
   }
@@ -113,7 +115,6 @@ public class LatestMysqlSchemaStore extends AbstractMysqlSchemaStore
                       .list());
     } catch (Exception ex) {
       log.error(String.format("Failed to fetch schema for database: %s", database), ex);
-      Throwables.throwIfUnchecked(ex);
       throw new RuntimeException(ex);
     }
     Map<String, MysqlTableSchema> allTableSchemaMap = Maps.newHashMap();
@@ -173,7 +174,6 @@ public class LatestMysqlSchemaStore extends AbstractMysqlSchemaStore
       log.error(
           String.format(
               "Failed to list all databases for source: %s. (Exception: %s)", source, ex));
-      Throwables.throwIfUnchecked(ex);
       throw new RuntimeException(ex);
     }
   }
@@ -191,7 +191,6 @@ public class LatestMysqlSchemaStore extends AbstractMysqlSchemaStore
       log.error(
           String.format(
               "Failed to list all tables for database: %s. (Exception: %s)", database, ex));
-      Throwables.throwIfUnchecked(ex);
       throw new RuntimeException(ex);
     }
   }
@@ -212,7 +211,6 @@ public class LatestMysqlSchemaStore extends AbstractMysqlSchemaStore
     } catch (SQLException ex) {
       log.error(
           String.format("Failed to get DDL for database: %s table: %s.", database, table), ex);
-      Throwables.throwIfUnchecked(ex);
       throw new RuntimeException(ex);
     }
   }

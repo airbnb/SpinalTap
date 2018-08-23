@@ -7,7 +7,6 @@ package com.airbnb.spinaltap.mysql.schema;
 import com.airbnb.spinaltap.mysql.BinlogFilePos;
 import com.airbnb.spinaltap.mysql.MysqlSourceMetrics;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Throwables;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Table;
 import com.google.common.collect.Tables;
@@ -18,6 +17,11 @@ import javax.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.skife.jdbi.v2.DBI;
 
+/**
+ * Represents a cached implementation of {@link com.airbnb.spinaltap.mysql.schema.SchemaStore}. This
+ * class acts as a proxy for {@link com.airbnb.spinaltap.mysql.schema.MysqlSchemaStore} and caches
+ * the schema information in memory
+ */
 @Slf4j
 public class CachedMysqlSchemaStore extends AbstractMysqlSchemaStore
     implements SchemaStore<MysqlTableSchema> {
@@ -53,7 +57,6 @@ public class CachedMysqlSchemaStore extends AbstractMysqlSchemaStore
       schemaVersionTable = schemaStore.getAll();
     } catch (Exception ex) {
       log.error("Failed to populate cache.", ex);
-      Throwables.throwIfUnchecked(ex);
       throw new RuntimeException(ex);
     }
 
@@ -134,7 +137,6 @@ public class CachedMysqlSchemaStore extends AbstractMysqlSchemaStore
       return tableSchemaTreeMap.get(key);
     } catch (Exception ex) {
       metrics.schemaStoreGetFailure(database, table, ex);
-      Throwables.throwIfUnchecked(ex);
       throw new RuntimeException(ex);
     }
   }
@@ -157,7 +159,6 @@ public class CachedMysqlSchemaStore extends AbstractMysqlSchemaStore
       return schemaVersionMap.get(version);
     } catch (Exception ex) {
       metrics.schemaStoreGetFailure(database, table, ex);
-      Throwables.throwIfUnchecked(ex);
       throw new RuntimeException(ex);
     }
   }
@@ -175,7 +176,6 @@ public class CachedMysqlSchemaStore extends AbstractMysqlSchemaStore
       return schemaVersionMap.lastEntry().getValue();
     } catch (Exception ex) {
       metrics.schemaStoreGetFailure(database, table, ex);
-      Throwables.throwIfUnchecked(ex);
       throw new RuntimeException(ex);
     }
   }
@@ -200,7 +200,6 @@ public class CachedMysqlSchemaStore extends AbstractMysqlSchemaStore
       return latestSchemaMap;
     } catch (Exception ex) {
       metrics.schemaStoreGetFailure(database, ex);
-      Throwables.throwIfUnchecked(ex);
       throw new RuntimeException(ex);
     }
   }
@@ -218,7 +217,6 @@ public class CachedMysqlSchemaStore extends AbstractMysqlSchemaStore
       return schemaVersionMap.lastKey();
     } catch (Exception ex) {
       metrics.schemaStoreGetFailure(database, table, ex);
-      Throwables.throwIfUnchecked(ex);
       throw new RuntimeException(ex);
     }
   }
@@ -241,7 +239,6 @@ public class CachedMysqlSchemaStore extends AbstractMysqlSchemaStore
       return schemaVersionTable.get(database, table);
     } catch (Exception ex) {
       metrics.schemaStoreGetFailure(database, table, ex);
-      Throwables.throwIfUnchecked(ex);
       throw new RuntimeException(ex);
     }
   }

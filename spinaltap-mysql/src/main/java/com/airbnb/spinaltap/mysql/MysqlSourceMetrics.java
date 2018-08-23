@@ -11,6 +11,10 @@ import com.google.common.collect.ImmutableMap;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Responsible for metrics collection on operations for {@link MysqlSource} and associated
+ * components.
+ */
 public class MysqlSourceMetrics extends SourceMetrics {
   private static final String MYSQL_PREFIX = METRIC_PREFIX + ".binlog";
 
@@ -38,6 +42,16 @@ public class MysqlSourceMetrics extends SourceMetrics {
   private static final String SCHEMA_DATABASE_APPLY_DDL_FAILURE_METRIC =
       MYSQL_PREFIX + ".schema_database.apply.ddl.failure.count";
 
+  private static final String DDL_HISTORY_STORE_GET_SUCCESS_METRIC =
+      MYSQL_PREFIX + ".ddl_history_store.get.success.count";
+  private static final String DDL_HISTORY_STORE_GET_FAILURE_METRIC =
+      MYSQL_PREFIX + ".ddl_history_store.get.failure.count";
+
+  private static final String DDL_HISTORY_STORE_PUT_SUCCESS_METRIC =
+      MYSQL_PREFIX + ".ddl_history_store.put.success.count";
+  private static final String DDL_HISTORY_STORE_PUT_FAILURE_METRIC =
+      MYSQL_PREFIX + ".ddl_history_store.put.failure.count";
+
   private static final String INVALID_SCHEMA_METRIC = MYSQL_PREFIX + ".table.invalid_schema.count";
   private static final String BINLOG_FILE_START_METRIC = MYSQL_PREFIX + ".binlog_file.start.count";
 
@@ -53,7 +67,7 @@ public class MysqlSourceMetrics extends SourceMetrics {
   private static final String RESET_EARLIEST_POSITION_METRIC =
       MYSQL_PREFIX + ".reset.earliest_position.count";
 
-  public MysqlSourceMetrics(String sourceName, TaggedMetricRegistry metricRegistry) {
+  public MysqlSourceMetrics(final String sourceName, final TaggedMetricRegistry metricRegistry) {
     this(sourceName, "mysql", metricRegistry);
   }
 
@@ -78,42 +92,60 @@ public class MysqlSourceMetrics extends SourceMetrics {
     inc(CLIENT_DISCONNECTED_METRIC);
   }
 
-  public void schemaStoreGetSuccess(String database, String table) {
+  public void schemaStoreGetSuccess(final String database, final String table) {
     inc(SCHEMA_STORE_GET_SUCCESS_METRIC, getTableTags(database, table));
   }
 
-  public void schemaStoreGetFailure(String database, String table, Throwable error) {
+  public void schemaStoreGetFailure(
+      final String database, final String table, final Throwable error) {
     incError(SCHEMA_STORE_GET_FAILURE_METRIC, error, getTableTags(database, table));
   }
 
-  public void schemaStoreGetSuccess(String database) {
+  public void schemaStoreGetSuccess(final String database) {
     inc(SCHEMA_STORE_GET_SUCCESS_METRIC, ImmutableMap.of(DATABASE_NAME_TAG, database));
   }
 
-  public void schemaStoreGetFailure(String database, Throwable error) {
+  public void schemaStoreGetFailure(final String database, final Throwable error) {
     incError(SCHEMA_STORE_GET_FAILURE_METRIC, error, ImmutableMap.of(DATABASE_NAME_TAG, database));
   }
 
-  public void schemaStorePutSuccess(String database, String table) {
+  public void schemaStorePutSuccess(final String database, final String table) {
     inc(SCHEMA_STORE_PUT_SUCCESS_METRIC, getTableTags(database, table));
   }
 
-  public void schemaStorePutFailure(String database, String table, Throwable error) {
+  public void schemaStorePutFailure(
+      final String database, final String table, final Throwable error) {
     incError(SCHEMA_STORE_PUT_FAILURE_METRIC, error, getTableTags(database, table));
   }
 
-  public void schemaDatabaseApplyDDLSuccess(String database) {
+  public void schemaDatabaseApplyDDLSuccess(final String database) {
     inc(SCHEMA_DATABASE_APPLY_DDL_SUCCESS_METRIC, ImmutableMap.of(DATABASE_NAME_TAG, database));
   }
 
-  public void schemaDatabaseApplyDDLFailure(String database, Throwable error) {
+  public void schemaDatabaseApplyDDLFailure(final String database, final Throwable error) {
     incError(
         SCHEMA_DATABASE_APPLY_DDL_FAILURE_METRIC,
         error,
         ImmutableMap.of(DATABASE_NAME_TAG, database));
   }
 
-  public void invalidSchema(Mutation<?> mutation) {
+  public void ddlHistoryStorePutSuccess() {
+    inc(DDL_HISTORY_STORE_PUT_SUCCESS_METRIC);
+  }
+
+  public void ddlHistoryStorePutFailure(final Throwable error) {
+    incError(DDL_HISTORY_STORE_PUT_FAILURE_METRIC, error);
+  }
+
+  public void ddlHistoryStoreGetSuccess() {
+    inc(DDL_HISTORY_STORE_GET_SUCCESS_METRIC);
+  }
+
+  public void ddlHistoryStoreGetFailure(final Throwable error) {
+    incError(DDL_HISTORY_STORE_GET_FAILURE_METRIC, error);
+  }
+
+  public void invalidSchema(final Mutation<?> mutation) {
     inc(INVALID_SCHEMA_METRIC, getTags(mutation));
   }
 
@@ -149,7 +181,7 @@ public class MysqlSourceMetrics extends SourceMetrics {
     inc(TRANSACTION_RECEIVED_METRIC);
   }
 
-  private Map<String, String> getTableTags(String database, String table) {
+  private Map<String, String> getTableTags(final String database, final String table) {
     Map<String, String> tableTags = new HashMap<>();
 
     tableTags.put(DATABASE_NAME_TAG, database);

@@ -18,7 +18,7 @@ import javax.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-/** Tracks MySQL schema change */
+/** Represents a {@link SchemaTracker} that tracks MySQL schema change. */
 @Slf4j
 @RequiredArgsConstructor
 public class MysqlSchemaTracker implements SchemaTracker {
@@ -26,12 +26,13 @@ public class MysqlSchemaTracker implements SchemaTracker {
       Pattern.compile("^(CREATE|DROP)\\s+(DATABASE|SCHEMA)", Pattern.CASE_INSENSITIVE);
   private final SchemaStore<MysqlTableSchema> schemaStore;
   private final MysqlSchemaDatabase schemaDatabase;
+  private final MysqlDDLHistoryStore ddlHistoryStore;
 
   public void processDDLStatement(@NotNull final QueryEvent event) {
     BinlogFilePos binlogFilePos = event.getBinlogFilePos();
     String ddl = event.getSql();
 
-    if (schemaStore.get(binlogFilePos) != null) {
+    if (schemaStore.get(binlogFilePos) != null || ddlHistoryStore.get(binlogFilePos) != null) {
       log.info(
           String.format(
               "DDL Statement (%s) has already been processed. (BinlogFilePos: %s)",
@@ -81,6 +82,9 @@ public class MysqlSchemaTracker implements SchemaTracker {
                 event,
                 activeTableSchemasInStore.row(database),
                 schemaDatabase.fetchTableSchema(database)));
+
+    log.info("Saving DDL into History Store: {}", ddl);
+    ddlHistoryStore.put(binlogFilePos, ddl, event.getTimestamp());
   }
 
   private void updateSchemaStore(

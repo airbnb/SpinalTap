@@ -1,9 +1,22 @@
+[![Build Status](https://travis-ci.org/airbnb/SpinalTap.svg?branch=master)](https://travis-ci.org/airbnb/SpinalTap)
 # SpinalTap
 SpinalTap is a general-purpose reliable Change Data Capture (CDC) service, capable of detecting data mutations with low-latency across different data sources, and propagating them as standardized events to downstream consumers.
 SpinalTap has become an integral component in Airbnb's infrastructure platform and data processing pipeline, on which several critical applications are reliant on. More information from our engineering [blog](https://medium.com/airbnb-engineering/capturing-data-evolution-in-a-service-oriented-architecture-72f7c643ee6f).
 
 ## Disclaimer
-This project is experimental. Please use with discretion.
+
+**SpinalTap does not support message authentication yet as part of its current open-source
+offering.**
+
+Message authentication is a requirement to enforce authenticity and accessibility of messages
+propagated in the message bus, as well as source verification of transmitted messages. Given
+SpinalTap is by design a source & destination agnostic library, we believe the burden of supplying a
+message authentication workflow lies on the message bus solution used, or as an extension to the
+destination component implement adopted. This is inline with the usage within Airbnb’s
+infrastructure, where SpinalTap is just another client to our internal message transport which in
+itself should supply message authentication as a general offering for all its clients. If the need
+arises in the future, message authentication can be seamlessly integrated within the library as a
+potential supported feature.
 
 ## Getting Started
 ### Install Thrift 0.9.3 Compiler

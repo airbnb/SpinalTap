@@ -23,27 +23,35 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
+import lombok.NonNull;
 
-class UpdateMutationMapper extends MysqlMutationMapper<UpdateEvent, MysqlMutation> {
+/**
+ * Represents a {@link com.airbnb.spinaltap.common.util.Mapper} of a {@link UpdateEvent}s to the
+ * corresponding list of {@link com.airbnb.spinaltap.mysql.mutation.MysqlMutation}s corresponding to
+ * each row change in the event.
+ */
+final class UpdateMutationMapper extends MysqlMutationMapper<UpdateEvent, MysqlMutation> {
   UpdateMutationMapper(
-      DataSource dataSource,
-      TableCache tableCache,
-      AtomicReference<Transaction> beginTransaction,
-      AtomicReference<Transaction> lastTransaction,
-      AtomicLong leaderEpoch) {
+      @NonNull final DataSource dataSource,
+      @NonNull final TableCache tableCache,
+      @NonNull final AtomicReference<Transaction> beginTransaction,
+      @NonNull final AtomicReference<Transaction> lastTransaction,
+      @NonNull final AtomicLong leaderEpoch) {
     super(dataSource, tableCache, beginTransaction, lastTransaction, leaderEpoch);
   }
 
   @Override
-  protected List<MysqlMutation> mapEvent(Table table, UpdateEvent event) {
-    List<MysqlMutation> mutations = Lists.newArrayList();
-    Collection<ColumnMetadata> cols = table.getColumns().values();
-    List<Map.Entry<Serializable[], Serializable[]>> rows = event.getRows();
+  protected List<MysqlMutation> mapEvent(
+      @NonNull final Table table, @NonNull final UpdateEvent event) {
+    final List<MysqlMutation> mutations = Lists.newArrayList();
+    final Collection<ColumnMetadata> cols = table.getColumns().values();
+    final List<Map.Entry<Serializable[], Serializable[]>> rows = event.getRows();
+
     for (int position = 0; position < rows.size(); position++) {
       MysqlMutationMetadata metadata = createMetadata(table, event, position);
 
-      Row previousRow = new Row(table, zip(rows.get(position).getKey(), cols));
-      Row newRow = new Row(table, zip(rows.get(position).getValue(), cols));
+      final Row previousRow = new Row(table, zip(rows.get(position).getKey(), cols));
+      final Row newRow = new Row(table, zip(rows.get(position).getValue(), cols));
 
       // If PK value has changed, then delete before image and insert new image
       // to retain invariant that a mutation captures changes to a single PK
@@ -55,7 +63,6 @@ class UpdateMutationMapper extends MysqlMutationMapper<UpdateEvent, MysqlMutatio
         mutations.add(new MysqlUpdateMutation(metadata, previousRow, newRow));
       }
     }
-    ;
 
     return mutations;
   }

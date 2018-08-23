@@ -11,27 +11,39 @@ import com.airbnb.spinaltap.mysql.mutation.MysqlMutationMetadata;
 import com.google.common.base.Preconditions;
 import java.util.HashMap;
 import java.util.Map;
+import lombok.NonNull;
 
+/**
+ * Responsible for metrics collection on operations for {@link
+ * com.airbnb.spinaltap.common.destination.Destination} and associated components for a given {@link
+ * MysqlSource}.
+ */
 public class MysqlDestinationMetrics extends DestinationMetrics {
-  public MysqlDestinationMetrics(String sourceName, TaggedMetricRegistry metricRegistry) {
+  private static final String DATABASE_NAME_TAG = "database_name";
+  private static final String TABLE_NAME_TAG = "table_name";
+
+  public MysqlDestinationMetrics(
+      @NonNull final String sourceName, @NonNull final TaggedMetricRegistry metricRegistry) {
     this("mysql", sourceName, metricRegistry);
   }
 
   protected MysqlDestinationMetrics(
-      String sourceType, String sourceName, TaggedMetricRegistry metricRegistry) {
+      @NonNull final String sourceType,
+      @NonNull final String sourceName,
+      @NonNull final TaggedMetricRegistry metricRegistry) {
     super(sourceName, sourceType, metricRegistry);
   }
 
   @Override
-  protected Map<String, String> getTags(Mutation.Metadata meta) {
-    Preconditions.checkState(meta instanceof MysqlMutationMetadata);
-    MysqlMutationMetadata metadata = (MysqlMutationMetadata) meta;
+  protected Map<String, String> getTags(@NonNull final Mutation.Metadata metadata) {
+    Preconditions.checkState(metadata instanceof MysqlMutationMetadata);
 
+    MysqlMutationMetadata mysqlMetadata = (MysqlMutationMetadata) metadata;
     Map<String, String> metadataTags = new HashMap<>();
 
-    metadataTags.put("database_name", metadata.getTable().getDatabase());
-    metadataTags.put("table_name", metadata.getTable().getName());
-    metadataTags.putAll(super.getTags(meta));
+    metadataTags.put(DATABASE_NAME_TAG, mysqlMetadata.getTable().getDatabase());
+    metadataTags.put(TABLE_NAME_TAG, mysqlMetadata.getTable().getName());
+    metadataTags.putAll(super.getTags(mysqlMetadata));
 
     return metadataTags;
   }

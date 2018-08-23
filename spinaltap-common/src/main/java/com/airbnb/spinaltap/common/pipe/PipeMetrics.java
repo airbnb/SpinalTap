@@ -8,6 +8,7 @@ import com.airbnb.common.metrics.TaggedMetricRegistry;
 import com.airbnb.spinaltap.common.metrics.SpinalTapMetrics;
 import com.google.common.collect.ImmutableMap;
 
+/** Responsible for metrics collection for a {@link Pipe}. */
 public class PipeMetrics extends SpinalTapMetrics {
   private static final String PIPE_PREFIX = METRIC_PREFIX + ".pipe";
 

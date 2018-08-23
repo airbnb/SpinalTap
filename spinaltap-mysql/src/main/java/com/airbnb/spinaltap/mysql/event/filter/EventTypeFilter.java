@@ -14,11 +14,15 @@ import com.airbnb.spinaltap.mysql.event.WriteEvent;
 import com.airbnb.spinaltap.mysql.event.XidEvent;
 import com.google.common.collect.ImmutableSet;
 import java.util.Set;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
-/** Filters events based on their type */
+/**
+ * Represents a {@link com.airbnb.spinaltap.common.util.Filter} for {@link BinlogEvent}s based on a
+ * predefined whitelist of event class types.
+ */
 @RequiredArgsConstructor
-class EventTypeFilter extends MysqlEventFilter {
+final class EventTypeFilter extends MysqlEventFilter {
   @SuppressWarnings("unchecked")
   private static final Set<Class<? extends BinlogEvent>> WHITELISTED_EVENT_TYPES =
       ImmutableSet.of(
@@ -30,7 +34,7 @@ class EventTypeFilter extends MysqlEventFilter {
           QueryEvent.class,
           StartEvent.class);
 
-  public boolean apply(BinlogEvent event) {
+  public boolean apply(@NonNull final BinlogEvent event) {
     return WHITELISTED_EVENT_TYPES.contains(event.getClass());
   }
 }

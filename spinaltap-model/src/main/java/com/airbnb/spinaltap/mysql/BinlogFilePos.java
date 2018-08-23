@@ -6,7 +6,6 @@ package com.airbnb.spinaltap.mysql;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
 import java.io.Serializable;
 import java.util.Iterator;
@@ -14,15 +13,20 @@ import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
+/** Represents the position in a binlog file. */
 @Slf4j
 @Getter
 @EqualsAndHashCode
 @AllArgsConstructor
 @NoArgsConstructor
-public final class BinlogFilePos implements Comparable<BinlogFilePos>, Serializable {
+public class BinlogFilePos implements Comparable<BinlogFilePos>, Serializable {
   private static final long serialVersionUID = 1549638989059430876L;
+
+  private static final Splitter SPLITTER = Splitter.on(':');
+  private static final String NULL_VALUE = "null";
   public static final String DEFAULT_BINLOG_FILE_NAME = "mysql-bin-changelog";
 
   @JsonProperty private String fileName;
@@ -41,12 +45,13 @@ public final class BinlogFilePos implements Comparable<BinlogFilePos>, Serializa
     this(String.format("%s.%06d", DEFAULT_BINLOG_FILE_NAME, fileNumber), position, nextPosition);
   }
 
-  public static BinlogFilePos fromString(String position) {
-    Iterator<String> parts = Splitter.on(':').split(position).iterator();
+  public static BinlogFilePos fromString(@NonNull final String position) {
+    Iterator<String> parts = SPLITTER.split(position).iterator();
     String fileName = parts.next();
     String pos = parts.next();
     String nextPos = parts.next();
-    if (fileName.equals("null")) {
+
+    if (NULL_VALUE.equals(fileName)) {
       fileName = null;
     }
 
@@ -71,13 +76,9 @@ public final class BinlogFilePos implements Comparable<BinlogFilePos>, Serializa
   }
 
   @Override
-  public int compareTo(BinlogFilePos that) {
-    Preconditions.checkNotNull(that);
-
-    if (this.getFileNumber() != that.getFileNumber()) {
-      return Long.valueOf(this.getFileNumber()).compareTo(that.getFileNumber());
-    } else {
-      return Long.valueOf(this.getPosition()).compareTo(that.getPosition());
-    }
+  public int compareTo(@NonNull final BinlogFilePos other) {
+    return getFileNumber() != other.getFileNumber()
+        ? Long.compare(getFileNumber(), other.getFileNumber())
+        : Long.compare(getPosition(), other.getPosition());
   }
 }
