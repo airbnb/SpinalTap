@@ -1,7 +1,7 @@
 [![Build Status](https://travis-ci.org/airbnb/SpinalTap.svg?branch=master)](https://travis-ci.org/airbnb/SpinalTap)
 # SpinalTap
 SpinalTap is a general-purpose reliable Change Data Capture (CDC) service, capable of detecting data mutations with low-latency across different data sources, and propagating them as standardized events to downstream consumers.
-SpinalTap has become an integral component in Airbnb's infrastructure platform and data processing pipeline, on which several critical applications are reliant on.
+SpinalTap has become an integral component in Airbnb's infrastructure platform and data processing pipeline, on which several critical applications are reliant on. More information from our engineering [blog](https://medium.com/airbnb-engineering/capturing-data-evolution-in-a-service-oriented-architecture-72f7c643ee6f).
 
 ## Disclaimer
 
