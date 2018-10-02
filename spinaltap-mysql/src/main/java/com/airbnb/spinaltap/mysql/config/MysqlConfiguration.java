@@ -33,6 +33,7 @@ public class MysqlConfiguration extends AbstractMysqlConfiguration {
   public static final HostRole DEFAULT_HOST_ROLE = HostRole.MASTER;
   public static final int DEFAULT_SOCKET_TIMEOUT_IN_SECONDS = 90;
   public static final int DEFAULT_PORT = 5672;
+  public static final int DEFAULT_SERVER_ID = -1;
   public static final boolean DEFAULT_SCHEMA_VERSION_ENABLED = false;
   public static final boolean DEFAULT_LARGE_MESSAGE_ENABLED = false;
   public static final long DEFAULT_DELAY_SEND_MS = 0L;
@@ -77,6 +78,11 @@ public class MysqlConfiguration extends AbstractMysqlConfiguration {
   @Max(65535)
   @JsonProperty
   private int port = DEFAULT_PORT;
+
+  /** Setting a non-default server_id overrides the value in the global config */
+  @Min(-1)
+  @JsonProperty("server_id")
+  private int serverId = DEFAULT_SERVER_ID;
 
   @JsonProperty("socket_timeout_seconds")
   private int socketTimeoutInSeconds = DEFAULT_SOCKET_TIMEOUT_IN_SECONDS;
