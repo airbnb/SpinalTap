@@ -52,9 +52,15 @@ public class MysqlSourceFactory {
     final DBI mysqlDBI = MysqlSchemaUtil.createMysqlDBI(host, port, user, password, null);
 
     final BinaryLogClient client = new BinaryLogClient(host, port, user, password);
-    // Set different server_id for staging and production environment.
-    // Conflict occurs when more than one client of same server_id connect to a MySQL server.
-    client.setServerId(serverId);
+
+    /* Override the global server_id if it is set in MysqlConfiguration
+      Allow each source to use a different server_id
+    */
+    if (configuration.getServerId() != MysqlConfiguration.DEFAULT_SERVER_ID) {
+      client.setServerId(configuration.getServerId());
+    } else {
+      client.setServerId(serverId);
+    }
 
     final DataSource dataSource = new DataSource(host, port, name);
 
