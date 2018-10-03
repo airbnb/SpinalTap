@@ -84,7 +84,7 @@ mysql-sources:
 - **zk-namespace**: ZK namespace, please make sure it exists.
 - **kafka-config**: Kafka destination config, `boostrap_servers` is required.
 - **mysql-user**: username to connect to MySQL server, `SELECT`, `REPLICATION SLAVE`, `REPLICATION CLIENT`, `SHOW VIEW` permissions are required. 
-- **mysql-passowrd**: password to connect to MySQL server.
+- **mysql-password**: password to connect to MySQL server.
 - **mysql-server-id**: MySQL server id for replication purpose, in the range from 1 to 2^32 – 1. Must be unique across whole replication group. If you have other slaves that connect to the MySQL server, SpinalTap's server id must be different from theirs.
 ### MySQL Schema Store
 MySQL schema store is a MySQL instance which is used to store SpinalTap MySQL table schemas and their version history. When this feature is enabled, SpinalTap will track table schema changes and save the schema version snapshots into the schema store.
