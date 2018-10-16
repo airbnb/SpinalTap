@@ -71,7 +71,7 @@ public class MysqlSchemaStore extends AbstractMysqlSchemaStore
           + "  KEY `version_index` (`version`),"
           + "  UNIQUE KEY `binlog_position_index` (`source`,`database`,`table`,`binlog_filename`,`binlog_position`),"
           + "  UNIQUE KEY `version_query_index` (`source`,`database`,`table`,`version`)"
-          + ") ENGINE=InnoDB DEFAULT CHARSET=utf8";
+          + ") ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin";
   private static final String ARCHIVE_SCHEMA_STORE_TABLE_QUERY = "RENAME TABLE `%s` TO `%s`.`%s`";
   private static final String CREATE_ARCHIVE_TABLE_QUERY = "CREATE TABLE `%s`.`%s` LIKE `%s`";
   private static final String INSERT_ARCHIVE_TABLE_QUERY =
