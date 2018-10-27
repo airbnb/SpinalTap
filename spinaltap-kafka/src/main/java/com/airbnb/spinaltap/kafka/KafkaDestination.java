@@ -126,7 +126,7 @@ public final class KafkaDestination<T extends TBase<?, ?>> extends AbstractDesti
     return String.format(
         "%s.%s-%s-%s",
         topicNamePrefix,
-        mutation.getDataSource().getHostname(),
+        mutation.getDataSource().getSynapseService(),
         mutation.getTable().getDatabase(),
         mutation.getTable().getName());
   }
