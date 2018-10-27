@@ -51,10 +51,12 @@ public class KafkaDestinationTest extends AbstractKafkaIntegrationTestHarness {
   private static final int SESSION_TIMEOUT_MS = 10000;
   private static final int CONNECTION_TIMEOUT_MS = 10000;
   private static final ZkSerializer ZK_SERIALIZER = ZKStringSerializer$.MODULE$;
-  private static final String HOSTNAME = "localhost";
+  private static final String SOURCE_NAME = "localhost";
+  private static final String HOSTNAME = "127.0.0.1";
   private static final String DATABASE = "database";
   private static final String TABLE = "table";
-  private static final String TOPIC = "spinaltap" + "." + HOSTNAME + "-" + DATABASE + "-" + TABLE;
+  private static final String TOPIC =
+      "spinaltap" + "." + SOURCE_NAME + "-" + DATABASE + "-" + TABLE;
   private static final ThreadLocal<TDeserializer> deserializer =
       ThreadLocal.withInitial(() -> new TDeserializer((new TBinaryProtocol.Factory())));
 
@@ -178,7 +180,7 @@ public class KafkaDestinationTest extends AbstractKafkaIntegrationTestHarness {
             ImmutableList.of("id"));
     MysqlMutationMetadata metadata =
         new MysqlMutationMetadata(
-            new DataSource(HOSTNAME, 0, "service"),
+            new DataSource(HOSTNAME, 0, SOURCE_NAME),
             new BinlogFilePos(),
             table,
             0L,
