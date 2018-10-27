@@ -49,7 +49,7 @@ public final class MysqlPipeFactory extends AbstractPipeFactory<MysqlConfigurati
       @Min(0) final long mysqlServerId,
       @NonNull
           final Map<String, Supplier<DestinationBuilder<Mutation>>> destinationBuilderSupplierMap,
-      @NonNull final MysqlSchemaStoreConfiguration schemaStoreConfig,
+      final MysqlSchemaStoreConfiguration schemaStoreConfig,
       @NonNull final TaggedMetricRegistry metricRegistry) {
     super(metricRegistry);
     this.mysqlUser = mysqlUser;

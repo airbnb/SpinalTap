@@ -25,6 +25,7 @@ import com.airbnb.spinaltap.mysql.schema.SchemaTracker;
 import com.airbnb.spinaltap.mysql.validator.EventOrderValidator;
 import com.airbnb.spinaltap.mysql.validator.MutationSchemaValidator;
 import com.github.shyiko.mysql.binlog.BinaryLogClient;
+import com.google.common.base.Preconditions;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.concurrent.atomic.AtomicLong;
@@ -43,7 +44,7 @@ public class MysqlSourceFactory {
       @Min(0) final long serverId,
       @NonNull final Repository<SourceState> backingStateRepository,
       @NonNull final Repository<Collection<SourceState>> stateHistoryRepository,
-      @NonNull final MysqlSchemaStoreConfiguration schemaStoreConfig,
+      final MysqlSchemaStoreConfiguration schemaStoreConfig,
       @NonNull final MysqlSourceMetrics metrics,
       @Min(0) final long leaderEpoch) {
     final String name = configuration.getName();
@@ -74,6 +75,9 @@ public class MysqlSourceFactory {
     SchemaTracker schemaTracker;
 
     if (configuration.isSchemaVersionEnabled()) {
+      Preconditions.checkNotNull(
+          schemaStoreConfig,
+          "MySQL schema version is enabled but mysql-schema-store is not set in config");
       final DBI schemaStoreDBI =
           MysqlSchemaUtil.createMysqlDBI(
               schemaStoreConfig.getHost(),
