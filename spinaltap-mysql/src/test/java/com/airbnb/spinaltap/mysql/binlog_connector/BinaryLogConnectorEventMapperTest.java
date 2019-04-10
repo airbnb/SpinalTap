@@ -164,6 +164,9 @@ public class BinaryLogConnectorEventMapperTest {
     String sql_with_comments =
         "CREATE/* ! COMMENTS ! */UNIQUE /* ANOTHER COMMENTS ! */INDEX unique_index\n"
             + "ON `my_db`.`my_table` (`col1`, `col2`)";
+    String sql_with_comments_in_multi_lines =
+        "CREATE UNIQUE /*\n COMMENT Line1  \n COMMENT Line 2\n  */\n"
+            + "INDEX ON `my_db`.`my_table` (`col1`, `col2`)";
     eventHeader.setEventType(EventType.QUERY);
     QueryEventData eventData = new QueryEventData();
     eventData.setDatabase(DATABASE);
@@ -189,6 +192,13 @@ public class BinaryLogConnectorEventMapperTest {
     String expected_sql =
         "CREATE UNIQUE  INDEX unique_index ON `my_db`.`my_table` (`col1`, `col2`)";
     String stripped_sql = ((QueryEvent) (binlogEvent.get())).getSql();
+    assertEquals(expected_sql, stripped_sql);
+
+    eventData.setSql(sql_with_comments_in_multi_lines);
+    binlogEvent =
+        BinaryLogConnectorEventMapper.INSTANCE.map(
+            new Event(eventHeader, eventData), BINLOG_FILE_POS);
+    assertTrue(binlogEvent.isPresent());
     assertEquals(expected_sql, stripped_sql);
   }
 
