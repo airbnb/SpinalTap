@@ -24,7 +24,7 @@ public class MysqlSchemaStoreManager implements SchemaStoreBootstrapper, SchemaS
       ImmutableSet.of("mysql", "information_schema", "performance_schema");
 
   @NonNull private final String source;
-  @NonNull private final LatestMysqlSchemaStore schemaReader;
+  private final LatestMysqlSchemaStore schemaReader;
   @NonNull private final MysqlSchemaStore schemaStore;
   @NonNull private final MysqlSchemaDatabase schemaDatabase;
   @NonNull private final MysqlDDLHistoryStore ddlHistoryStore;
