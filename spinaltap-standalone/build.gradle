@@ -6,6 +6,8 @@ dependencies {
   compile project(':spinaltap-mysql')
   compile project(':spinaltap-kafka')
   compile libraries.jackson_dataformat_yaml
+  compileOnly libraries.lombok
+  annotationProcessor libraries.lombok
 }
 
 jar {
