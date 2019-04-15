@@ -1,5 +1,5 @@
 /**
- * Copyright 2018 Airbnb. Licensed under Apache-2.0. See License in the project root for license
+ * Copyright 2019 Airbnb. Licensed under Apache-2.0. See License in the project root for license
  * information.
  */
 package com.airbnb.spinaltap.mysql.schema;
@@ -24,7 +24,7 @@ public class MysqlSchemaStoreManager implements SchemaStoreBootstrapper, SchemaS
       ImmutableSet.of("mysql", "information_schema", "performance_schema");
 
   @NonNull private final String source;
-  @NonNull private final LatestMysqlSchemaStore schemaReader;
+  private final LatestMysqlSchemaStore schemaReader;
   @NonNull private final MysqlSchemaStore schemaStore;
   @NonNull private final MysqlSchemaDatabase schemaDatabase;
   @NonNull private final MysqlDDLHistoryStore ddlHistoryStore;

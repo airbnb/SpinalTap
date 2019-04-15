@@ -1,5 +1,5 @@
 /**
- * Copyright 2018 Airbnb. Licensed under Apache-2.0. See License in the project root for license
+ * Copyright 2019 Airbnb. Licensed under Apache-2.0. See License in the project root for license
  * information.
  */
 package com.airbnb.spinaltap.mysql.binlog_connector;
@@ -74,7 +74,12 @@ public final class BinaryLogConnectorEventMapper {
           final QueryEventData queryData = event.getData();
           return Optional.of(
               new QueryEvent(
-                  serverId, timestamp, position, queryData.getDatabase(), queryData.getSql()));
+                  serverId,
+                  timestamp,
+                  position,
+                  queryData.getDatabase(),
+                  // Remove newline and comments
+                  queryData.getSql().replaceAll("\\n|/\\*.*?\\*/", " ")));
         case FORMAT_DESCRIPTION:
           return Optional.of(new StartEvent(serverId, timestamp, position));
         default:

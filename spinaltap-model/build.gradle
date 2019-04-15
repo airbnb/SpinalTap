@@ -5,10 +5,11 @@ plugins {
 dependencies {
   compile libraries.apache_commons_lang
   compile libraries.guava
-  compile libraries.lombok
   compile libraries.jackson_annotations
   compile libraries.slf4j
   compile libraries.thrift
+  compileOnly libraries.lombok
+  annotationProcessor libraries.lombok
  
   testCompile libraries.junit
 }

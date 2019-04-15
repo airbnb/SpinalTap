@@ -9,9 +9,13 @@ dependencies {
   compile libraries.jackson_datatype_guava
   compile libraries.mysql_connector
   compile libraries.hibernate_validator
+  compileOnly libraries.lombok
+  annotationProcessor libraries.lombok
 
   testCompile libraries.junit
   testCompile libraries.mokito
+  testCompileOnly libraries.lombok
+  testAnnotationProcessor libraries.lombok
 
   antlr libraries.antlr4
 }

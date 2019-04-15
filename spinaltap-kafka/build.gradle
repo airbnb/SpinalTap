@@ -3,6 +3,8 @@ dependencies {
   compile project(":spinaltap-mysql")
   compile project(":kafka-test-harness")
   compile libraries.kafka_core
+  compileOnly libraries.lombok
+  annotationProcessor libraries.lombok
 
   testCompile libraries.junit
 }

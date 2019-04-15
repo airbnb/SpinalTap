@@ -9,6 +9,8 @@ dependencies {
   compile libraries.javax_validaton
   compile libraries.log4j_slf4j_impl
   compile libraries.zookeeper
+  compileOnly libraries.lombok
+  annotationProcessor libraries.lombok
 
   // Running in ZooKeeper 3.4.x compatibility mode
   compile(libraries.apache_curator_framework) {
@@ -17,4 +19,6 @@ dependencies {
   
   testCompile libraries.junit
   testCompile libraries.mokito
+  testCompileOnly libraries.lombok
+  testAnnotationProcessor libraries.lombok
 }
