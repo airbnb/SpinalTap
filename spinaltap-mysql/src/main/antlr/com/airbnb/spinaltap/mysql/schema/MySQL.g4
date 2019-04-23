@@ -253,7 +253,7 @@ create_view
 // details
 
 create_database_option
-    : DEFAULT? CHARACTER SET '='? charset_name
+    : DEFAULT? character_set '='? charset_name
    | DEFAULT? COLLATE '='? collation_name
    ;
 
@@ -413,7 +413,7 @@ table_option
     : ENGINE '='? engine_name                            #tblOptEngine
    | AUTO_INCREMENT '='? decimal_literal                    #tblOptAuInc
    | AVG_ROW_LENGTH '='? decimal_literal                    #tblOptAvgRLen
-   | DEFAULT? (CHARACTER SET | CHARSET) '='? charset_name         #tblOptDefCharSet
+   | DEFAULT? character_set '='? charset_name         #tblOptDefCharSet
    | CHECKSUM '='? ('0' | '1')                              #tblOptChkSum
    | DEFAULT? COLLATE '='? collation_name                   #tblOptDefCollate
    | COMMENT '='? STRING_LITERAL                         #tblOptComment
@@ -605,9 +605,9 @@ alter_table_spec
    | ENABLE KEYS                                      #altblEnKey
    | RENAME (TO | AS)? table_name                              #altblRenameTbl
    | ORDER BY id_list                                    #altblResort
-   | CONVERT TO CHARACTER SET charset_name 
+   | CONVERT TO character_set charset_name
        (COLLATE collation_name)?                         #altblConvert
-   | DEFAULT? CHARACTER SET '=' charset_name 
+   | DEFAULT? character_set '=' charset_name
        (COLLATE '=' collation_name)?                        #altblDefCharset
    | DISCARD TABLESPACE                               #altblDisTblspace
    | IMPORT TABLESPACE                                   #altblImpTblSpace
@@ -753,7 +753,7 @@ load_data_statement
      replaceignore=(REPLACE | IGNORE)? 
    INTO TABLE table_name
      (PARTITION '(' id_list ')' )?
-     (CHARACTER SET charset=charset_name)?
+     (character_set charset=charset_name)?
      (
        (FIELDS | COLUMNS)
        (TERMINATED BY terminatefieldsymb=STRING_LITERAL)?
@@ -778,7 +778,7 @@ load_xml_statement
      LOCAL? INFILE STRING_LITERAL
      (REPLACE | IGNORE)? 
    INTO TABLE table_name
-     (CHARACTER SET charset_name)?
+     (character_set charset_name)?
      (ROWS IDENTIFIED BY '<' STRING_LITERAL '>')?
      ( IGNORE decimal_literal (LINES | ROWS) )?
    ( '(' col_or_uservar (',' col_or_uservar)* ')' )?
@@ -1003,7 +1003,7 @@ select_into_expression
    | INTO DUMPFILE STRING_LITERAL                           #selectIntoDump
    | (
       INTO OUTFILE filename=STRING_LITERAL 
-      (CHARACTER SET charset=charset_name)?
+      (character_set charset=charset_name)?
       (
         (FIELDS | COLUMNS) 
           (TERMINATED BY terminatefieldsymb=STRING_LITERAL)?
@@ -1570,7 +1570,7 @@ install_plugin
 set_statement
     : SET variable_clause '=' expression 
      (',' variable_clause '=' expression)*                     #setVariableAssignment
-   | SET (CHARACTER SET | CHARSET) (charset_name | DEFAULT)    #setCharset
+   | SET character_set (charset_name | DEFAULT)    #setCharset
    | SET NAMES 
        (charset_name (COLLATE collation_name)? | DEFAULT)         #setNames
    | set_password_statement                              #setPasswordStatement
@@ -1588,7 +1588,7 @@ show_statement
        )?                                             #showLogevents
    | SHOW 
        (
-         CHARACTER SET | COLLATION | DATABASES | SCHEMAS
+         character_set | COLLATION | DATABASES | SCHEMAS
          | FUNCTION STATUS | PROCEDURE STATUS
          | (GLOBAL | SESSION)? (STATUS | VARIABLES)
        ) 
@@ -1880,12 +1880,16 @@ current_timestamp
       ) ('(' DECIMAL_LITERAL? ')')?
     ;
 
+// CHARSET is a synonym for CHARACTER SET.
+character_set
+    : CHARACTER SET | CHARSET;
+
 //    Data Types
 
 data_type
     : (CHAR | CHARACTER | VARCHAR | TINYTEXT | TEXT | MEDIUMTEXT | LONGTEXT | LONG)
      length_one_dimension? BINARY? 
-     (CHARACTER SET charset_name)? (COLLATE collation_name)?      #charDatatype
+     (character_set charset_name)? (COLLATE collation_name)?      #charDatatype
    | (TINYINT | SMALLINT | MEDIUMINT | INT | INTEGER | BIGINT | INT1 | INT2 | INT3 | INT4 | INT8)
      length_one_dimension? UNSIGNED? ZEROFILL?                 #dimensionDatatype
    | (REAL | DOUBLE PRECISION? | FLOAT)
@@ -1898,14 +1902,14 @@ data_type
      length_one_dimension?                               #dimensionDatatype
    | (ENUM | SET) 
      '(' STRING_LITERAL (',' STRING_LITERAL)* ')' BINARY? 
-     (CHARACTER SET charset_name)? (COLLATE collation_name)?      #collectCharDatatype
+     (character_set charset_name)? (COLLATE collation_name)?      #collectCharDatatype
    | SERIAL                                              #serialDatatype
    | spatial_data_type                                   #spatialDatatype
    ;
 
 data_type_to_convert
     : (BINARY| NCHAR) length_one_dimension?
-   | CHAR length_one_dimension? (CHARACTER SET charset_name)?
+   | CHAR length_one_dimension? (character_set charset_name)?
    | DATE | DATETIME | TIME
    | DECIMAL length_two_dimension?
    | (SIGNED | UNSIGNED) INTEGER?
