@@ -86,6 +86,27 @@ public class MysqlSchemaDatabaseTest {
             + "   `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE NOW(),\n"
             + "   PRIMARY KEY (`id`) ) ENGINE=InnoDB";
     assertEquals(expectedDDL, schemaDatabase.addSourcePrefix(ddl));
+
+    ddl =
+        "create   table `airbed3_production`.`_users_ghc` ( \t\t\t"
+            + "id bigint auto_increment, \t\t\t"
+            + "last_update timestamp not null DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, \t\t\t"
+            + "hint varchar(64) charset   ascii not null, \t\t\t"
+            + "value varchar(4096) charset ascii not null, \t\t\t"
+            + "primary key(id), \t\t\t"
+            + "unique key hint_uidx(hint) \t\t\t"
+            + ") auto_increment=256";
+    expectedDDL =
+        "create   table `source/airbed3_production`.`_users_ghc` ( \t\t\t"
+            + "id bigint auto_increment, \t\t\t"
+            + "last_update timestamp not null DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, \t\t\t"
+            + "hint varchar(64) charset   ascii not null, \t\t\t"
+            + "value varchar(4096) charset ascii not null, \t\t\t"
+            + "primary key(id), \t\t\t"
+            + "unique key hint_uidx(hint) \t\t\t"
+            + ") auto_increment=256";
+    String d = schemaDatabase.addSourcePrefix(ddl);
+    assertEquals(expectedDDL, d);
   }
 
   @Test
@@ -164,6 +185,11 @@ public class MysqlSchemaDatabaseTest {
     ddl = "CREATE SCHEMA `new_``schema``+456.789`";
     assertEquals(
         "CREATE SCHEMA `source/new_``schema``+456.789`", schemaDatabase.addSourcePrefix(ddl));
+
+    ddl = "CREATE DATABASE new_db DEFAULT CHARSET=utf8";
+    assertEquals(
+        "CREATE DATABASE `source/new_db` DEFAULT CHARSET=utf8",
+        schemaDatabase.addSourcePrefix(ddl));
   }
 
   @Test
