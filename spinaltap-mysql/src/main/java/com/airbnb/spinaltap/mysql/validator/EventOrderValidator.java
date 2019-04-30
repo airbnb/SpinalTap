@@ -29,7 +29,7 @@ public class EventOrderValidator implements Validator<BinlogEvent> {
     long eventId = event.getOffset();
     log.debug("Validating order for event with id {}. {}", eventId, event);
 
-    if (lastSeenId > eventId) {
+    if (eventId > 0 && lastSeenId > eventId) {
       log.warn(
           "Mutation with id {} is out of order and should precede {}. {}",
           eventId,
