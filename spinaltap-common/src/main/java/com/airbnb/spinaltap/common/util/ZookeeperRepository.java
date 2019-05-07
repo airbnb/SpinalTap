@@ -52,4 +52,11 @@ public class ZookeeperRepository<T> implements Repository<T> {
     byte[] value = zkClient.getData().forPath(path);
     return JsonUtil.OBJECT_MAPPER.readValue(value, propertyClass);
   }
+
+  @Override
+  public void remove() throws Exception {
+    if (exists()) {
+      zkClient.delete().guaranteed().forPath(path);
+    }
+  }
 }
