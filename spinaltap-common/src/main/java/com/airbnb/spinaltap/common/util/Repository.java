@@ -38,6 +38,9 @@ public interface Repository<T> {
   /** Retrieves the current object value. */
   T get() throws Exception;
 
+  /** Delete the current object */
+  void remove() throws Exception;
+
   /**
    * Responsible for determining the object value, as a function of the current value and new value.
    *

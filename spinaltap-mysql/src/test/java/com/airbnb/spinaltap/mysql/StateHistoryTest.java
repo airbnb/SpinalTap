@@ -114,6 +114,14 @@ public class StateHistoryTest {
     assertEquals(Collections.singletonList(firstState), repository.get());
   }
 
+  @Test
+  public void testRemoveStateHistory() throws Exception {
+    TestRepository repository = new TestRepository(mock(SourceState.class));
+    assertTrue(repository.exists());
+    repository.remove();
+    assertFalse(repository.exists());
+  }
+
   @NoArgsConstructor
   @AllArgsConstructor
   public class TestRepository implements Repository<Collection<SourceState>> {
@@ -147,6 +155,11 @@ public class StateHistoryTest {
     @Override
     public Collection<SourceState> get() throws Exception {
       return states;
+    }
+
+    @Override
+    public void remove() throws Exception {
+      states = null;
     }
   }
 }
