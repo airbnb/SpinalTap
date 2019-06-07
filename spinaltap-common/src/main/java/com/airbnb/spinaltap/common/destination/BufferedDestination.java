@@ -33,6 +33,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public final class BufferedDestination extends ListenableDestination {
+  @NonNull private final String name;
   @NonNull private final Destination destination;
   @NonNull private final DestinationMetrics metrics;
   @NonNull private final BlockingQueue<List<? extends Mutation<?>>> mutationBuffer;
@@ -40,10 +41,11 @@ public final class BufferedDestination extends ListenableDestination {
   private ExecutorService consumer;
 
   public BufferedDestination(
+      @NonNull final String name,
       @Min(1) final int bufferSize,
       @NonNull final Destination destination,
       @NonNull final DestinationMetrics metrics) {
-    this(destination, metrics, new ArrayBlockingQueue<>(bufferSize, true));
+    this(name, destination, metrics, new ArrayBlockingQueue<>(bufferSize, true));
 
     destination.addListener(
         new Listener() {
@@ -161,7 +163,9 @@ public final class BufferedDestination extends ListenableDestination {
 
       consumer =
           Executors.newSingleThreadExecutor(
-              new ThreadFactoryBuilder().setNameFormat("buffered-destination-consumer").build());
+              new ThreadFactoryBuilder()
+                  .setNameFormat(name + "buffered-destination-consumer")
+                  .build());
 
       consumer.execute(this::execute);
 

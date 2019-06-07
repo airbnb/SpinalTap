@@ -24,7 +24,7 @@ public abstract class DestinationBuilder<T> {
   protected String topicNamePrefix = "spinaltap";
   protected boolean largeMessageEnabled = false;
   protected long delaySendMs = 0;
-
+  private String name = "";
   private KeyProvider<Mutation<?>, String> keyProvider;
   private int bufferSize = 0;
   private int poolSize = 0;
@@ -53,6 +53,11 @@ public abstract class DestinationBuilder<T> {
 
   public final DestinationBuilder<T> withBuffer(@Min(0) final int bufferSize) {
     this.bufferSize = bufferSize;
+    return this;
+  }
+
+  public final DestinationBuilder<T> withName(@NonNull final String name) {
+    this.name = name;
     return this;
   }
 
@@ -91,7 +96,7 @@ public abstract class DestinationBuilder<T> {
           }
 
           if (bufferSize > 0) {
-            return new BufferedDestination(bufferSize, destination, metrics);
+            return new BufferedDestination(name, bufferSize, destination, metrics);
           }
 
           return destination;
