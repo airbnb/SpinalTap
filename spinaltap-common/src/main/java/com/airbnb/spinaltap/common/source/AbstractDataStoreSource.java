@@ -32,7 +32,7 @@ public abstract class AbstractDataStoreSource<E extends SourceEvent> extends Abs
   }
 
   @Override
-  protected void start() {
+  protected synchronized void start() {
     processor =
         Executors.newSingleThreadExecutor(
             new ThreadFactoryBuilder().setNameFormat(name + "-source-processor").build());
@@ -59,17 +59,17 @@ public abstract class AbstractDataStoreSource<E extends SourceEvent> extends Abs
   }
 
   @Override
-  public boolean isStarted() {
+  public synchronized boolean isStarted() {
     return started.get() && isRunning();
   }
 
   @Override
-  protected boolean isRunning() {
+  protected synchronized boolean isRunning() {
     return processor != null && !processor.isShutdown();
   }
 
   @Override
-  protected boolean isTerminated() {
+  protected synchronized boolean isTerminated() {
     return processor == null || processor.isTerminated();
   }
 

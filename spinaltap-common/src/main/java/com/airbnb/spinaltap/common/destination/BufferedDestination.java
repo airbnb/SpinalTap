@@ -135,16 +135,16 @@ public final class BufferedDestination extends ListenableDestination {
     log.info("Destination stopped processing mutations");
   }
 
-  public boolean isRunning() {
+  public synchronized boolean isRunning() {
     return consumer != null && !consumer.isShutdown();
   }
 
-  public boolean isTerminated() {
+  public synchronized boolean isTerminated() {
     return consumer == null || consumer.isTerminated();
   }
 
   @Override
-  public boolean isStarted() {
+  public synchronized boolean isStarted() {
     return destination.isStarted() && isRunning();
   }
 
@@ -161,13 +161,15 @@ public final class BufferedDestination extends ListenableDestination {
       mutationBuffer.clear();
       destination.open();
 
-      consumer =
-          Executors.newSingleThreadExecutor(
-              new ThreadFactoryBuilder()
-                  .setNameFormat(name + "buffered-destination-consumer")
-                  .build());
+      synchronized (this) {
+        consumer =
+            Executors.newSingleThreadExecutor(
+                new ThreadFactoryBuilder()
+                    .setNameFormat(name + "buffered-destination-consumer")
+                    .build());
 
-      consumer.execute(this::execute);
+        consumer.execute(this::execute);
+      }
 
       log.info("Started destination.");
     } catch (Exception ex) {
