@@ -14,6 +14,7 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
 import lombok.AccessLevel;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -32,11 +33,15 @@ public final class DestinationPool extends ListenableDestination {
   @NonNull private final KeyProvider<Mutation<?>, String> keyProvider;
   @NonNull private final List<Destination> destinations;
   @NonNull private final boolean[] isActive;
+  private final AtomicBoolean isErrorNotified = new AtomicBoolean();
 
   private Listener destinationListener =
       new Listener() {
         public void onError(Exception ex) {
-          notifyError(ex);
+          // Only notify once if error occurred in multiple destinations
+          if (isErrorNotified.compareAndSet(false, true)) {
+            notifyError(ex);
+          }
         }
       };
 
@@ -111,6 +116,7 @@ public final class DestinationPool extends ListenableDestination {
   @Override
   public void open() {
     Arrays.fill(isActive, false);
+    isErrorNotified.set(false);
     destinations.parallelStream().forEach(Destination::open);
   }
 

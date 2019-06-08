@@ -72,8 +72,6 @@ public final class BufferedDestination extends ListenableDestination {
         return;
       }
 
-      Preconditions.checkState(destination.isStarted(), "Destination is not started!");
-
       final Stopwatch stopwatch = Stopwatch.createStarted();
       final Mutation.Metadata metadata = mutations.get(0).getMetadata();
 
