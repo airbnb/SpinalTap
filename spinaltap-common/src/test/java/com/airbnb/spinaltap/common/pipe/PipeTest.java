@@ -36,6 +36,9 @@ public class PipeTest {
 
     pipe.start();
 
+    when(source.isStarted()).thenReturn(true);
+    when(destination.isStarted()).thenReturn(true);
+
     verify(source, times(1)).addListener(any(Source.Listener.class));
     verify(source, times(1)).open();
 

@@ -43,6 +43,9 @@ public class Pipe {
    */
   private ExecutorService keepAliveExecutor;
 
+  /** The error-handling executor that executes error-handling procedurewhen error occurred. */
+  private ExecutorService errorHandlingExecutor;
+
   /** @return The name of the pipe. */
   public String getName() {
     return source.getName();
@@ -63,6 +66,11 @@ public class Pipe {
     scheduleKeepAliveExecutor();
     scheduleCheckpointExecutor();
 
+    errorHandlingExecutor =
+        Executors.newSingleThreadExecutor(
+            new ThreadFactoryBuilder()
+                .setNameFormat(getName() + "-error-handling-executor")
+                .build());
     metrics.start();
   }
 
@@ -142,6 +150,10 @@ public class Pipe {
       checkpointExecutor.shutdownNow();
     }
 
+    if (errorHandlingExecutor != null) {
+      errorHandlingExecutor.shutdownNow();
+    }
+
     source.clear();
     destination.clear();
 
@@ -166,8 +178,13 @@ public class Pipe {
    * the last recorded {@link Source} state.
    */
   private synchronized void close() {
-    source.close();
-    destination.close();
+    if (source.isStarted()) {
+      source.close();
+    }
+
+    if (destination.isStarted()) {
+      destination.close();
+    }
 
     checkpoint();
 
@@ -194,13 +211,13 @@ public class Pipe {
     }
 
     public void onError(Throwable error) {
-      close();
+      errorHandlingExecutor.execute(Pipe.this::close);
     }
   }
 
   final class DestinationListener extends Destination.Listener {
     public void onError(Exception ex) {
-      destination.close();
+      errorHandlingExecutor.execute(Pipe.this::close);
     }
   }
 }
