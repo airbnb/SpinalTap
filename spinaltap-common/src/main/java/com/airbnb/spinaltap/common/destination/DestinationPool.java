@@ -115,7 +115,6 @@ public final class DestinationPool extends ListenableDestination {
 
   @Override
   public void open() {
-    Arrays.fill(isActive, false);
     isErrorNotified.set(false);
     destinations.parallelStream().forEach(Destination::open);
   }
