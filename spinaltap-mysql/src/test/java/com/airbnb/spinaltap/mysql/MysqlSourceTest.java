@@ -8,6 +8,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -170,11 +171,20 @@ public class MysqlSourceTest {
 
     source.addListener(listener);
     source.setPosition(null);
+    try {
+      source.onCommunicationError(new RuntimeException());
+      fail("Should not reach here");
+    } catch (Exception ex) {
 
-    source.onCommunicationError(new RuntimeException());
+    }
     assertNull(source.getLastSavedState().get());
 
-    source.onCommunicationError(new InvalidBinlogPositionException(""));
+    try {
+      source.onCommunicationError(new InvalidBinlogPositionException(""));
+      fail("Should not reach here");
+    } catch (Exception ex) {
+
+    }
     assertEquals(
         MysqlSource.EARLIEST_BINLOG_POS, source.getLastSavedState().get().getLastPosition());
   }

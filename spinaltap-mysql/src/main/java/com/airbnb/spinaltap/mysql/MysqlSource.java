@@ -172,6 +172,7 @@ public abstract class MysqlSource extends AbstractDataStoreSource<BinlogEvent> {
     if (ex instanceof InvalidBinlogPositionException) {
       resetToLastValidState();
     }
+    throw new RuntimeException(ex);
   }
 
   /** Checkpoints the {@link SourceState} for the source at the given {@link Mutation} position. */
