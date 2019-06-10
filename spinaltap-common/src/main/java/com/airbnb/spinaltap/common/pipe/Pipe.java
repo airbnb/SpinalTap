@@ -9,9 +9,8 @@ import com.airbnb.spinaltap.common.destination.Destination;
 import com.airbnb.spinaltap.common.source.Source;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -37,12 +36,15 @@ public class Pipe {
   private final Destination.Listener destinationListener = new DestinationListener();
 
   /** The checkpoint executor that periodically checkpoints the state of the source. */
-  private ScheduledExecutorService checkpointExecutor;
+  private ExecutorService checkpointExecutor;
 
   /**
    * The keep-alive executor that periodically checks the pipe is alive, and otherwise restarts it.
    */
-  private ScheduledExecutorService keepAliveExecutor;
+  private ExecutorService keepAliveExecutor;
+
+  /** The error-handling executor that executes error-handling procedurewhen error occurred. */
+  private ExecutorService errorHandlingExecutor;
 
   /** @return The name of the pipe. */
   public String getName() {
@@ -64,6 +66,11 @@ public class Pipe {
     scheduleKeepAliveExecutor();
     scheduleCheckpointExecutor();
 
+    errorHandlingExecutor =
+        Executors.newSingleThreadExecutor(
+            new ThreadFactoryBuilder()
+                .setNameFormat(getName() + "-error-handling-executor")
+                .build());
     metrics.start();
   }
 
@@ -72,28 +79,34 @@ public class Pipe {
       log.debug("Keep-alive executor is running");
       return;
     }
-
+    String name = getName() + "-pipe-keep-alive-executor";
     keepAliveExecutor =
-        Executors.newSingleThreadScheduledExecutor(
-            new ThreadFactoryBuilder()
-                .setNameFormat(getName() + "-pipe-keep-alive-executor")
-                .build());
+        Executors.newSingleThreadExecutor(new ThreadFactoryBuilder().setNameFormat(name).build());
 
-    keepAliveExecutor.scheduleAtFixedRate(
+    keepAliveExecutor.execute(
         () -> {
           try {
-            if (isStarted()) {
-              log.info("Pipe {} is alive", getName());
-            } else {
-              open();
-            }
-          } catch (Exception ex) {
-            log.error("Failed to open pipe " + getName(), ex);
+            Thread.sleep(EXECUTOR_DELAY_SECONDS * 1000);
+          } catch (InterruptedException ex) {
+            log.info("{} is interrupted.", name);
           }
-        },
-        EXECUTOR_DELAY_SECONDS,
-        KEEP_ALIVE_PERIOD_SECONDS,
-        TimeUnit.SECONDS);
+          while (!keepAliveExecutor.isShutdown()) {
+            try {
+              if (isStarted()) {
+                log.info("Pipe {} is alive", getName());
+              } else {
+                open();
+              }
+            } catch (Exception ex) {
+              log.error("Failed to open pipe " + getName(), ex);
+            }
+            try {
+              Thread.sleep(KEEP_ALIVE_PERIOD_SECONDS * 1000);
+            } catch (InterruptedException ex) {
+              log.info("{} is interrupted.", name);
+            }
+          }
+        });
   }
 
   private void scheduleCheckpointExecutor() {
@@ -101,24 +114,30 @@ public class Pipe {
       log.debug("Checkpoint executor is running");
       return;
     }
-
+    String name = getName() + "-pipe-checkpoint-executor";
     checkpointExecutor =
-        Executors.newSingleThreadScheduledExecutor(
-            new ThreadFactoryBuilder()
-                .setNameFormat(getName() + "-pipe-checkpoint-executor")
-                .build());
+        Executors.newSingleThreadExecutor(new ThreadFactoryBuilder().setNameFormat(name).build());
 
-    checkpointExecutor.scheduleAtFixedRate(
+    checkpointExecutor.execute(
         () -> {
           try {
-            checkpoint();
-          } catch (Exception ex) {
-            log.error("Failed to checkpoint pipe " + getName(), ex);
+            Thread.sleep(EXECUTOR_DELAY_SECONDS * 1000);
+          } catch (InterruptedException ex) {
+            log.info("{} is interrupted.", name);
           }
-        },
-        EXECUTOR_DELAY_SECONDS,
-        CHECKPOINT_PERIOD_SECONDS,
-        TimeUnit.SECONDS);
+          while (!checkpointExecutor.isShutdown()) {
+            try {
+              checkpoint();
+            } catch (Exception ex) {
+              log.error("Failed to checkpoint pipe " + getName(), ex);
+            }
+            try {
+              Thread.sleep(CHECKPOINT_PERIOD_SECONDS * 1000);
+            } catch (InterruptedException ex) {
+              log.info("{} is interrupted.", name);
+            }
+          }
+        });
   }
 
   /** Stops event streaming for the pipe. */
@@ -129,6 +148,10 @@ public class Pipe {
 
     if (checkpointExecutor != null) {
       checkpointExecutor.shutdownNow();
+    }
+
+    if (errorHandlingExecutor != null) {
+      errorHandlingExecutor.shutdownNow();
     }
 
     source.clear();
@@ -155,8 +178,13 @@ public class Pipe {
    * the last recorded {@link Source} state.
    */
   private synchronized void close() {
-    source.close();
-    destination.close();
+    if (source.isStarted()) {
+      source.close();
+    }
+
+    if (destination.isStarted()) {
+      destination.close();
+    }
 
     checkpoint();
 
@@ -183,13 +211,13 @@ public class Pipe {
     }
 
     public void onError(Throwable error) {
-      close();
+      errorHandlingExecutor.execute(Pipe.this::close);
     }
   }
 
   final class DestinationListener extends Destination.Listener {
     public void onError(Exception ex) {
-      destination.close();
+      errorHandlingExecutor.execute(Pipe.this::close);
     }
   }
 }

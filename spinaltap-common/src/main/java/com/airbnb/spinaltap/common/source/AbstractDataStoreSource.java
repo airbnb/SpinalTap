@@ -5,12 +5,14 @@
 package com.airbnb.spinaltap.common.source;
 
 import com.airbnb.spinaltap.Mutation;
+import com.airbnb.spinaltap.common.util.ConcurrencyUtil;
 import com.airbnb.spinaltap.common.util.Filter;
 import com.airbnb.spinaltap.common.util.Mapper;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 import lombok.extern.slf4j.Slf4j;
 
@@ -32,7 +34,7 @@ public abstract class AbstractDataStoreSource<E extends SourceEvent> extends Abs
   }
 
   @Override
-  protected void start() {
+  protected synchronized void start() {
     processor =
         Executors.newSingleThreadExecutor(
             new ThreadFactoryBuilder().setNameFormat(name + "-source-processor").build());
@@ -51,25 +53,26 @@ public abstract class AbstractDataStoreSource<E extends SourceEvent> extends Abs
 
   @Override
   protected void stop() throws Exception {
-    disconnect();
-
-    if (processor != null) {
-      processor.shutdownNow();
+    if (isRunning()) {
+      synchronized (this) {
+        ConcurrencyUtil.shutdownGracefully(processor, 2, TimeUnit.SECONDS);
+      }
     }
+    disconnect();
   }
 
   @Override
-  public boolean isStarted() {
+  public synchronized boolean isStarted() {
     return started.get() && isRunning();
   }
 
   @Override
-  protected boolean isRunning() {
+  protected synchronized boolean isRunning() {
     return processor != null && !processor.isShutdown();
   }
 
   @Override
-  protected boolean isTerminated() {
+  protected synchronized boolean isTerminated() {
     return processor == null || processor.isTerminated();
   }
 

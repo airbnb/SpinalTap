@@ -128,6 +128,7 @@ public final class MysqlPipeFactory extends AbstractPipeFactory<MysqlConfigurati
                 "destination builder is not found for %s.", destinationConfiguration.getType()));
     return destinationBuilderSupplier
         .get()
+        .withName(sourceConfiguration.getName())
         .withTopicNamePrefix(MysqlConfiguration.MYSQL_TOPICS.get(sourceConfiguration.getHostRole()))
         .withMapper(ThriftMutationMapper.create(getHostName()))
         .withMetrics(new MysqlDestinationMetrics(sourceConfiguration.getName(), metricRegistry))

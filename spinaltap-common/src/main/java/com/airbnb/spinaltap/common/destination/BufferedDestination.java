@@ -33,6 +33,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public final class BufferedDestination extends ListenableDestination {
+  @NonNull private final String name;
   @NonNull private final Destination destination;
   @NonNull private final DestinationMetrics metrics;
   @NonNull private final BlockingQueue<List<? extends Mutation<?>>> mutationBuffer;
@@ -40,10 +41,11 @@ public final class BufferedDestination extends ListenableDestination {
   private ExecutorService consumer;
 
   public BufferedDestination(
+      @NonNull final String name,
       @Min(1) final int bufferSize,
       @NonNull final Destination destination,
       @NonNull final DestinationMetrics metrics) {
-    this(destination, metrics, new ArrayBlockingQueue<>(bufferSize, true));
+    this(name, destination, metrics, new ArrayBlockingQueue<>(bufferSize, true));
 
     destination.addListener(
         new Listener() {
@@ -69,8 +71,6 @@ public final class BufferedDestination extends ListenableDestination {
       if (mutations.isEmpty()) {
         return;
       }
-
-      Preconditions.checkState(destination.isStarted(), "Destination is not started!");
 
       final Stopwatch stopwatch = Stopwatch.createStarted();
       final Mutation.Metadata metadata = mutations.get(0).getMetadata();
@@ -133,16 +133,16 @@ public final class BufferedDestination extends ListenableDestination {
     log.info("Destination stopped processing mutations");
   }
 
-  public boolean isRunning() {
+  public synchronized boolean isRunning() {
     return consumer != null && !consumer.isShutdown();
   }
 
-  public boolean isTerminated() {
+  public synchronized boolean isTerminated() {
     return consumer == null || consumer.isTerminated();
   }
 
   @Override
-  public boolean isStarted() {
+  public synchronized boolean isStarted() {
     return destination.isStarted() && isRunning();
   }
 
@@ -159,11 +159,15 @@ public final class BufferedDestination extends ListenableDestination {
       mutationBuffer.clear();
       destination.open();
 
-      consumer =
-          Executors.newSingleThreadExecutor(
-              new ThreadFactoryBuilder().setNameFormat("buffered-destination-consumer").build());
+      synchronized (this) {
+        consumer =
+            Executors.newSingleThreadExecutor(
+                new ThreadFactoryBuilder()
+                    .setNameFormat(name + "buffered-destination-consumer")
+                    .build());
 
-      consumer.execute(this::execute);
+        consumer.execute(this::execute);
+      }
 
       log.info("Started destination.");
     } catch (Exception ex) {
