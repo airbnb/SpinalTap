@@ -23,7 +23,7 @@ ext {
     log4j_slf4j_impl: 'org.apache.logging.log4j:log4j-slf4j-impl:2.9.1',
     lombok: 'org.projectlombok:lombok:1.18.2',
     mokito: 'org.mockito:mockito-all:1.10.19',
-    mysql_binlog_connector: 'com.github.shyiko:mysql-binlog-connector-java:0.13.0',
+    mysql_binlog_connector: 'com.github.shyiko:mysql-binlog-connector-java:0.20.1',
     mysql_connector: 'mysql:mysql-connector-java:5.1.44',
     slf4j: 'org.slf4j:slf4j-api:1.7.25',
     thrift: 'org.apache.thrift:libthrift:0.9.3',
