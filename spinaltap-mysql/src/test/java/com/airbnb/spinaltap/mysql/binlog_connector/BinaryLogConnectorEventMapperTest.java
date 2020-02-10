@@ -196,7 +196,7 @@ public class BinaryLogConnectorEventMapperTest {
         BinaryLogConnectorEventMapper.INSTANCE.map(
             new Event(eventHeader, eventData), BINLOG_FILE_POS);
     assertTrue(binlogEvent.isPresent());
-    String expected_sql = " CREATE TABLE t1 (id bigint(20)) ENGINE=InnoDB";
+    String expected_sql = "CREATE TABLE t1 (id bigint(20)) ENGINE=InnoDB";
     String stripped_sql = ((QueryEvent) (binlogEvent.get())).getSql();
     assertEquals(expected_sql, stripped_sql);
   }

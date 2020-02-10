@@ -82,7 +82,7 @@ public final class BinaryLogConnectorEventMapper {
                   queryData
                       .getSql()
                       // https://dev.mysql.com/doc/refman/5.7/en/comments.html
-                      // Remove MySQL-specific comments (/*! ... */ and /*!50110 ... */) which
+                      // Replace MySQL-specific comments (/*! ... */ and /*!50110 ... */) which
                       // are actually executed
                       .replaceAll("/\\*!(?:\\d{5})?(.*?)\\*/", "$1")
                       // Remove line comments and block comments along with newlines
@@ -90,7 +90,8 @@ public final class BinaryLogConnectorEventMapper {
                       .replaceAll(
                           "((?:--\\s+|#).*?)?(?:\\r|\\n)|/\\*[^*]*\\*+(?:[^/*][^*]*\\*+)*/", " ")
                       // Remove extra spaces
-                      .replaceAll("\\s+", " ")));
+                      .replaceAll("\\s+", " ")
+                      .replaceAll("^\\s+", "")));
         case FORMAT_DESCRIPTION:
           return Optional.of(new StartEvent(serverId, timestamp, position));
         default:
