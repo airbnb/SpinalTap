@@ -79,6 +79,7 @@ public final class BinaryLogConnectorEventMapper {
                   position,
                   queryData.getDatabase(),
                   // Remove newline and comments
+                  // Note: This does not handle comments in quotes (e.g. '# comments')
                   queryData
                       .getSql()
                       // https://dev.mysql.com/doc/refman/5.7/en/comments.html
