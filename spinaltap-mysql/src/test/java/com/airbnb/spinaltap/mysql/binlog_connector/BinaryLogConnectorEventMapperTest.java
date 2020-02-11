@@ -180,28 +180,6 @@ public class BinaryLogConnectorEventMapperTest {
   }
 
   @Test
-  public void testQueryEventWithLineSQLComments() {
-    String sql_with_line_comments =
-        "-- I am a line comment\n"
-            + "CREATE #I am another line comment \n"
-            + "TABLE t1\n"
-            + "(id bigint(20)) -- line comment\n"
-            + " ENGINE=InnoDB";
-    eventHeader.setEventType(EventType.QUERY);
-    QueryEventData eventData = new QueryEventData();
-    eventData.setDatabase(DATABASE);
-    eventData.setSql(sql_with_line_comments);
-
-    Optional<BinlogEvent> binlogEvent =
-        BinaryLogConnectorEventMapper.INSTANCE.map(
-            new Event(eventHeader, eventData), BINLOG_FILE_POS);
-    assertTrue(binlogEvent.isPresent());
-    String expected_sql = "CREATE TABLE t1 (id bigint(20)) ENGINE=InnoDB";
-    String stripped_sql = ((QueryEvent) (binlogEvent.get())).getSql();
-    assertEquals(expected_sql, stripped_sql);
-  }
-
-  @Test
   public void testQueryEventWithBlockSQLComments() {
     String sql_with_block_comments =
         "CREATE/* ! COMMENTS ! */UNIQUE /* ANOTHER COMMENTS ! */INDEX unique_index\n"
@@ -221,7 +199,8 @@ public class BinaryLogConnectorEventMapperTest {
         BinaryLogConnectorEventMapper.INSTANCE.map(
             new Event(eventHeader, eventData), BINLOG_FILE_POS);
     assertTrue(binlogEvent.isPresent());
-    String expected_sql = "CREATE UNIQUE INDEX unique_index ON `my_db`.`my_table` (`col1`, `col2`)";
+    String expected_sql =
+        "CREATE UNIQUE INDEX unique_index\nON `my_db`.`my_table` (`col1`, `col2`)";
     String stripped_sql = ((QueryEvent) (binlogEvent.get())).getSql();
     assertEquals(expected_sql, stripped_sql);
 
@@ -231,7 +210,7 @@ public class BinaryLogConnectorEventMapperTest {
             new Event(eventHeader, eventData), BINLOG_FILE_POS);
     assertTrue(binlogEvent.isPresent());
     stripped_sql = ((QueryEvent) (binlogEvent.get())).getSql();
-    expected_sql = "CREATE UNIQUE INDEX ON `my_db`.`my_table` (`col1`, `col2`)";
+    expected_sql = "CREATE UNIQUE \nINDEX ON `my_db`.`my_table` (`col1`, `col2`)";
     assertEquals(expected_sql, stripped_sql);
   }
 
