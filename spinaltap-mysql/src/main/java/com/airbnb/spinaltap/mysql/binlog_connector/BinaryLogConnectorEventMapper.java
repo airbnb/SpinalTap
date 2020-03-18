@@ -78,8 +78,20 @@ public final class BinaryLogConnectorEventMapper {
                   timestamp,
                   position,
                   queryData.getDatabase(),
-                  // Remove newline and comments
-                  queryData.getSql().replaceAll("\\n|/\\*.*?\\*/", " ")));
+                  queryData
+                      .getSql()
+                      // https://dev.mysql.com/doc/refman/5.7/en/comments.html
+                      // Replace MySQL-specific comments (/*! ... */ and /*!50110 ... */) which
+                      // are actually executed
+                      .replaceAll("/\\*!(?:\\d{5})?(.*?)\\*/", "$1")
+                      // Remove block comments
+                      // https://stackoverflow.com/questions/13014947/regex-to-match-a-c-style-multiline-comment
+                      // line comments and newlines are kept
+                      // Note: This does not handle comments in quotes
+                      .replaceAll("/\\*[^*]*\\*+(?:[^/*][^*]*\\*+)*/", " ")
+                      // Remove extra spaces
+                      .replaceAll("\\h+", " ")
+                      .replaceAll("^\\s+", "")));
         case FORMAT_DESCRIPTION:
           return Optional.of(new StartEvent(serverId, timestamp, position));
         default:

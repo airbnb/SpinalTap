@@ -1,14 +1,16 @@
 language: java
 
-jdk:
-  - oraclejdk8
+dist: bionic
 
 sudo: true
 
 before_install:
   - sudo apt-get -qq update
-  - sudo apt-get install -y automake bison flex g++ git libboost-all-dev libevent-dev libssl-dev libtool make pkg-config
+  - sudo apt-get install -y automake bison flex g++ git libboost-all-dev libevent-dev libssl1.0-dev libtool make pkg-config openjdk-8-jdk
   - ./install-thrift-0.9.3.sh
+  - wget https://raw.githubusercontent.com/michaelklishin/jdk_switcher/master/jdk_switcher.sh
+  - source jdk_switcher.sh
+  - jdk_switcher use openjdk8
 
 install:
   - ./gradlew spotlessCheck
