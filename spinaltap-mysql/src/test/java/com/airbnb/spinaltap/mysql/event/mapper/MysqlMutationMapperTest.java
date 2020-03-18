@@ -60,6 +60,7 @@ public class MysqlMutationMapperTest {
           TABLE_ID,
           "Users",
           "test_db",
+          null,
           ImmutableList.of(
               new ColumnMetadata("id", ColumnDataType.LONGLONG, true, 0),
               new ColumnMetadata("name", ColumnDataType.VARCHAR, false, 1),

@@ -21,6 +21,7 @@ import org.junit.Test;
 
 public class TableCacheTest {
   private static final String DATABASE_NAME = "db";
+  private static final String OVERRIDING_DATABASE_NAME = "overriding_db";
   private static final String TABLE_NAME = "test";
   private static final long TABLE_ID = 1l;
 
@@ -29,6 +30,7 @@ public class TableCacheTest {
           TABLE_ID,
           TABLE_NAME,
           DATABASE_NAME,
+          OVERRIDING_DATABASE_NAME,
           Arrays.asList(
               new ColumnMetadata("col1", ColumnDataType.TINY, true, 0),
               new ColumnMetadata("col2", ColumnDataType.STRING, false, 1),
@@ -53,6 +55,7 @@ public class TableCacheTest {
           TABLE_ID,
           TABLE_NAME,
           DATABASE_NAME,
+          OVERRIDING_DATABASE_NAME,
           Arrays.asList(
               new ColumnMetadata("col1", ColumnDataType.TINY, true, 0),
               new ColumnMetadata("col2", ColumnDataType.STRING, false, 1),
@@ -89,7 +92,7 @@ public class TableCacheTest {
 
   @Test
   public void test() throws Exception {
-    TableCache tableCache = new TableCache(schemaReader);
+    TableCache tableCache = new TableCache(schemaReader, OVERRIDING_DATABASE_NAME);
 
     List<ColumnDataType> columnTypes =
         Arrays.asList(
@@ -145,7 +148,7 @@ public class TableCacheTest {
 
   @Test
   public void testNewTableName() throws Exception {
-    TableCache tableCache = new TableCache(schemaReader);
+    TableCache tableCache = new TableCache(schemaReader, OVERRIDING_DATABASE_NAME);
     String newTable = "new_table";
 
     when(schemaReader.query(DATABASE_NAME, TABLE_NAME, binlogFilePos)).thenReturn(TABLE_SCHEMA);

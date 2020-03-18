@@ -29,4 +29,6 @@ public abstract class AbstractMysqlConfiguration extends SourceConfiguration {
   public abstract int getPort();
 
   public abstract List<String> getCanonicalTableNames();
+
+  public abstract String getOverridingDatabase();
 }

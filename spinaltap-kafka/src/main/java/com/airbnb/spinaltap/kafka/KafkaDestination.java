@@ -4,6 +4,7 @@
  */
 package com.airbnb.spinaltap.kafka;
 
+import com.airbnb.jitney.event.spinaltap.v1.Table;
 import com.airbnb.spinaltap.Mutation;
 import com.airbnb.spinaltap.common.destination.AbstractDestination;
 import com.airbnb.spinaltap.common.destination.DestinationMetrics;
@@ -123,11 +124,12 @@ public final class KafkaDestination<T extends TBase<?, ?>> extends AbstractDesti
   private String getTopic(final TBase<?, ?> event) {
     com.airbnb.jitney.event.spinaltap.v1.Mutation mutation =
         ((com.airbnb.jitney.event.spinaltap.v1.Mutation) event);
+    Table table = mutation.getTable();
     return String.format(
         "%s.%s-%s-%s",
         topicNamePrefix,
         mutation.getDataSource().getSynapseService(),
-        mutation.getTable().getDatabase(),
+        table.isSetOverridingDatabase() ? table.getOverridingDatabase() : table.getDatabase(),
         mutation.getTable().getName());
   }
 

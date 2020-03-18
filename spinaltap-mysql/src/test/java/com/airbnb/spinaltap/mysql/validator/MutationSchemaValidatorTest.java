@@ -27,6 +27,7 @@ public class MutationSchemaValidatorTest {
           0L,
           "Users",
           "test_db",
+          null,
           ImmutableList.of(
               new ColumnMetadata(ID_COLUMN, ColumnDataType.LONGLONG, true, 0),
               new ColumnMetadata(NAME_COLUMN, ColumnDataType.VARCHAR, false, 1),
