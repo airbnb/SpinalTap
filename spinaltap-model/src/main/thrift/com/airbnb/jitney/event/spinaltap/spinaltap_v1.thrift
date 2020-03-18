@@ -39,6 +39,10 @@ struct Table {
   3: required string database,
   4: required set<string> primary_key,
   5: required map<string, Column> columns,
+  // When `overriding_database` is set, mutations will be published to the Kafka topic
+  // with name <spinaltap_prefix>.<overriding_database>.<table_name> instead of
+  // <sipnaltap_prefix>.<database_name>.<table_name>
+  6: optional string overriding_database,
 }
 
 struct Mutation {

@@ -23,6 +23,7 @@ public class MysqlUpdateMutationTest {
             1,
             "table_name",
             "db_name",
+            null,
             ImmutableList.of(new ColumnMetadata("id", ColumnDataType.LONGLONG, false, 0)),
             ImmutableList.of());
 

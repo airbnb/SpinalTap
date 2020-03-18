@@ -23,6 +23,7 @@ public class MysqlKeyProviderTest {
           0L,
           "users",
           "test",
+          null,
           ImmutableList.of(new ColumnMetadata(ID_COLUMN, ColumnDataType.LONGLONG, true, 0)),
           ImmutableList.of(ID_COLUMN));
 

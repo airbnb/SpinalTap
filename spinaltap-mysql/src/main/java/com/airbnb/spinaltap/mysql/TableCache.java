@@ -29,6 +29,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class TableCache {
   @NonNull private final SchemaStore<MysqlTableSchema> schemaStore;
+  private final String overridingDatabase;
   private final Cache<Long, Table> tableCache = CacheBuilder.newBuilder().maximumSize(200).build();
 
   /**
@@ -128,6 +129,7 @@ public class TableCache {
             .map(ColumnInfo::getName)
             .collect(Collectors.toList());
 
-    return new Table(tableId, tableName, databaseName, columnMetadata, primaryColumns);
+    return new Table(
+        tableId, tableName, databaseName, overridingDatabase, columnMetadata, primaryColumns);
   }
 }

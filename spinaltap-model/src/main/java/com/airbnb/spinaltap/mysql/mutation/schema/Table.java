@@ -24,6 +24,7 @@ public final class Table {
   private final long id;
   private final String name;
   private final String database;
+  private final String overridingDatabase;
 
   /**
    * Note: It is important that the implement of the columns map retains the order of entry
@@ -42,11 +43,13 @@ public final class Table {
       long id,
       String name,
       String database,
+      String overridingDatabase,
       List<ColumnMetadata> columnMetadatas,
       List<String> primaryKeyColumns) {
     this.id = id;
     this.name = name;
     this.database = database;
+    this.overridingDatabase = overridingDatabase;
     this.columns = createColumns(columnMetadatas);
     this.primaryKey = createPrimaryKey(primaryKeyColumns, columns);
   }
@@ -84,8 +87,13 @@ public final class Table {
                 })
             .collect(Collectors.toMap(c -> c.getName(), c -> c));
 
-    return new com.airbnb.jitney.event.spinaltap.v1.Table(
-        table.getId(), table.getName(), table.getDatabase(), primaryKey, columns);
+    com.airbnb.jitney.event.spinaltap.v1.Table thriftTable =
+        new com.airbnb.jitney.event.spinaltap.v1.Table(
+            table.getId(), table.getName(), table.getDatabase(), primaryKey, columns);
+    if (table.getOverridingDatabase() != null) {
+      thriftTable.setOverridingDatabase(table.getOverridingDatabase());
+    }
+    return thriftTable;
   }
 
   public static String canonicalNameOf(String db, String tableName) {

@@ -120,7 +120,8 @@ public class MysqlSourceFactory {
       schemaTracker = (event) -> {};
     }
 
-    final TableCache tableCache = new TableCache(schemaStore);
+    final TableCache tableCache =
+        new TableCache(schemaStore, configuration.getOverridingDatabase());
 
     final BinaryLogConnectorSource source =
         new BinaryLogConnectorSource(

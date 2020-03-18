@@ -99,6 +99,9 @@ public class MysqlConfiguration extends AbstractMysqlConfiguration {
   @JsonProperty("delay_send_ms")
   private long delaySendMs = DEFAULT_DELAY_SEND_MS;
 
+  @JsonProperty("overriding_database")
+  private String overridingDatabase;
+
   @Override
   public void setPartitions(int partitions) {
     // We only support 1 partition for mysql sources

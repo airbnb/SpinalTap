@@ -30,6 +30,7 @@ public class RowTest {
             TABLE_ID,
             TABLE_NAME,
             DB_NAME,
+            null,
             ImmutableList.of(new ColumnMetadata(ID_COLUMN, ColumnDataType.LONGLONG, false, 0)),
             ImmutableList.of());
 
@@ -47,6 +48,7 @@ public class RowTest {
             TABLE_ID,
             TABLE_NAME,
             DB_NAME,
+            null,
             ImmutableList.of(new ColumnMetadata(ID_COLUMN, ColumnDataType.LONGLONG, true, 0)),
             ImmutableList.of(ID_COLUMN));
 
@@ -64,6 +66,7 @@ public class RowTest {
             TABLE_ID,
             TABLE_NAME,
             DB_NAME,
+            null,
             ImmutableList.of(
                 new ColumnMetadata(ID_COLUMN, ColumnDataType.LONGLONG, true, 0),
                 new ColumnMetadata(NAME_COLUMN, ColumnDataType.VARCHAR, false, 1)),
@@ -86,6 +89,7 @@ public class RowTest {
             TABLE_ID,
             TABLE_NAME,
             DB_NAME,
+            null,
             ImmutableList.of(
                 new ColumnMetadata(ID_COLUMN, ColumnDataType.LONGLONG, true, 0),
                 new ColumnMetadata(NAME_COLUMN, ColumnDataType.VARCHAR, true, 1)),

@@ -176,6 +176,7 @@ public class KafkaDestinationTest extends AbstractKafkaIntegrationTestHarness {
             0L,
             TABLE,
             DATABASE,
+            null,
             ImmutableList.of(new ColumnMetadata("id", ColumnDataType.LONGLONG, true, 0)),
             ImmutableList.of("id"));
     MysqlMutationMetadata metadata =
