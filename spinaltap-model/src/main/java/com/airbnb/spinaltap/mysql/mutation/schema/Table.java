@@ -7,6 +7,7 @@ package com.airbnb.spinaltap.mysql.mutation.schema;
 import com.airbnb.jitney.event.spinaltap.v1.Column;
 import com.google.common.base.Optional;
 import com.google.common.base.Splitter;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
@@ -38,6 +39,15 @@ public final class Table {
 
   @Getter(lazy = true)
   private final com.airbnb.jitney.event.spinaltap.v1.Table thriftTable = toThriftTable(this);
+
+  public Table(
+      long id,
+      String name,
+      String database,
+      List<ColumnMetadata> columnMetadatas,
+      List<String> primaryKeyColumns) {
+    this(id, name, database, null, columnMetadatas, primaryKeyColumns);
+  }
 
   public Table(
       long id,
@@ -90,7 +100,7 @@ public final class Table {
     com.airbnb.jitney.event.spinaltap.v1.Table thriftTable =
         new com.airbnb.jitney.event.spinaltap.v1.Table(
             table.getId(), table.getName(), table.getDatabase(), primaryKey, columns);
-    if (table.getOverridingDatabase() != null) {
+    if (!Strings.isNullOrEmpty(table.getOverridingDatabase())) {
       thriftTable.setOverridingDatabase(table.getOverridingDatabase());
     }
     return thriftTable;
