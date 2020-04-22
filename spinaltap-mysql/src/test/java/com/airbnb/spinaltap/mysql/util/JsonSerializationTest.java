@@ -10,6 +10,7 @@ import com.airbnb.spinaltap.common.source.SourceState;
 import com.airbnb.spinaltap.common.util.JsonUtil;
 import com.airbnb.spinaltap.mysql.BinlogFilePos;
 import com.airbnb.spinaltap.mysql.DataSource;
+import com.airbnb.spinaltap.mysql.GtidSet;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.Queues;
 import java.util.Collection;
@@ -20,6 +21,7 @@ public class JsonSerializationTest {
   private static final DataSource DATA_SOURCE = new DataSource("test", 3306, "test_service");
   private static final BinlogFilePos BINLOG_FILE_POS = new BinlogFilePos("test.218", 1234, 5678);
   private static final SourceState SOURCE_STATE = new SourceState(15l, 20l, -1l, BINLOG_FILE_POS);
+  private static final String SERVER_UUID = "4a4ac150-fe5b-4093-a1ef-a8876011adaa";
 
   @Test
   public void testSerializeDataSource() throws Exception {
@@ -36,6 +38,29 @@ public class JsonSerializationTest {
         JsonUtil.OBJECT_MAPPER.readValue(
             JsonUtil.OBJECT_MAPPER.writeValueAsString(BINLOG_FILE_POS),
             new TypeReference<BinlogFilePos>() {}));
+  }
+
+  @Test
+  public void testSerializeBinlogFilePosWithGTID() throws Exception {
+    BinlogFilePos pos =
+        new BinlogFilePos("test.123", 123, 456, new GtidSet(SERVER_UUID + ":1-123"), SERVER_UUID);
+    assertEquals(
+        pos,
+        JsonUtil.OBJECT_MAPPER.readValue(
+            JsonUtil.OBJECT_MAPPER.writeValueAsString(pos), new TypeReference<BinlogFilePos>() {}));
+  }
+
+  @Test
+  public void testDeserialzeBinlogFilePosWithoutGTID() throws Exception {
+    String jsonString = "{\"fileName\": \"test.123\", \"position\": 4, \"nextPosition\": 8}";
+    BinlogFilePos pos =
+        JsonUtil.OBJECT_MAPPER.readValue(jsonString, new TypeReference<BinlogFilePos>() {});
+    assertEquals("test.123", pos.getFileName());
+    assertEquals(123, pos.getFileNumber());
+    assertEquals(4, pos.getPosition());
+    assertEquals(8, pos.getNextPosition());
+    assertNull(pos.getServerUUID());
+    assertNull(pos.getGtidSet());
   }
 
   @Test
