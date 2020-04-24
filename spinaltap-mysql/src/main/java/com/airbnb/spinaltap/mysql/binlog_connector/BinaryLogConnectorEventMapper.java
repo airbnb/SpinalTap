@@ -7,6 +7,7 @@ package com.airbnb.spinaltap.mysql.binlog_connector;
 import com.airbnb.spinaltap.mysql.BinlogFilePos;
 import com.airbnb.spinaltap.mysql.event.BinlogEvent;
 import com.airbnb.spinaltap.mysql.event.DeleteEvent;
+import com.airbnb.spinaltap.mysql.event.GTIDEvent;
 import com.airbnb.spinaltap.mysql.event.QueryEvent;
 import com.airbnb.spinaltap.mysql.event.StartEvent;
 import com.airbnb.spinaltap.mysql.event.TableMapEvent;
@@ -17,6 +18,7 @@ import com.github.shyiko.mysql.binlog.event.DeleteRowsEventData;
 import com.github.shyiko.mysql.binlog.event.Event;
 import com.github.shyiko.mysql.binlog.event.EventHeaderV4;
 import com.github.shyiko.mysql.binlog.event.EventType;
+import com.github.shyiko.mysql.binlog.event.GtidEventData;
 import com.github.shyiko.mysql.binlog.event.QueryEventData;
 import com.github.shyiko.mysql.binlog.event.TableMapEventData;
 import com.github.shyiko.mysql.binlog.event.UpdateRowsEventData;
@@ -70,6 +72,9 @@ public final class BinaryLogConnectorEventMapper {
         case XID:
           final XidEventData xidData = event.getData();
           return Optional.of(new XidEvent(serverId, timestamp, position, xidData.getXid()));
+        case GTID:
+          final GtidEventData gtidEventData = event.getData();
+          return Optional.of(new GTIDEvent(serverId, timestamp, position, gtidEventData.getGtid()));
         case QUERY:
           final QueryEventData queryData = event.getData();
           return Optional.of(

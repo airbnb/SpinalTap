@@ -6,11 +6,13 @@ package com.airbnb.spinaltap.mysql.binlog_connector;
 
 import com.airbnb.spinaltap.mysql.BinlogFilePos;
 import com.airbnb.spinaltap.mysql.DataSource;
+import com.airbnb.spinaltap.mysql.MysqlClient;
 import com.airbnb.spinaltap.mysql.MysqlSource;
 import com.airbnb.spinaltap.mysql.MysqlSourceMetrics;
 import com.airbnb.spinaltap.mysql.StateHistory;
 import com.airbnb.spinaltap.mysql.StateRepository;
 import com.airbnb.spinaltap.mysql.TableCache;
+import com.airbnb.spinaltap.mysql.config.MysqlConfiguration;
 import com.airbnb.spinaltap.mysql.exception.InvalidBinlogPositionException;
 import com.airbnb.spinaltap.mysql.schema.SchemaTracker;
 import com.github.shyiko.mysql.binlog.BinaryLogClient;
@@ -18,10 +20,9 @@ import com.github.shyiko.mysql.binlog.event.Event;
 import com.github.shyiko.mysql.binlog.event.EventHeaderV4;
 import com.google.common.base.Preconditions;
 import java.net.Socket;
-import java.util.Set;
+import java.util.HashSet;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
-import javax.validation.constraints.Min;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
@@ -33,42 +34,44 @@ import lombok.extern.slf4j.Slf4j;
 public final class BinaryLogConnectorSource extends MysqlSource {
   private static final String INVALID_BINLOG_POSITION_ERROR_CODE = "1236";
 
-  @NonNull private final BinaryLogClient client;
+  @NonNull private final BinaryLogClient binlogClient;
+  @NonNull private final MysqlClient mysqlClient;
+  private final String serverUUID;
 
   public BinaryLogConnectorSource(
       @NonNull final String name,
-      @NonNull final DataSource dataSource,
-      @NonNull final BinaryLogClient client,
-      @NonNull final Set<String> tableNames,
+      @NonNull final MysqlConfiguration config,
+      @NonNull final BinaryLogClient binlogClient,
+      @NonNull final MysqlClient mysqlClient,
       @NonNull final TableCache tableCache,
       @NonNull final StateRepository stateRepository,
       @NonNull final StateHistory stateHistory,
-      @NonNull final BinlogFilePos initialBinlogFilePosition,
       @NonNull final SchemaTracker schemaTracker,
       @NonNull final MysqlSourceMetrics metrics,
-      @NonNull final AtomicLong currentLeaderEpoch,
-      @Min(0) final int socketTimeoutInSeconds) {
+      @NonNull final AtomicLong currentLeaderEpoch) {
     super(
         name,
-        dataSource,
-        tableNames,
+        new DataSource(config.getHost(), config.getPort(), name),
+        new HashSet<>(config.getCanonicalTableNames()),
         tableCache,
         stateRepository,
         stateHistory,
-        initialBinlogFilePosition,
+        config.getInitialBinlogFilePosition(),
         schemaTracker,
         metrics,
         currentLeaderEpoch,
         new AtomicReference<>(),
         new AtomicReference<>());
 
-    this.client = client;
-    initializeClient(socketTimeoutInSeconds);
+    this.binlogClient = binlogClient;
+    this.mysqlClient = mysqlClient;
+    this.serverUUID = mysqlClient.getServerUUID();
+    initializeClient(config.getSocketTimeoutInSeconds());
   }
 
   /** Initializes the {@link BinaryLogClient}. */
   private void initializeClient(final int socketTimeoutInSeconds) {
-    client.setThreadFactory(
+    binlogClient.setThreadFactory(
         runnable ->
             new Thread(
                 runnable,
@@ -76,7 +79,7 @@ public final class BinaryLogConnectorSource extends MysqlSource {
                     "binlog-client-%s-%s-%d",
                     name, getDataSource().getHost(), getDataSource().getPort())));
 
-    client.setSocketFactory(
+    binlogClient.setSocketFactory(
         () -> {
           Socket socket = new Socket();
           try {
@@ -89,32 +92,58 @@ public final class BinaryLogConnectorSource extends MysqlSource {
           return socket;
         });
 
-    client.setKeepAlive(false);
-    client.registerEventListener(new BinlogEventListener());
-    client.registerLifecycleListener(new BinlogClientLifeCycleListener());
+    binlogClient.setKeepAlive(false);
+    binlogClient.registerEventListener(new BinlogEventListener());
+    binlogClient.registerLifecycleListener(new BinlogClientLifeCycleListener());
   }
 
   @Override
   protected void connect() throws Exception {
-    client.connect();
+    binlogClient.connect();
   }
 
   @Override
   protected void disconnect() throws Exception {
-    client.disconnect();
+    binlogClient.disconnect();
   }
 
   @Override
   protected boolean isConnected() {
-    return client.isConnected();
+    return binlogClient.isConnected();
   }
 
   @Override
   public void setPosition(@NonNull final BinlogFilePos pos) {
-    log.info("Setting binlog position for source {} to {}", name, pos);
+    if (!mysqlClient.isGtidModeEnabled()
+        || (pos.getGtidSet() == null
+            && pos != MysqlSource.EARLIEST_BINLOG_POS
+            && pos != MysqlSource.LATEST_BINLOG_POS)) {
+      log.info("Setting binlog position for source {} to {}", name, pos);
 
-    client.setBinlogFilename(pos.getFileName());
-    client.setBinlogPosition(pos.getNextPosition());
+      binlogClient.setBinlogFilename(pos.getFileName());
+      binlogClient.setBinlogPosition(pos.getNextPosition());
+    } else {
+      // GTID mode is enabled
+      if (pos == MysqlSource.EARLIEST_BINLOG_POS) {
+        log.info("Setting binlog position for source {} to earliest available GTIDSet", name);
+        binlogClient.setGtidSet("");
+        binlogClient.setGtidSetFallbackToPurged(true);
+      } else if (pos == MysqlSource.LATEST_BINLOG_POS) {
+        BinlogFilePos currentPos = mysqlClient.getMasterStatus();
+        String gtidSet = currentPos.getGtidSet().toString();
+        log.info("Setting binlog position for source {} to GTIDSet {}", name, gtidSet);
+        binlogClient.setGtidSet(gtidSet);
+      } else {
+        String gtidSet = pos.getGtidSet().toString();
+        log.info("Setting binlog position for source {} to GTIDSet {}", name, gtidSet);
+        binlogClient.setGtidSet(gtidSet);
+        if (serverUUID != null && serverUUID.equalsIgnoreCase(pos.getServerUUID())) {
+          binlogClient.setBinlogFilename(pos.getFileName());
+          binlogClient.setBinlogPosition(pos.getNextPosition());
+          binlogClient.setUseBinlogFilenamePositionInGtidMode(true);
+        }
+      }
+    }
   }
 
   private final class BinlogEventListener implements BinaryLogClient.EventListener {
@@ -124,7 +153,11 @@ public final class BinaryLogConnectorSource extends MysqlSource {
       final EventHeaderV4 header = event.getHeader();
       final BinlogFilePos filePos =
           new BinlogFilePos(
-              client.getBinlogFilename(), header.getPosition(), header.getNextPosition());
+              binlogClient.getBinlogFilename(),
+              header.getPosition(),
+              header.getNextPosition(),
+              binlogClient.getGtidSet(),
+              serverUUID);
 
       BinaryLogConnectorEventMapper.INSTANCE
           .map(event, filePos)

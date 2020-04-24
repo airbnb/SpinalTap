@@ -13,6 +13,7 @@ import com.airbnb.spinaltap.mysql.TableCache;
 import com.airbnb.spinaltap.mysql.Transaction;
 import com.airbnb.spinaltap.mysql.event.BinlogEvent;
 import com.airbnb.spinaltap.mysql.event.DeleteEvent;
+import com.airbnb.spinaltap.mysql.event.GTIDEvent;
 import com.airbnb.spinaltap.mysql.event.QueryEvent;
 import com.airbnb.spinaltap.mysql.event.StartEvent;
 import com.airbnb.spinaltap.mysql.event.TableMapEvent;
@@ -58,10 +59,12 @@ public abstract class MysqlMutationMapper<R extends BinlogEvent, T extends Mysql
       @NonNull final AtomicReference<Transaction> beginTransaction,
       @NonNull final AtomicReference<Transaction> lastTransaction,
       @NonNull final MysqlSourceMetrics metrics) {
+    final AtomicReference<String> gtid = new AtomicReference<>();
     return ClassBasedMapper.<BinlogEvent, List<? extends Mutation<?>>>builder()
         .addMapper(TableMapEvent.class, new TableMapMapper(tableCache))
-        .addMapper(QueryEvent.class, new QueryMapper(beginTransaction, schemaTracker))
-        .addMapper(XidEvent.class, new XidMapper(lastTransaction, metrics))
+        .addMapper(GTIDEvent.class, new GTIDMapper(gtid))
+        .addMapper(QueryEvent.class, new QueryMapper(beginTransaction, gtid, schemaTracker))
+        .addMapper(XidEvent.class, new XidMapper(lastTransaction, gtid, metrics))
         .addMapper(StartEvent.class, new StartMapper(dataSource, tableCache, metrics))
         .addMapper(
             UpdateEvent.class,

@@ -10,7 +10,6 @@ import com.airbnb.spinaltap.common.source.SourceState;
 import com.airbnb.spinaltap.common.util.JsonUtil;
 import com.airbnb.spinaltap.mysql.BinlogFilePos;
 import com.airbnb.spinaltap.mysql.DataSource;
-import com.airbnb.spinaltap.mysql.GtidSet;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.Queues;
 import java.util.Collection;
@@ -43,7 +42,7 @@ public class JsonSerializationTest {
   @Test
   public void testSerializeBinlogFilePosWithGTID() throws Exception {
     BinlogFilePos pos =
-        new BinlogFilePos("test.123", 123, 456, new GtidSet(SERVER_UUID + ":1-123"), SERVER_UUID);
+        new BinlogFilePos("test.123", 123, 456, SERVER_UUID + ":1-123", SERVER_UUID);
     assertEquals(
         pos,
         JsonUtil.OBJECT_MAPPER.readValue(

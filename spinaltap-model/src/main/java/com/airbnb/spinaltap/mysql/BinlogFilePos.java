@@ -11,7 +11,6 @@ import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.google.common.base.Splitter;
 import java.io.Serializable;
 import java.util.Iterator;
-import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -22,7 +21,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Getter
 @EqualsAndHashCode
-@AllArgsConstructor
 @NoArgsConstructor
 @JsonDeserialize(builder = BinlogFilePos.Builder.class)
 public class BinlogFilePos implements Comparable<BinlogFilePos>, Serializable {
@@ -48,6 +46,17 @@ public class BinlogFilePos implements Comparable<BinlogFilePos>, Serializable {
 
   public BinlogFilePos(long fileNumber, long position, long nextPosition) {
     this(String.format("%s.%06d", DEFAULT_BINLOG_FILE_NAME, fileNumber), position, nextPosition);
+  }
+
+  public BinlogFilePos(
+      String fileName, long position, long nextPosition, String gtidSet, String serverUUID) {
+    this.fileName = fileName;
+    this.position = position;
+    this.nextPosition = nextPosition;
+    this.serverUUID = serverUUID;
+    if (gtidSet != null) {
+      this.gtidSet = new GtidSet(gtidSet);
+    }
   }
 
   public BinlogFilePos(String fileName, long position, long nextPosition) {
@@ -108,7 +117,7 @@ public class BinlogFilePos implements Comparable<BinlogFilePos>, Serializable {
     return 1;
   }
 
-  public Builder builder() {
+  public static Builder builder() {
     return new Builder();
   }
 
@@ -118,7 +127,7 @@ public class BinlogFilePos implements Comparable<BinlogFilePos>, Serializable {
     private String fileName;
     private long position;
     private long nextPosition;
-    private GtidSet gtidSet;
+    private String gtidSet;
     private String serverUUID;
 
     public Builder withFileName(String fileName) {
@@ -137,9 +146,7 @@ public class BinlogFilePos implements Comparable<BinlogFilePos>, Serializable {
     }
 
     public Builder withGtidSet(String gtidSet) {
-      if (gtidSet != null) {
-        this.gtidSet = new GtidSet(gtidSet);
-      }
+      this.gtidSet = gtidSet;
       return this;
     }
 

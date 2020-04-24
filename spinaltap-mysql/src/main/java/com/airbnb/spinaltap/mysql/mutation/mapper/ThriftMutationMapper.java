@@ -53,8 +53,17 @@ public abstract class ThriftMutationMapper<T extends MysqlMutation>
     if (metadata.getLastTransaction() != null) {
       header.setLastTransactionPos(metadata.getLastTransaction().getPosition().toString());
       header.setLastTransactionTimestamp(metadata.getLastTransaction().getTimestamp());
+      header.setLastTransactionGtidSet(
+          metadata.getLastTransaction().getPosition().getGtidSet().toString());
     }
 
+    if (metadata.getBeginTransaction() != null) {
+      header.setBeginTransactionPos(metadata.getBeginTransaction().getPosition().toString());
+      header.setBeginTransactionTimestamp(metadata.getBeginTransaction().getTimestamp());
+      header.setBeginTransactionGtid(metadata.getBeginTransaction().getGtid());
+    }
+
+    header.setServerUuid(metadata.getFilePos().getServerUUID());
     header.setLeaderEpoch(metadata.getLeaderEpoch());
     header.setId(metadata.getId());
     header.setEventRowPosition(metadata.getEventRowPosition());

@@ -35,12 +35,14 @@ final class QueryMapper implements Mapper<QueryEvent, List<MysqlMutation>> {
       Pattern.compile("^(CREATE|DROP)\\s+(DATABASE|SCHEMA)", Pattern.CASE_INSENSITIVE);
 
   private final AtomicReference<Transaction> beginTransaction;
+  private final AtomicReference<String> gtid;
   private final SchemaTracker schemaTracker;
 
   public List<MysqlMutation> map(@NonNull final QueryEvent event) {
     if (isTransactionBegin(event)) {
       beginTransaction.set(
-          new Transaction(event.getTimestamp(), event.getOffset(), event.getBinlogFilePos()));
+          new Transaction(
+              event.getTimestamp(), event.getOffset(), event.getBinlogFilePos(), gtid.get()));
     }
 
     if (isDDLStatement(event)) {
