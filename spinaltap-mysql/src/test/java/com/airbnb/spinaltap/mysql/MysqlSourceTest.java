@@ -41,7 +41,8 @@ public class MysqlSourceTest {
 
   private static final long SAVED_OFFSET = 12L;
   private static final long SAVED_TIMESTAMP = 12L;
-  private static final BinlogFilePos BINLOG_FILE_POS = new BinlogFilePos("test.txt", 14, 100);
+  private static final BinlogFilePos BINLOG_FILE_POS =
+      new BinlogFilePos("mysql-binlog.123450", 14, 100);
 
   private final TableCache tableCache = mock(TableCache.class);
   private final MysqlSourceMetrics mysqlMetrics = mock(MysqlSourceMetrics.class);
@@ -152,10 +153,10 @@ public class MysqlSourceTest {
     assertEquals(earliestState, source.getLastSavedState().get());
     assertTrue(stateHistory.isEmpty());
 
-    BinlogFilePos filePos = new BinlogFilePos("test.txt", 18, 156);
+    BinlogFilePos filePos = new BinlogFilePos("mysql-binlog.123450", 18, 156);
     Transaction lastTransaction = new Transaction(0L, 0L, filePos);
     MysqlMutationMetadata metadata =
-        new MysqlMutationMetadata(null, null, null, 0L, 1L, 23L, null, lastTransaction, 0L, 0);
+        new MysqlMutationMetadata(null, filePos, null, 0L, 1L, 23L, null, lastTransaction, 0L, 0);
 
     source.checkpoint(new MysqlInsertMutation(metadata, null));
 
@@ -195,7 +196,7 @@ public class MysqlSourceTest {
     TestSource source = new TestSource(stateHistory);
 
     Row row = new Row(null, ImmutableMap.of());
-    BinlogFilePos filePos = new BinlogFilePos("test.txt", 18, 156);
+    BinlogFilePos filePos = new BinlogFilePos("mysql-binlog.123450", 18, 156);
     Transaction lastTransaction = new Transaction(0L, 0L, filePos);
     MysqlMutationMetadata metadata =
         new MysqlMutationMetadata(null, filePos, null, 0L, 0L, 0L, null, lastTransaction, 0, 0);
