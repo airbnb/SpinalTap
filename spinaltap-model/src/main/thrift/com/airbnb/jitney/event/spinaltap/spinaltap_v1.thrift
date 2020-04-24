@@ -31,6 +31,11 @@ struct BinlogHeader {
   7: optional i64 leader_epoch,
   8: optional i64 id,
   9: optional i32 event_row_position,
+  10: optional string server_uuid,
+  11: optional string last_transaction_gtid_set,
+  12: optional string begin_transaction_pos,
+  13: optional i64 begin_transaction_timestamp,
+  14: optional string begin_transaction_gtid,
 }
 
 struct Table {
