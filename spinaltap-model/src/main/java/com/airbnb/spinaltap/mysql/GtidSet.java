@@ -38,7 +38,7 @@ public class GtidSet {
     for (String uuidSet : COMMA_SPLITTER.split(gtidSetString)) {
       Iterator<String> uuidSetIter = COLUMN_SPLITTER.split(uuidSet).iterator();
       if (uuidSetIter.hasNext()) {
-        String uuid = uuidSetIter.next();
+        String uuid = uuidSetIter.next().toLowerCase();
         List<Interval> intervals = new LinkedList<>();
         while (uuidSetIter.hasNext()) {
           Iterator<String> intervalIter = DASH_SPLITTER.split(uuidSetIter.next()).iterator();
@@ -49,7 +49,11 @@ public class GtidSet {
           }
         }
         if (intervals.size() > 0) {
-          map.put(uuid, new UUIDSet(uuid, intervals));
+          if (map.containsKey(uuid)) {
+            map.get(uuid).addIntervals(intervals);
+          } else {
+            map.put(uuid, new UUIDSet(uuid, intervals));
+          }
         }
       }
     }
@@ -87,26 +91,33 @@ public class GtidSet {
     public UUIDSet(String uuid, List<Interval> intervals) {
       this.uuid = uuid.toLowerCase();
       this.intervals = intervals;
+      collapseIntervals();
+    }
 
-      // Collapse intervals if possible
-      Collections.sort(this.intervals);
+    private void collapseIntervals() {
+      Collections.sort(intervals);
       for (int i = intervals.size() - 1; i > 0; i--) {
-        Interval before = this.intervals.get(i - 1);
-        Interval after = this.intervals.get(i);
+        Interval before = intervals.get(i - 1);
+        Interval after = intervals.get(i);
         if (after.getStart() <= before.getEnd() + 1) {
           if (after.getEnd() > before.getEnd()) {
-            this.intervals.set(i - 1, new Interval(before.getStart(), after.getEnd()));
+            intervals.set(i - 1, new Interval(before.getStart(), after.getEnd()));
           }
-          this.intervals.remove(i);
+          intervals.remove(i);
         }
       }
+    }
+
+    public void addIntervals(List<Interval> intervals) {
+      this.intervals.addAll(intervals);
+      collapseIntervals();
     }
 
     public boolean isContainedWithin(UUIDSet other) {
       if (other == null) {
         return false;
       }
-      if (!this.uuid.equalsIgnoreCase(other.uuid)) {
+      if (!this.uuid.equals(other.uuid)) {
         return false;
       }
       if (this.intervals.isEmpty()) {
