@@ -64,7 +64,7 @@ public class MysqlClient {
   }
 
   public boolean isGtidModeEnabled() {
-    return !"OFF".equalsIgnoreCase(getGlobalVariableValue("gtid_mode"));
+    return "ON".equalsIgnoreCase(getGlobalVariableValue("gtid_mode"));
   }
 
   public String getGlobalVariableValue(String variableName) {
