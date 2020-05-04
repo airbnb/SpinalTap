@@ -95,7 +95,7 @@ public class BinlogFilePos implements Comparable<BinlogFilePos>, Serializable {
 
   @Override
   public int compareTo(@NonNull final BinlogFilePos other) {
-    if (canCompareUsingFilePosition(this, other)) {
+    if (shouldCompareUsingFilePosition(this, other)) {
       return getFileNumber() != other.getFileNumber()
           ? Long.compare(getFileNumber(), other.getFileNumber())
           : Long.compare(getPosition(), other.getPosition());
@@ -117,7 +117,7 @@ public class BinlogFilePos implements Comparable<BinlogFilePos>, Serializable {
   }
 
   /** Whether we can compare two BinlogFilePos using Binlog file position (without GTIDSet) */
-  public static boolean canCompareUsingFilePosition(BinlogFilePos pos1, BinlogFilePos pos2) {
+  public static boolean shouldCompareUsingFilePosition(BinlogFilePos pos1, BinlogFilePos pos2) {
     return isFromSameSource(pos1, pos2) || pos1.getGtidSet() == null || pos2.getGtidSet() == null;
   }
 

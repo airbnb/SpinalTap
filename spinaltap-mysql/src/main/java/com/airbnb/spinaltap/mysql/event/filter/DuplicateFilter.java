@@ -36,7 +36,7 @@ public final class DuplicateFilter extends MysqlEventFilter {
     BinlogFilePos eventBinlogPos = event.getBinlogFilePos();
     BinlogFilePos savedBinlogPos = state.get().getLastPosition();
     // Use the same logic in BinlogFilePos.compareTo() here...
-    if (BinlogFilePos.canCompareUsingFilePosition(eventBinlogPos, savedBinlogPos)) {
+    if (BinlogFilePos.shouldCompareUsingFilePosition(eventBinlogPos, savedBinlogPos)) {
       return event.getOffset() > state.get().getLastOffset();
     }
 

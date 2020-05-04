@@ -188,7 +188,7 @@ public abstract class MysqlSource extends AbstractDataStoreSource<BinlogEvent> {
     // Make sure we are saving at a higher watermark
     BinlogFilePos mutationPosition = metadata.getFilePos();
     BinlogFilePos savedStatePosition = savedState.getLastPosition();
-    if ((BinlogFilePos.canCompareUsingFilePosition(mutationPosition, savedStatePosition)
+    if ((BinlogFilePos.shouldCompareUsingFilePosition(mutationPosition, savedStatePosition)
             && savedState.getLastOffset() >= metadata.getId())
         || (mutationPosition.getGtidSet() != null
             && mutationPosition.getGtidSet().isContainedWithin(savedStatePosition.getGtidSet()))) {
