@@ -15,6 +15,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 /** Represents the position in a binlog file. */
@@ -33,8 +34,8 @@ public class BinlogFilePos implements Comparable<BinlogFilePos>, Serializable {
   @JsonProperty private String fileName;
   @JsonProperty private long position;
   @JsonProperty private long nextPosition;
-  @JsonProperty private GtidSet gtidSet;
-  @JsonProperty private String serverUUID;
+  @JsonProperty @Setter private GtidSet gtidSet;
+  @JsonProperty @Setter private String serverUUID;
 
   public BinlogFilePos(long fileNumber) {
     this(fileNumber, 4L, 4L);
