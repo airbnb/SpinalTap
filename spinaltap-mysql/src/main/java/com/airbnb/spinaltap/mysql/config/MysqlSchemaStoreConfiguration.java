@@ -4,14 +4,18 @@
  */
 package com.airbnb.spinaltap.mysql.config;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.NonNull;
 
 /** Represents the configuration for a {@link com.airbnb.spinaltap.mysql.schema.MysqlSchemaStore} */
 @Data
+@NoArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class MysqlSchemaStoreConfiguration {
   @NonNull @JsonProperty private String host;
 

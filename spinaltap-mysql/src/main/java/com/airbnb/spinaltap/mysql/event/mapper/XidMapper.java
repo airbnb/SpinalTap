@@ -25,11 +25,13 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 final class XidMapper implements Mapper<XidEvent, List<MysqlMutation>> {
   @NonNull private final AtomicReference<Transaction> endTransaction;
+  @NonNull private final AtomicReference<String> gtid;
   @NonNull private final MysqlSourceMetrics metrics;
 
   public List<MysqlMutation> map(@NonNull final XidEvent event) {
     endTransaction.set(
-        new Transaction(event.getTimestamp(), event.getOffset(), event.getBinlogFilePos()));
+        new Transaction(
+            event.getTimestamp(), event.getOffset(), event.getBinlogFilePos(), gtid.get()));
 
     metrics.transactionReceived();
     return Collections.emptyList();

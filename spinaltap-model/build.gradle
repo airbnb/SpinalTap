@@ -6,6 +6,7 @@ dependencies {
   compile libraries.apache_commons_lang
   compile libraries.guava
   compile libraries.jackson_annotations
+  compile libraries.jackson_databind
   compile libraries.slf4j
   compile libraries.thrift
   compileOnly libraries.lombok

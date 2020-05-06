@@ -27,7 +27,6 @@ import com.airbnb.spinaltap.mysql.validator.MutationSchemaValidator;
 import com.github.shyiko.mysql.binlog.BinaryLogClient;
 import com.google.common.base.Preconditions;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.concurrent.atomic.AtomicLong;
 import javax.validation.constraints.Min;
 import lombok.NonNull;
@@ -52,18 +51,16 @@ public class MysqlSourceFactory {
     final int port = configuration.getPort();
     final DBI mysqlDBI = MysqlSchemaUtil.createMysqlDBI(host, port, user, password, null);
 
-    final BinaryLogClient client = new BinaryLogClient(host, port, user, password);
+    final BinaryLogClient binlogClient = new BinaryLogClient(host, port, user, password);
 
     /* Override the global server_id if it is set in MysqlConfiguration
       Allow each source to use a different server_id
     */
     if (configuration.getServerId() != MysqlConfiguration.DEFAULT_SERVER_ID) {
-      client.setServerId(configuration.getServerId());
+      binlogClient.setServerId(configuration.getServerId());
     } else {
-      client.setServerId(serverId);
+      binlogClient.setServerId(serverId);
     }
-
-    final DataSource dataSource = new DataSource(host, port, name);
 
     final StateRepository stateRepository =
         new StateRepository(name, backingStateRepository, metrics);
@@ -126,17 +123,15 @@ public class MysqlSourceFactory {
     final BinaryLogConnectorSource source =
         new BinaryLogConnectorSource(
             name,
-            dataSource,
-            client,
-            new HashSet<>(configuration.getCanonicalTableNames()),
+            configuration,
+            binlogClient,
+            new MysqlClient(host, port, user, password),
             tableCache,
             stateRepository,
             stateHistory,
-            configuration.getInitialBinlogFilePosition(),
             schemaTracker,
             metrics,
-            new AtomicLong(leaderEpoch),
-            configuration.getSocketTimeoutInSeconds());
+            new AtomicLong(leaderEpoch));
 
     source.addEventValidator(new EventOrderValidator(metrics::outOfOrder));
     source.addMutationValidator(new MutationOrderValidator(metrics::outOfOrder));
