@@ -63,7 +63,9 @@ public abstract class MysqlMutationMapper<R extends BinlogEvent, T extends Mysql
     return ClassBasedMapper.<BinlogEvent, List<? extends Mutation<?>>>builder()
         .addMapper(TableMapEvent.class, new TableMapMapper(tableCache))
         .addMapper(GTIDEvent.class, new GTIDMapper(gtid))
-        .addMapper(QueryEvent.class, new QueryMapper(beginTransaction, gtid, schemaTracker))
+        .addMapper(
+            QueryEvent.class,
+            new QueryMapper(beginTransaction, lastTransaction, gtid, schemaTracker))
         .addMapper(XidEvent.class, new XidMapper(lastTransaction, gtid, metrics))
         .addMapper(StartEvent.class, new StartMapper(dataSource, tableCache, metrics))
         .addMapper(

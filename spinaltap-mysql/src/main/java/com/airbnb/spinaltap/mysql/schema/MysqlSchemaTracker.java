@@ -24,26 +24,40 @@ import lombok.extern.slf4j.Slf4j;
 public class MysqlSchemaTracker implements SchemaTracker {
   private static final Pattern DATABASE_DDL_SQL_PATTERN =
       Pattern.compile("^(CREATE|DROP)\\s+(DATABASE|SCHEMA)", Pattern.CASE_INSENSITIVE);
+  private static final Pattern TABLE_DDL_SQL_PATTERN =
+      Pattern.compile("^(ALTER|CREATE|DROP|RENAME)\\s+TABLE", Pattern.CASE_INSENSITIVE);
+  private static final Pattern INDEX_DDL_SQL_PATTERN =
+      Pattern.compile(
+          "^((CREATE(\\s+(UNIQUE|FULLTEXT|SPATIAL))?)|DROP)\\s+INDEX", Pattern.CASE_INSENSITIVE);
   private final SchemaStore<MysqlTableSchema> schemaStore;
   private final MysqlSchemaDatabase schemaDatabase;
   private final MysqlDDLHistoryStore ddlHistoryStore;
 
+  private boolean isDDLStatement(final String sql) {
+    return TABLE_DDL_SQL_PATTERN.matcher(sql).find()
+        || INDEX_DDL_SQL_PATTERN.matcher(sql).find()
+        || DATABASE_DDL_SQL_PATTERN.matcher(sql).find();
+  }
+
   public void processDDLStatement(@NotNull final QueryEvent event) {
+    String sql = MysqlSchemaUtil.removeCommentsFromDDL(event.getSql());
+    if (!isDDLStatement(sql)) {
+      return;
+    }
     BinlogFilePos binlogFilePos = event.getBinlogFilePos();
-    String ddl = event.getSql();
 
     if (schemaStore.get(binlogFilePos) != null || ddlHistoryStore.get(binlogFilePos) != null) {
       log.info(
           String.format(
               "DDL Statement (%s) has already been processed. (BinlogFilePos: %s)",
-              ddl, binlogFilePos));
+              sql, binlogFilePos));
       return;
     }
 
     // It could be a new database which has not been created in schema store database, so don't
     // switch to any database before applying database DDL.
     schemaDatabase.applyDDLStatement(
-        DATABASE_DDL_SQL_PATTERN.matcher(ddl).find() ? "" : event.getDatabase(), ddl);
+        DATABASE_DDL_SQL_PATTERN.matcher(sql).find() ? "" : event.getDatabase(), sql);
 
     // Get schemas for active tables in schema store
     Table<String, String, MysqlTableSchema> activeTableSchemasInStore =
@@ -83,8 +97,8 @@ public class MysqlSchemaTracker implements SchemaTracker {
                 activeTableSchemasInStore.row(database),
                 schemaDatabase.fetchTableSchema(database)));
 
-    log.info("Saving DDL into History Store: {}", ddl);
-    ddlHistoryStore.put(binlogFilePos, ddl, event.getTimestamp());
+    log.info("Saving DDL into History Store: {}", sql);
+    ddlHistoryStore.put(binlogFilePos, sql, event.getTimestamp());
   }
 
   private void updateSchemaStore(

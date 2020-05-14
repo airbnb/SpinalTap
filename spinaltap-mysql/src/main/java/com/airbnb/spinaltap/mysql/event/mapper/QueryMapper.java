@@ -12,7 +12,6 @@ import com.airbnb.spinaltap.mysql.schema.SchemaTracker;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.regex.Pattern;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,26 +25,21 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 final class QueryMapper implements Mapper<QueryEvent, List<MysqlMutation>> {
   private static final String BEGIN_STATEMENT = "BEGIN";
-  private static final Pattern TABLE_DDL_SQL_PATTERN =
-      Pattern.compile("^(ALTER|CREATE|DROP|RENAME)\\s+TABLE", Pattern.CASE_INSENSITIVE);
-  private static final Pattern INDEX_DDL_SQL_PATTERN =
-      Pattern.compile(
-          "^((CREATE(\\s+(UNIQUE|FULLTEXT|SPATIAL))?)|DROP)\\s+INDEX", Pattern.CASE_INSENSITIVE);
-  private static final Pattern DATABASE_DDL_SQL_PATTERN =
-      Pattern.compile("^(CREATE|DROP)\\s+(DATABASE|SCHEMA)", Pattern.CASE_INSENSITIVE);
 
   private final AtomicReference<Transaction> beginTransaction;
+  private final AtomicReference<Transaction> lastTransaction;
   private final AtomicReference<String> gtid;
   private final SchemaTracker schemaTracker;
 
   public List<MysqlMutation> map(@NonNull final QueryEvent event) {
+    Transaction transaction =
+        new Transaction(
+            event.getTimestamp(), event.getOffset(), event.getBinlogFilePos(), gtid.get());
     if (isTransactionBegin(event)) {
-      beginTransaction.set(
-          new Transaction(
-              event.getTimestamp(), event.getOffset(), event.getBinlogFilePos(), gtid.get()));
-    }
-
-    if (isDDLStatement(event)) {
+      beginTransaction.set(transaction);
+    } else {
+      // DDL is also a transaction
+      lastTransaction.set(transaction);
       schemaTracker.processDDLStatement(event);
     }
 
@@ -54,12 +48,5 @@ final class QueryMapper implements Mapper<QueryEvent, List<MysqlMutation>> {
 
   private boolean isTransactionBegin(final QueryEvent event) {
     return event.getSql().equals(BEGIN_STATEMENT);
-  }
-
-  private boolean isDDLStatement(final QueryEvent event) {
-    final String sql = event.getSql();
-    return TABLE_DDL_SQL_PATTERN.matcher(sql).find()
-        || INDEX_DDL_SQL_PATTERN.matcher(sql).find()
-        || DATABASE_DDL_SQL_PATTERN.matcher(sql).find();
   }
 }
