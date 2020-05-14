@@ -20,8 +20,7 @@ public class ClassBasedMapper<T, R> implements Mapper<T, R> {
   public static <T, R> ClassBasedMapper.Builder<T, R> builder() {
     return new ClassBasedMapper.Builder<>();
   }
-
-  @SuppressWarnings("rawtypes")
+  
   @Override
   public R map(@NonNull final T object) {
     Mapper<T, ? extends R> mapper = locator.get(object.getClass());
@@ -40,7 +39,7 @@ public class ClassBasedMapper<T, R> implements Mapper<T, R> {
       return this;
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public Mapper<T, R> build() {
       return new ClassBasedMapper(locator);
     }
