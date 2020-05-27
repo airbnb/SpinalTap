@@ -10,11 +10,8 @@ import static org.mockito.Mockito.*;
 import com.airbnb.spinaltap.mysql.mutation.schema.ColumnDataType;
 import com.airbnb.spinaltap.mysql.mutation.schema.ColumnMetadata;
 import com.airbnb.spinaltap.mysql.mutation.schema.Table;
-import com.airbnb.spinaltap.mysql.schema.ColumnInfo;
-import com.airbnb.spinaltap.mysql.schema.LatestMysqlSchemaStore;
-import com.airbnb.spinaltap.mysql.schema.MysqlSchemaUtil;
-import com.airbnb.spinaltap.mysql.schema.MysqlTableSchema;
-import com.airbnb.spinaltap.mysql.schema.SchemaStore;
+import com.airbnb.spinaltap.mysql.schema.MysqlColumn;
+import com.airbnb.spinaltap.mysql.schema.MysqlSchemaManager;
 import java.util.Arrays;
 import java.util.List;
 import org.junit.Test;
@@ -23,7 +20,7 @@ public class TableCacheTest {
   private static final String DATABASE_NAME = "db";
   private static final String OVERRIDING_DATABASE_NAME = "overriding_db";
   private static final String TABLE_NAME = "test";
-  private static final long TABLE_ID = 1l;
+  private static final long TABLE_ID = 1L;
 
   private static final Table TABLE =
       new Table(
@@ -38,17 +35,12 @@ public class TableCacheTest {
               new ColumnMetadata("col4", ColumnDataType.LONG, false, 3)),
           Arrays.asList("col1", "col3"));
 
-  private static final MysqlTableSchema TABLE_SCHEMA =
-      MysqlSchemaUtil.createTableSchema(
-          "host",
-          "database",
-          "table",
-          "",
-          Arrays.asList(
-              new ColumnInfo("table", "col1", "TINY", true),
-              new ColumnInfo("table", "col2", "STRING", false),
-              new ColumnInfo("table", "col3", "FLOAT", true),
-              new ColumnInfo("table", "col4", "LONG", false)));
+  private static final List<MysqlColumn> TABLE_COLUMNS =
+      Arrays.asList(
+          new MysqlColumn("col1", "TINY", "TINY", true),
+          new MysqlColumn("col2", "STRING", "TEXT", false),
+          new MysqlColumn("col3", "FLOAT", "FLOAT", true),
+          new MysqlColumn("col4", "LONG", "LONG", false));
 
   private static final Table TABLE_UPDATED =
       new Table(
@@ -62,43 +54,33 @@ public class TableCacheTest {
               new ColumnMetadata("col3", ColumnDataType.FLOAT, true, 2)),
           Arrays.asList("col1", "col3"));
 
-  private static final MysqlTableSchema TABLE_SCHEMA_UPDATED =
-      MysqlSchemaUtil.createTableSchema(
-          "host",
-          "database",
-          "table",
-          "",
-          Arrays.asList(
-              new ColumnInfo("table", "col1", "TINY", true),
-              new ColumnInfo("table", "col2", "STRING", false),
-              new ColumnInfo("table", "col3", "FLOAT", true)));
+  private static final List<MysqlColumn> TABLE_COLUMNS_UPDATED =
+      Arrays.asList(
+          new MysqlColumn("col1", "TINY", "TINY", true),
+          new MysqlColumn("col2", "STRING", "STRING", false),
+          new MysqlColumn("col3", "FLOAT", "FLOAT", true));
 
-  private static final MysqlTableSchema TABLE_SCHEMA_LARGE_STUB =
-      MysqlSchemaUtil.createTableSchema(
-          "host",
-          "database",
-          "table",
-          "",
-          Arrays.asList(
-              new ColumnInfo("table", "col1", "TINY", true),
-              new ColumnInfo("table", "col2", "STRING", false),
-              new ColumnInfo("table", "col3", "FLOAT", true),
-              new ColumnInfo("table", "col4", "LONG", false),
-              new ColumnInfo("table", "col5", "VARCHAR", false)));
+  private static final List<MysqlColumn> TABLE_COLUMNS_LARGE_STUB =
+      Arrays.asList(
+          new MysqlColumn("col1", "TINY", "TINY", true),
+          new MysqlColumn("col2", "STRING", "STRING", false),
+          new MysqlColumn("col3", "FLOAT", "FLOAT", true),
+          new MysqlColumn("col4", "LONG", "LONG", false),
+          new MysqlColumn("col5", "VARCHAR", "VARCHAR", false));
 
-  private final SchemaStore<MysqlTableSchema> schemaReader = mock(LatestMysqlSchemaStore.class);
+  private final MysqlSchemaManager schemaManager = mock(MysqlSchemaManager.class);
   private final MysqlSourceMetrics metrics = mock(MysqlSourceMetrics.class);
   private final BinlogFilePos binlogFilePos = new BinlogFilePos("mysql-bin-changelog.000532");
 
   @Test
   public void test() throws Exception {
-    TableCache tableCache = new TableCache(schemaReader, OVERRIDING_DATABASE_NAME);
+    TableCache tableCache = new TableCache(schemaManager, OVERRIDING_DATABASE_NAME);
 
     List<ColumnDataType> columnTypes =
         Arrays.asList(
             ColumnDataType.TINY, ColumnDataType.STRING, ColumnDataType.FLOAT, ColumnDataType.LONG);
 
-    when(schemaReader.query(DATABASE_NAME, TABLE_NAME, binlogFilePos)).thenReturn(TABLE_SCHEMA);
+    when(schemaManager.getTableColumns(DATABASE_NAME, TABLE_NAME)).thenReturn(TABLE_COLUMNS);
 
     assertNull(tableCache.get(TABLE_ID));
 
@@ -106,67 +88,66 @@ public class TableCacheTest {
 
     Table table = tableCache.get(TABLE_ID);
     assertEquals(TABLE, table);
-    verify(schemaReader, times(1)).query(DATABASE_NAME, TABLE_NAME, binlogFilePos);
+    verify(schemaManager, times(1)).getTableColumns(DATABASE_NAME, TABLE_NAME);
 
     tableCache.addOrUpdate(TABLE_ID, TABLE_NAME, DATABASE_NAME, binlogFilePos, columnTypes);
 
     table = tableCache.get(TABLE_ID);
     assertEquals(TABLE, table);
-    verify(schemaReader, times(1)).query(DATABASE_NAME, TABLE_NAME, binlogFilePos);
+    verify(schemaManager, times(1)).getTableColumns(DATABASE_NAME, TABLE_NAME);
 
     columnTypes = Arrays.asList(ColumnDataType.TINY, ColumnDataType.STRING, ColumnDataType.FLOAT);
 
-    when(schemaReader.query(DATABASE_NAME, TABLE_NAME, binlogFilePos))
-        .thenReturn(TABLE_SCHEMA_UPDATED);
+    when(schemaManager.getTableColumns(DATABASE_NAME, TABLE_NAME))
+        .thenReturn(TABLE_COLUMNS_UPDATED);
 
     tableCache.addOrUpdate(TABLE_ID, TABLE_NAME, DATABASE_NAME, binlogFilePos, columnTypes);
 
     table = tableCache.get(TABLE_ID);
     assertEquals(TABLE_UPDATED, table);
-    verify(schemaReader, times(2)).query(DATABASE_NAME, TABLE_NAME, binlogFilePos);
+    verify(schemaManager, times(2)).getTableColumns(DATABASE_NAME, TABLE_NAME);
 
     tableCache.addOrUpdate(TABLE_ID, TABLE_NAME, DATABASE_NAME, binlogFilePos, columnTypes);
 
     table = tableCache.get(TABLE_ID);
     assertEquals(TABLE_UPDATED, table);
-    verify(schemaReader, times(2)).query(DATABASE_NAME, TABLE_NAME, binlogFilePos);
+    verify(schemaManager, times(2)).getTableColumns(DATABASE_NAME, TABLE_NAME);
 
     // Schema reader now returns schema with 5 columns, but columnTypes has size 4
     columnTypes =
         Arrays.asList(
             ColumnDataType.TINY, ColumnDataType.STRING, ColumnDataType.FLOAT, ColumnDataType.LONG);
 
-    when(schemaReader.query(DATABASE_NAME, TABLE_NAME, binlogFilePos))
-        .thenReturn(TABLE_SCHEMA_LARGE_STUB);
+    when(schemaManager.getTableColumns(DATABASE_NAME, TABLE_NAME))
+        .thenReturn(TABLE_COLUMNS_LARGE_STUB);
 
     tableCache.addOrUpdate(TABLE_ID, TABLE_NAME, DATABASE_NAME, binlogFilePos, columnTypes);
 
     table = tableCache.get(TABLE_ID);
     assertEquals(TABLE, table);
-    verify(schemaReader, times(3)).query(DATABASE_NAME, TABLE_NAME, binlogFilePos);
+    verify(schemaManager, times(3)).getTableColumns(DATABASE_NAME, TABLE_NAME);
   }
 
   @Test
   public void testNewTableName() throws Exception {
-    TableCache tableCache = new TableCache(schemaReader, OVERRIDING_DATABASE_NAME);
+    TableCache tableCache = new TableCache(schemaManager, OVERRIDING_DATABASE_NAME);
     String newTable = "new_table";
 
-    when(schemaReader.query(DATABASE_NAME, TABLE_NAME, binlogFilePos)).thenReturn(TABLE_SCHEMA);
+    when(schemaManager.getTableColumns(DATABASE_NAME, TABLE_NAME)).thenReturn(TABLE_COLUMNS);
     List<ColumnDataType> columnTypes =
         Arrays.asList(
             ColumnDataType.TINY, ColumnDataType.STRING, ColumnDataType.FLOAT, ColumnDataType.LONG);
 
     tableCache.addOrUpdate(TABLE_ID, TABLE_NAME, DATABASE_NAME, binlogFilePos, columnTypes);
 
-    verify(schemaReader, times(1)).query(DATABASE_NAME, TABLE_NAME, binlogFilePos);
+    verify(schemaManager, times(1)).getTableColumns(DATABASE_NAME, TABLE_NAME);
 
-    when(schemaReader.query(DATABASE_NAME, newTable, binlogFilePos))
-        .thenReturn(TABLE_SCHEMA_UPDATED);
+    when(schemaManager.getTableColumns(DATABASE_NAME, newTable)).thenReturn(TABLE_COLUMNS_UPDATED);
     columnTypes = Arrays.asList(ColumnDataType.TINY, ColumnDataType.STRING, ColumnDataType.FLOAT);
 
     tableCache.addOrUpdate(TABLE_ID, newTable, DATABASE_NAME, binlogFilePos, columnTypes);
 
-    verify(schemaReader, times(1)).query(DATABASE_NAME, newTable, binlogFilePos);
+    verify(schemaManager, times(1)).getTableColumns(DATABASE_NAME, newTable);
     verifyZeroInteractions(metrics);
   }
 }

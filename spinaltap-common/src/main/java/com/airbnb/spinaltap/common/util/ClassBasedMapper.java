@@ -20,7 +20,7 @@ public class ClassBasedMapper<T, R> implements Mapper<T, R> {
   public static <T, R> ClassBasedMapper.Builder<T, R> builder() {
     return new ClassBasedMapper.Builder<>();
   }
-  
+
   @Override
   public R map(@NonNull final T object) {
     Mapper<T, ? extends R> mapper = locator.get(object.getClass());

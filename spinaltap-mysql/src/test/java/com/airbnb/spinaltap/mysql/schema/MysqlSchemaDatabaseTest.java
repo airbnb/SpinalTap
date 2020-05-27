@@ -8,14 +8,15 @@ import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 import com.airbnb.spinaltap.mysql.MysqlSourceMetrics;
+import org.jdbi.v3.core.Jdbi;
 import org.junit.Test;
-import org.skife.jdbi.v2.DBI;
 
 public class MysqlSchemaDatabaseTest {
   private static final String SOURCE_NAME = "source";
-  private final DBI jdbi = mock(DBI.class);
+  private final Jdbi jdbi = mock(Jdbi.class);
   private final MysqlSourceMetrics metrics = mock(MysqlSourceMetrics.class);
-  private MysqlSchemaDatabase schemaDatabase = new MysqlSchemaDatabase(SOURCE_NAME, jdbi, metrics);;
+  private final MysqlSchemaDatabase schemaDatabase =
+      new MysqlSchemaDatabase(SOURCE_NAME, jdbi, metrics);;
 
   @Test
   public void testAddSourcePrefixCreateTable() throws Exception {

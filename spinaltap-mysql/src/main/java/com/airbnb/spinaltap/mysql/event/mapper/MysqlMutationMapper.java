@@ -25,7 +25,7 @@ import com.airbnb.spinaltap.mysql.mutation.MysqlMutationMetadata;
 import com.airbnb.spinaltap.mysql.mutation.schema.Column;
 import com.airbnb.spinaltap.mysql.mutation.schema.ColumnMetadata;
 import com.airbnb.spinaltap.mysql.mutation.schema.Table;
-import com.airbnb.spinaltap.mysql.schema.SchemaTracker;
+import com.airbnb.spinaltap.mysql.schema.MysqlSchemaManager;
 import com.google.common.collect.ImmutableMap;
 import java.io.Serializable;
 import java.util.Collection;
@@ -54,7 +54,7 @@ public abstract class MysqlMutationMapper<R extends BinlogEvent, T extends Mysql
   public static Mapper<BinlogEvent, List<? extends Mutation<?>>> create(
       @NonNull final DataSource dataSource,
       @NonNull final TableCache tableCache,
-      @NonNull final SchemaTracker schemaTracker,
+      @NonNull final MysqlSchemaManager schemaManager,
       @NonNull final AtomicLong leaderEpoch,
       @NonNull final AtomicReference<Transaction> beginTransaction,
       @NonNull final AtomicReference<Transaction> lastTransaction,
@@ -65,7 +65,7 @@ public abstract class MysqlMutationMapper<R extends BinlogEvent, T extends Mysql
         .addMapper(GTIDEvent.class, new GTIDMapper(gtid))
         .addMapper(
             QueryEvent.class,
-            new QueryMapper(beginTransaction, lastTransaction, gtid, schemaTracker))
+            new QueryMapper(beginTransaction, lastTransaction, gtid, schemaManager))
         .addMapper(XidEvent.class, new XidMapper(lastTransaction, gtid, metrics))
         .addMapper(StartEvent.class, new StartMapper(dataSource, tableCache, metrics))
         .addMapper(

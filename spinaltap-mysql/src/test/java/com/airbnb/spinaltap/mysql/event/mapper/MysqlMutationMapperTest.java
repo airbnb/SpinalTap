@@ -34,8 +34,7 @@ import com.airbnb.spinaltap.mysql.mutation.schema.ColumnDataType;
 import com.airbnb.spinaltap.mysql.mutation.schema.ColumnMetadata;
 import com.airbnb.spinaltap.mysql.mutation.schema.Row;
 import com.airbnb.spinaltap.mysql.mutation.schema.Table;
-import com.airbnb.spinaltap.mysql.schema.MysqlSchemaTracker;
-import com.airbnb.spinaltap.mysql.schema.SchemaTracker;
+import com.airbnb.spinaltap.mysql.schema.MysqlSchemaManager;
 import com.google.common.collect.ImmutableList;
 import java.io.Serializable;
 import java.util.AbstractMap;
@@ -73,14 +72,14 @@ public class MysqlMutationMapperTest {
   private final AtomicLong leaderEpoch = new AtomicLong(4l);
 
   private final TableCache tableCache = mock(TableCache.class);
-  private final SchemaTracker schemaTracker = mock(MysqlSchemaTracker.class);
+  private final MysqlSchemaManager schemaManager = mock(MysqlSchemaManager.class);
   private final MysqlSourceMetrics metrics = mock(MysqlSourceMetrics.class);
 
   private Mapper<BinlogEvent, List<? extends Mutation<?>>> eventMapper =
       MysqlMutationMapper.create(
           DATA_SOURCE,
           tableCache,
-          schemaTracker,
+          schemaManager,
           leaderEpoch,
           beginTransaction,
           lastTransaction,

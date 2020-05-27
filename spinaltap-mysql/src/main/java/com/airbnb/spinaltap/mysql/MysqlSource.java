@@ -13,7 +13,7 @@ import com.airbnb.spinaltap.mysql.event.mapper.MysqlMutationMapper;
 import com.airbnb.spinaltap.mysql.exception.InvalidBinlogPositionException;
 import com.airbnb.spinaltap.mysql.mutation.MysqlMutation;
 import com.airbnb.spinaltap.mysql.mutation.MysqlMutationMetadata;
-import com.airbnb.spinaltap.mysql.schema.SchemaTracker;
+import com.airbnb.spinaltap.mysql.schema.MysqlSchemaManager;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import java.util.Optional;
@@ -62,13 +62,13 @@ public abstract class MysqlSource extends AbstractDataStoreSource<BinlogEvent> {
   @NonNull
   @VisibleForTesting
   @Getter(AccessLevel.PACKAGE)
-  private AtomicReference<SourceState> lastSavedState;
+  private final AtomicReference<SourceState> lastSavedState;
 
   /** The last MySQL {@link Transaction} seen so far from the streamed events. */
   @NonNull
   @VisibleForTesting
   @Getter(AccessLevel.PACKAGE)
-  private AtomicReference<Transaction> lastTransaction;
+  private final AtomicReference<Transaction> lastTransaction;
 
   /** The leader epoch of the current node processing the source stream. */
   @NonNull private final AtomicLong currentLeaderEpoch;
@@ -78,6 +78,8 @@ public abstract class MysqlSource extends AbstractDataStoreSource<BinlogEvent> {
   @VisibleForTesting
   @Getter(AccessLevel.PACKAGE)
   private final StateHistory stateHistory;
+
+  private final MysqlSchemaManager schemaManager;
 
   /** The number of {@link SourceState} entries to remove from {@link StateHistory} on rollback. */
   private final AtomicInteger stateRollbackCount = new AtomicInteger(1);
@@ -90,7 +92,7 @@ public abstract class MysqlSource extends AbstractDataStoreSource<BinlogEvent> {
       @NonNull final StateRepository stateRepository,
       @NonNull final StateHistory stateHistory,
       @NonNull final BinlogFilePos initialBinlogFilePosition,
-      @NonNull final SchemaTracker schemaTracker,
+      @NonNull final MysqlSchemaManager schemaManager,
       @NonNull final MysqlSourceMetrics metrics,
       @NonNull final AtomicLong currentLeaderEpoch,
       @NonNull final AtomicReference<Transaction> lastTransaction,
@@ -101,7 +103,7 @@ public abstract class MysqlSource extends AbstractDataStoreSource<BinlogEvent> {
         MysqlMutationMapper.create(
             dataSource,
             tableCache,
-            schemaTracker,
+            schemaManager,
             currentLeaderEpoch,
             new AtomicReference<>(),
             lastTransaction,
@@ -117,6 +119,7 @@ public abstract class MysqlSource extends AbstractDataStoreSource<BinlogEvent> {
     this.lastTransaction = lastTransaction;
     this.lastSavedState = lastSavedState;
     this.initialBinlogFilePosition = initialBinlogFilePosition;
+    this.schemaManager = schemaManager;
   }
 
   public abstract void setPosition(BinlogFilePos pos);
@@ -132,6 +135,7 @@ public abstract class MysqlSource extends AbstractDataStoreSource<BinlogEvent> {
         new Transaction(state.getLastTimestamp(), state.getLastOffset(), state.getLastPosition()));
 
     setPosition(state.getLastPosition());
+    schemaManager.initialize(state.getLastPosition());
   }
 
   /** Resets to the last valid {@link SourceState} recorded in the {@link StateHistory}. */

@@ -23,8 +23,7 @@ import com.airbnb.spinaltap.mysql.mutation.MysqlMutation;
 import com.airbnb.spinaltap.mysql.mutation.MysqlMutationMetadata;
 import com.airbnb.spinaltap.mysql.mutation.schema.Row;
 import com.airbnb.spinaltap.mysql.mutation.schema.Table;
-import com.airbnb.spinaltap.mysql.schema.MysqlSchemaTracker;
-import com.airbnb.spinaltap.mysql.schema.SchemaTracker;
+import com.airbnb.spinaltap.mysql.schema.MysqlSchemaManager;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 import java.util.Set;
@@ -48,7 +47,7 @@ public class MysqlSourceTest {
   private final MysqlSourceMetrics mysqlMetrics = mock(MysqlSourceMetrics.class);
   private final StateRepository stateRepository = mock(StateRepository.class);
   private final MysqlSource.Listener listener = mock(MysqlSource.Listener.class);
-  private final SchemaTracker schemaTracker = mock(MysqlSchemaTracker.class);
+  private final MysqlSchemaManager schemaManager = mock(MysqlSchemaManager.class);
 
   @Test
   public void testOpenClose() throws Exception {
@@ -246,7 +245,7 @@ public class MysqlSourceTest {
           stateRepository,
           stateHistory,
           BinaryLogConnectorSource.LATEST_BINLOG_POS,
-          schemaTracker,
+          schemaManager,
           mysqlMetrics,
           new AtomicLong(0L),
           new AtomicReference<>(),

@@ -7,9 +7,8 @@ package com.airbnb.spinaltap.mysql;
 import com.airbnb.spinaltap.mysql.mutation.schema.ColumnDataType;
 import com.airbnb.spinaltap.mysql.mutation.schema.ColumnMetadata;
 import com.airbnb.spinaltap.mysql.mutation.schema.Table;
-import com.airbnb.spinaltap.mysql.schema.ColumnInfo;
-import com.airbnb.spinaltap.mysql.schema.MysqlTableSchema;
-import com.airbnb.spinaltap.mysql.schema.SchemaStore;
+import com.airbnb.spinaltap.mysql.schema.MysqlColumn;
+import com.airbnb.spinaltap.mysql.schema.MysqlSchemaManager;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import java.util.ArrayList;
@@ -28,7 +27,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @RequiredArgsConstructor
 public class TableCache {
-  @NonNull private final SchemaStore<MysqlTableSchema> schemaStore;
+  private final MysqlSchemaManager schemaManager;
   private final String overridingDatabase;
   private final Cache<Long, Table> tableCache = CacheBuilder.newBuilder().maximumSize(200).build();
 
@@ -103,9 +102,8 @@ public class TableCache {
       final BinlogFilePos binlogFilePos,
       final List<ColumnDataType> columnTypes)
       throws Exception {
-    final List<ColumnInfo> tableSchema =
-        schemaStore.query(databaseName, tableName, binlogFilePos).getColumnInfo();
-    final Iterator<ColumnInfo> schemaIterator = tableSchema.iterator();
+    final List<MysqlColumn> tableSchema = schemaManager.getTableColumns(databaseName, tableName);
+    final Iterator<MysqlColumn> schemaIterator = tableSchema.iterator();
 
     if (tableSchema.size() != columnTypes.size()) {
       log.error(
@@ -116,7 +114,7 @@ public class TableCache {
 
     final List<ColumnMetadata> columnMetadata = new ArrayList<>();
     for (int position = 0; position < columnTypes.size() && schemaIterator.hasNext(); position++) {
-      ColumnInfo colInfo = schemaIterator.next();
+      MysqlColumn colInfo = schemaIterator.next();
       columnMetadata.add(
           new ColumnMetadata(
               colInfo.getName(), columnTypes.get(position), colInfo.isPrimaryKey(), position));
@@ -125,8 +123,8 @@ public class TableCache {
     final List<String> primaryColumns =
         tableSchema
             .stream()
-            .filter(ColumnInfo::isPrimaryKey)
-            .map(ColumnInfo::getName)
+            .filter(MysqlColumn::isPrimaryKey)
+            .map(MysqlColumn::getName)
             .collect(Collectors.toList());
 
     return new Table(

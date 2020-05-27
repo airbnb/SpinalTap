@@ -3,7 +3,7 @@ apply plugin: 'antlr'
 dependencies {
   compile project(':spinaltap-common')
 
-  compile libraries.jdbi
+  compile libraries.jdbi3
   compile libraries.mysql_binlog_connector
   compile libraries.guava_retrying
   compile libraries.jackson_datatype_guava

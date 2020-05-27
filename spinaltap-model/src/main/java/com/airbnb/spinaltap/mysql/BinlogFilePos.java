@@ -5,6 +5,7 @@
 package com.airbnb.spinaltap.mysql;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
@@ -23,6 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 @Getter
 @EqualsAndHashCode
 @NoArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = true)
 @JsonDeserialize(builder = BinlogFilePos.Builder.class)
 public class BinlogFilePos implements Comparable<BinlogFilePos>, Serializable {
   private static final long serialVersionUID = 1549638989059430876L;

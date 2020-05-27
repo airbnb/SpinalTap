@@ -29,8 +29,4 @@ public class MysqlSchemaStoreConfiguration {
   @NonNull
   @JsonProperty("archive-database")
   private String archiveDatabase = "schema_store_archives";
-
-  @NonNull
-  @JsonProperty("ddl-history-store-database")
-  private String ddlHistoryStoreDatabase = "ddl_history_store";
 }

@@ -6,87 +6,25 @@ package com.airbnb.spinaltap.mysql;
 
 import com.mysql.jdbc.jdbc2.optional.MysqlConnectionPoolDataSource;
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.List;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jdbi.v3.core.Jdbi;
 
 /** Represents a MySQL server connection and context with utility functions */
 @Slf4j
+@RequiredArgsConstructor
+@Getter
 public class MysqlClient {
-  private final String host;
-  private final int port;
-  private final String user;
-  private final String password;
-  private final MysqlDataSource dataSource;
+  private final Jdbi jdbi;
 
-  public MysqlClient(String host, int port, String user, String password) {
-    this.host = host;
-    this.port = port;
-    this.user = user;
-    this.password = password;
-    dataSource = createMysqlDataSource();
+  public static MysqlClient create(String host, int port, String user, String password) {
+    return new MysqlClient(Jdbi.create(createMysqlDataSource(host, port, user, password)));
   }
 
-  public BinlogFilePos getMasterStatus() {
-    AtomicReference<BinlogFilePos> binlogFilePos = new AtomicReference<>();
-    String serverUUID = getServerUUID();
-    try {
-      executeQuery(
-          "SHOW MASTER STATUS",
-          rs -> {
-            if (rs.next()) {
-              BinlogFilePos.Builder builder =
-                  BinlogFilePos.builder()
-                      .withServerUUID(getServerUUID())
-                      .withFileName(rs.getString(1))
-                      .withPosition(rs.getLong(2))
-                      .withNextPosition(rs.getLong(2));
-
-              if (rs.getMetaData().getColumnCount() > 4) {
-                builder.withGtidSet(rs.getString(5));
-              }
-
-              binlogFilePos.set(builder.build());
-            }
-          });
-    } catch (SQLException ex) {
-      log.error(String.format("Failed to execute SHOW MASTER STATUS on %s%d", host, port));
-      throw new RuntimeException(ex);
-    }
-    return binlogFilePos.get();
-  }
-
-  public String getServerUUID() {
-    return getGlobalVariableValue("server_uuid");
-  }
-
-  public boolean isGtidModeEnabled() {
-    return "ON".equalsIgnoreCase(getGlobalVariableValue("gtid_mode"));
-  }
-
-  public String getGlobalVariableValue(String variableName) {
-    AtomicReference<String> value = new AtomicReference<>();
-    try {
-      executeQuery(
-          String.format("SHOW GLOBAL VARIABLES WHERE Variable_name = '%s'", variableName),
-          rs -> {
-            if (rs.next()) {
-              value.set(rs.getString(2));
-            }
-          });
-    } catch (SQLException ex) {
-      log.error(
-          String.format(
-              "Failed to get global variable value for %s on %s:%d", variableName, host, port));
-      throw new RuntimeException(ex);
-    }
-    return value.get();
-  }
-
-  private MysqlDataSource createMysqlDataSource() {
+  public static MysqlDataSource createMysqlDataSource(
+      String host, int port, String user, String password) {
     MysqlDataSource dataSource = new MysqlConnectionPoolDataSource();
 
     dataSource.setUser(user);
@@ -98,19 +36,50 @@ public class MysqlClient {
     return dataSource;
   }
 
-  public void executeQuery(String sql, ResultSetConsumer resultSetConsumer) throws SQLException {
-    try (Connection conn = dataSource.getConnection()) {
-      try (Statement statement = conn.createStatement()) {
-        try (ResultSet resultSet = statement.executeQuery(sql)) {
-          if (resultSetConsumer != null) {
-            resultSetConsumer.accept(resultSet);
-          }
-        }
-      }
-    }
+  public BinlogFilePos getMasterStatus() {
+    return jdbi.withHandle(
+        handle ->
+            handle
+                .createQuery("SHOW MASTER STATUS")
+                .map(
+                    (rs, ctx) -> {
+                      BinlogFilePos.Builder builder =
+                          BinlogFilePos.builder()
+                              .withServerUUID(getServerUUID())
+                              .withFileName(rs.getString(1))
+                              .withPosition(rs.getLong(2))
+                              .withNextPosition(rs.getLong(2));
+
+                      if (rs.getMetaData().getColumnCount() > 4) {
+                        builder.withGtidSet(rs.getString(5));
+                      }
+                      return builder.build();
+                    })
+                .findFirst()
+                .orElse(null));
   }
 
-  public interface ResultSetConsumer {
-    void accept(ResultSet rs) throws SQLException;
+  public String getServerUUID() {
+    return getGlobalVariableValue("server_uuid");
+  }
+
+  public boolean isGtidModeEnabled() {
+    return "ON".equalsIgnoreCase(getGlobalVariableValue("gtid_mode"));
+  }
+
+  public List<String> getBinaryLogs() {
+    return jdbi.withHandle(
+        handle -> handle.createQuery("SHOW BINARY LOGS").map((rs, ctx) -> rs.getString(1)).list());
+  }
+
+  public String getGlobalVariableValue(String variableName) {
+    return jdbi.withHandle(
+        handle ->
+            handle
+                .createQuery(
+                    String.format("SHOW GLOBAL VARIABLES WHERE Variable_name = '%s'", variableName))
+                .map((rs, ctx) -> rs.getString(2))
+                .findFirst()
+                .orElse(null));
   }
 }
