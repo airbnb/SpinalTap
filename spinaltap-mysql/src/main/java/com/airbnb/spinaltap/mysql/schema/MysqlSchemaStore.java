@@ -10,11 +10,11 @@ import com.airbnb.spinaltap.mysql.MysqlSourceMetrics;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Table;
 import com.google.common.collect.Tables;
 import java.io.IOException;
-import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -29,6 +29,7 @@ import java.util.Set;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.logging.log4j.util.Strings;
 import org.jdbi.v3.core.Handle;
 import org.jdbi.v3.core.Jdbi;
 import org.jdbi.v3.core.mapper.RowMapper;
@@ -181,7 +182,7 @@ public class MysqlSchemaStore {
                   .bind("columns", OBJECT_MAPPER.writeValueAsString(schema.getColumns()))
                   .bind("sql", schema.getSql())
                   .bind("meta_data", OBJECT_MAPPER.writeValueAsString(schema.getMetadata()))
-                  .bind("timestamp", new Date(schema.getTimestamp()))
+                  .bind("timestamp", new Timestamp(schema.getTimestamp()))
                   .add();
             }
             batch.execute();
@@ -196,6 +197,7 @@ public class MysqlSchemaStore {
   }
 
   public List<MysqlTableSchema> queryByBinlogFilePos(BinlogFilePos pos) {
+    Preconditions.checkNotNull(pos, "BinlogFilePos cannot be null");
     try (Handle handle = jdbi.open()) {
       return MysqlSchemaUtil.LIST_TABLE_SCHEMA_RETRYER.call(
           () ->
@@ -204,7 +206,7 @@ public class MysqlSchemaStore {
                       String.format(
                           "SELECT * FROM `%s`.`%s` WHERE binlog_file_position = :pos",
                           storeDBName, sourceName))
-                  .bind("pos", pos)
+                  .bind("pos", pos.toString())
                   .map(MysqlTableSchemaMapper.INSTANCE)
                   .list());
     } catch (Exception ex) {
@@ -215,6 +217,7 @@ public class MysqlSchemaStore {
   }
 
   public List<MysqlTableSchema> queryByGTID(String gtid) {
+    Preconditions.checkArgument(Strings.isNotBlank(gtid), "GTID cannot be empty");
     try (Handle handle = jdbi.open()) {
       return handle
           .createQuery(
