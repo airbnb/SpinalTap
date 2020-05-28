@@ -7,8 +7,6 @@ package com.airbnb.spinaltap.mysql.schema;
 import com.airbnb.spinaltap.mysql.BinlogFilePos;
 import com.airbnb.spinaltap.mysql.GtidSet;
 import com.airbnb.spinaltap.mysql.MysqlClient;
-import com.airbnb.spinaltap.mysql.MysqlSourceMetrics;
-import com.airbnb.spinaltap.mysql.config.MysqlSchemaStoreConfiguration;
 import com.airbnb.spinaltap.mysql.event.QueryEvent;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
@@ -20,11 +18,10 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.jdbi.v3.core.Jdbi;
 
 @Slf4j
 @RequiredArgsConstructor
-public class MysqlSchemaManager {
+public class MysqlSchemaManager implements MysqlSchemaArchiver {
   private static final Set<String> SYSTEM_DATABASES =
       ImmutableSet.of("mysql", "information_schema", "performance_schema", "sys");
   private static final Pattern DATABASE_DDL_SQL_PATTERN =
@@ -40,44 +37,6 @@ public class MysqlSchemaManager {
   private final MysqlSchemaReader schemaReader;
   private final MysqlClient mysqlClient;
   private final boolean isSchemaVersionEnabled;
-
-  public static MysqlSchemaManager create(
-      String sourceName,
-      String username,
-      String password,
-      MysqlClient mysqlClient,
-      MysqlSchemaStoreConfiguration configuration,
-      boolean schemaVersionEnabled,
-      MysqlSourceMetrics metrics) {
-    MysqlSchemaReader schemaReader =
-        new MysqlSchemaReader(sourceName, mysqlClient.getJdbi(), metrics);
-    if (!schemaVersionEnabled) {
-      return new MysqlSchemaManager(
-          sourceName, null, null, schemaReader, mysqlClient, schemaVersionEnabled);
-    }
-    Jdbi jdbi =
-        Jdbi.create(
-            MysqlClient.createMysqlDataSource(
-                configuration.getHost(), configuration.getPort(), username, password));
-    jdbi.useHandle(
-        handle -> {
-          handle.execute(
-              String.format("CREATE DATABASE IF NOT EXISTS `%s`", configuration.getDatabase()));
-          handle.execute(
-              String.format(
-                  "CREATE DATABASE IF NOT EXISTS `%s`", configuration.getArchiveDatabase()));
-        });
-    MysqlSchemaStore schemaStore =
-        new MysqlSchemaStore(
-            sourceName,
-            configuration.getDatabase(),
-            configuration.getArchiveDatabase(),
-            jdbi,
-            metrics);
-    MysqlSchemaDatabase schemaDatabase = new MysqlSchemaDatabase(sourceName, jdbi, metrics);
-    return new MysqlSchemaManager(
-        sourceName, schemaStore, schemaDatabase, schemaReader, mysqlClient, schemaVersionEnabled);
-  }
 
   public List<MysqlColumn> getTableColumns(String database, String table) {
     return isSchemaVersionEnabled
@@ -257,6 +216,7 @@ public class MysqlSchemaManager {
     schemaStore.bootstrap(allTableSchemas);
   }
 
+  @Override
   public void archive() {
     if (!isSchemaVersionEnabled) {
       log.info("Schema versioning is not enabled for {}", sourceName);

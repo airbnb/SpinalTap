@@ -55,7 +55,7 @@ public class MysqlSchemaReader {
     }
   }
 
-  List<MysqlColumn> getTableColumns(@NonNull String database, @NonNull String table) {
+  public List<MysqlColumn> getTableColumns(@NonNull String database, @NonNull String table) {
     try (Handle handle = jdbi.open()) {
       List<MysqlColumn> columns =
           MysqlSchemaUtil.LIST_COLUMN_RETRYER.call(

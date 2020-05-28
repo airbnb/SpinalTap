@@ -10,8 +10,8 @@ import com.airbnb.spinaltap.common.util.Repository;
 import com.airbnb.spinaltap.common.validator.MutationOrderValidator;
 import com.airbnb.spinaltap.mysql.binlog_connector.BinaryLogConnectorSource;
 import com.airbnb.spinaltap.mysql.config.MysqlConfiguration;
-import com.airbnb.spinaltap.mysql.config.MysqlSchemaStoreConfiguration;
 import com.airbnb.spinaltap.mysql.schema.MysqlSchemaManager;
+import com.airbnb.spinaltap.mysql.schema.MysqlSchemaManagerFactory;
 import com.airbnb.spinaltap.mysql.validator.EventOrderValidator;
 import com.airbnb.spinaltap.mysql.validator.MutationSchemaValidator;
 import com.github.shyiko.mysql.binlog.BinaryLogClient;
@@ -31,7 +31,7 @@ public class MysqlSourceFactory {
       @Min(0) final long serverId,
       @NonNull final Repository<SourceState> backingStateRepository,
       @NonNull final Repository<Collection<SourceState>> stateHistoryRepository,
-      final MysqlSchemaStoreConfiguration schemaStoreConfig,
+      final MysqlSchemaManagerFactory schemaManagerFactory,
       @NonNull final MysqlSourceMetrics metrics,
       @Min(0) final long leaderEpoch) {
     final String name = configuration.getName();
@@ -56,14 +56,8 @@ public class MysqlSourceFactory {
     final MysqlClient mysqlClient = MysqlClient.create(host, port, user, password);
 
     final MysqlSchemaManager schemaManager =
-        MysqlSchemaManager.create(
-            name,
-            user,
-            password,
-            mysqlClient,
-            schemaStoreConfig,
-            configuration.isSchemaVersionEnabled(),
-            metrics);
+        schemaManagerFactory.create(
+            name, mysqlClient, configuration.isSchemaVersionEnabled(), metrics);
 
     final TableCache tableCache =
         new TableCache(schemaManager, configuration.getOverridingDatabase());

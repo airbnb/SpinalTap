@@ -9,6 +9,7 @@ import com.airbnb.spinaltap.common.pipe.PipeManager;
 import com.airbnb.spinaltap.kafka.KafkaDestinationBuilder;
 import com.airbnb.spinaltap.mysql.MysqlPipeFactory;
 import com.airbnb.spinaltap.mysql.config.MysqlConfiguration;
+import com.airbnb.spinaltap.mysql.schema.MysqlSchemaManagerFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.google.common.collect.ImmutableMap;
@@ -55,7 +56,8 @@ public final class SpinalTapStandaloneApp {
         config.getMysqlServerId(),
         ImmutableMap.of(
             "kafka", () -> new KafkaDestinationBuilder<>(config.getKafkaProducerConfig())),
-        config.getMysqlSchemaStoreConfig(),
+        new MysqlSchemaManagerFactory(
+            config.getMysqlUser(), config.getMysqlPassword(), config.getMysqlSchemaStoreConfig()),
         new TaggedMetricRegistry());
   }
 

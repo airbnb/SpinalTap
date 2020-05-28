@@ -229,6 +229,10 @@ public class MysqlSchemaStore {
   }
 
   public void archive() {
+    if (!isCreated()) {
+      log.error("Schema store for {} is not created.", sourceName);
+      return;
+    }
     String archiveTableName =
         String.format(
             "%s_%s",
