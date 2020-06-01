@@ -14,7 +14,7 @@ import com.airbnb.spinaltap.mysql.StateRepository;
 import com.airbnb.spinaltap.mysql.TableCache;
 import com.airbnb.spinaltap.mysql.config.MysqlConfiguration;
 import com.airbnb.spinaltap.mysql.exception.InvalidBinlogPositionException;
-import com.airbnb.spinaltap.mysql.schema.SchemaTracker;
+import com.airbnb.spinaltap.mysql.schema.MysqlSchemaManager;
 import com.github.shyiko.mysql.binlog.BinaryLogClient;
 import com.github.shyiko.mysql.binlog.event.Event;
 import com.github.shyiko.mysql.binlog.event.EventHeaderV4;
@@ -46,7 +46,7 @@ public final class BinaryLogConnectorSource extends MysqlSource {
       @NonNull final TableCache tableCache,
       @NonNull final StateRepository stateRepository,
       @NonNull final StateHistory stateHistory,
-      @NonNull final SchemaTracker schemaTracker,
+      @NonNull final MysqlSchemaManager schemaManager,
       @NonNull final MysqlSourceMetrics metrics,
       @NonNull final AtomicLong currentLeaderEpoch) {
     super(
@@ -57,7 +57,7 @@ public final class BinaryLogConnectorSource extends MysqlSource {
         stateRepository,
         stateHistory,
         config.getInitialBinlogFilePosition(),
-        schemaTracker,
+        schemaManager,
         metrics,
         currentLeaderEpoch,
         new AtomicReference<>(),

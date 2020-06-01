@@ -5,27 +5,19 @@
 package com.airbnb.spinaltap.mysql.schema;
 
 import com.airbnb.spinaltap.mysql.BinlogFilePos;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
-import java.sql.Blob;
 import java.util.List;
-import lombok.Builder;
+import java.util.Map;
 import lombok.Value;
 
 @Value
-@Builder
-@JsonDeserialize(builder = MysqlTableSchema.MysqlTableSchemaBuilder.class)
-public final class MysqlTableSchema {
-  private final int version;
-  private final String source;
-  private final String database;
-  private final String table;
-  private final BinlogFilePos binlogFilePos;
-  private final String sql;
-  private final long timestamp;
-  private final List<ColumnInfo> columnInfo;
-  private final Blob metadata;
-
-  @JsonPOJOBuilder(withPrefix = "")
-  static final class MysqlTableSchemaBuilder {}
+public class MysqlTableSchema {
+  long id;
+  String database;
+  String table;
+  BinlogFilePos binlogFilePos;
+  String gtid;
+  String sql;
+  long timestamp;
+  List<MysqlColumn> columns;
+  Map<String, String> metadata;
 }

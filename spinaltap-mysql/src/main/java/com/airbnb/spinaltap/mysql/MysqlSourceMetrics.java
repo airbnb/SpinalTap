@@ -101,14 +101,6 @@ public class MysqlSourceMetrics extends SourceMetrics {
     incError(SCHEMA_STORE_GET_FAILURE_METRIC, error, getTableTags(database, table));
   }
 
-  public void schemaStoreGetSuccess(final String database) {
-    inc(SCHEMA_STORE_GET_SUCCESS_METRIC, ImmutableMap.of(DATABASE_NAME_TAG, database));
-  }
-
-  public void schemaStoreGetFailure(final String database, final Throwable error) {
-    incError(SCHEMA_STORE_GET_FAILURE_METRIC, error, ImmutableMap.of(DATABASE_NAME_TAG, database));
-  }
-
   public void schemaStorePutSuccess(final String database, final String table) {
     inc(SCHEMA_STORE_PUT_SUCCESS_METRIC, getTableTags(database, table));
   }
@@ -119,30 +111,16 @@ public class MysqlSourceMetrics extends SourceMetrics {
   }
 
   public void schemaDatabaseApplyDDLSuccess(final String database) {
-    inc(SCHEMA_DATABASE_APPLY_DDL_SUCCESS_METRIC, ImmutableMap.of(DATABASE_NAME_TAG, database));
+    inc(
+        SCHEMA_DATABASE_APPLY_DDL_SUCCESS_METRIC,
+        ImmutableMap.of(DATABASE_NAME_TAG, database == null ? "" : database));
   }
 
   public void schemaDatabaseApplyDDLFailure(final String database, final Throwable error) {
     incError(
         SCHEMA_DATABASE_APPLY_DDL_FAILURE_METRIC,
         error,
-        ImmutableMap.of(DATABASE_NAME_TAG, database));
-  }
-
-  public void ddlHistoryStorePutSuccess() {
-    inc(DDL_HISTORY_STORE_PUT_SUCCESS_METRIC);
-  }
-
-  public void ddlHistoryStorePutFailure(final Throwable error) {
-    incError(DDL_HISTORY_STORE_PUT_FAILURE_METRIC, error);
-  }
-
-  public void ddlHistoryStoreGetSuccess() {
-    inc(DDL_HISTORY_STORE_GET_SUCCESS_METRIC);
-  }
-
-  public void ddlHistoryStoreGetFailure(final Throwable error) {
-    incError(DDL_HISTORY_STORE_GET_FAILURE_METRIC, error);
+        ImmutableMap.of(DATABASE_NAME_TAG, database == null ? "" : database));
   }
 
   public void invalidSchema(final Mutation<?> mutation) {
@@ -184,8 +162,8 @@ public class MysqlSourceMetrics extends SourceMetrics {
   private Map<String, String> getTableTags(final String database, final String table) {
     Map<String, String> tableTags = new HashMap<>();
 
-    tableTags.put(DATABASE_NAME_TAG, database);
-    tableTags.put(TABLE_NAME_TAG, table);
+    tableTags.put(DATABASE_NAME_TAG, database == null ? "" : database);
+    tableTags.put(TABLE_NAME_TAG, table == null ? "" : table);
 
     return tableTags;
   }

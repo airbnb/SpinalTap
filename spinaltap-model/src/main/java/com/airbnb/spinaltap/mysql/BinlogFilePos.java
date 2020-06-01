@@ -5,6 +5,7 @@
 package com.airbnb.spinaltap.mysql;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
@@ -15,6 +16,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 /** Represents the position in a binlog file. */
@@ -22,6 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 @Getter
 @EqualsAndHashCode
 @NoArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = true)
 @JsonDeserialize(builder = BinlogFilePos.Builder.class)
 public class BinlogFilePos implements Comparable<BinlogFilePos>, Serializable {
   private static final long serialVersionUID = 1549638989059430876L;
@@ -33,8 +36,8 @@ public class BinlogFilePos implements Comparable<BinlogFilePos>, Serializable {
   @JsonProperty private String fileName;
   @JsonProperty private long position;
   @JsonProperty private long nextPosition;
-  @JsonProperty private GtidSet gtidSet;
-  @JsonProperty private String serverUUID;
+  @JsonProperty @Setter private GtidSet gtidSet;
+  @JsonProperty @Setter private String serverUUID;
 
   public BinlogFilePos(long fileNumber) {
     this(fileNumber, 4L, 4L);

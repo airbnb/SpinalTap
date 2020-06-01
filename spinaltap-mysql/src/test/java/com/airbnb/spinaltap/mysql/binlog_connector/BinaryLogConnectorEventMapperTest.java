@@ -180,69 +180,6 @@ public class BinaryLogConnectorEventMapperTest {
   }
 
   @Test
-  public void testQueryEventWithBlockSQLComments() {
-    String sql_with_block_comments =
-        "CREATE/* ! COMMENTS ! */UNIQUE /* ANOTHER COMMENTS ! */INDEX unique_index\n"
-            + "ON `my_db`.`my_table` (`col1`, `col2`)";
-    String sql_with_comments_in_multi_lines =
-        "CREATE UNIQUE /*\n"
-            + "COMMENT Line1  \n"
-            + "COMMENT Line 2\n"
-            + "*/\n"
-            + "INDEX ON `my_db`.`my_table` (`col1`, `col2`)";
-    eventHeader.setEventType(EventType.QUERY);
-    QueryEventData eventData = new QueryEventData();
-    eventData.setDatabase(DATABASE);
-    eventData.setSql(sql_with_block_comments);
-
-    Optional<BinlogEvent> binlogEvent =
-        BinaryLogConnectorEventMapper.INSTANCE.map(
-            new Event(eventHeader, eventData), BINLOG_FILE_POS);
-    assertTrue(binlogEvent.isPresent());
-    String expected_sql =
-        "CREATE UNIQUE INDEX unique_index\nON `my_db`.`my_table` (`col1`, `col2`)";
-    String stripped_sql = ((QueryEvent) (binlogEvent.get())).getSql();
-    assertEquals(expected_sql, stripped_sql);
-
-    eventData.setSql(sql_with_comments_in_multi_lines);
-    binlogEvent =
-        BinaryLogConnectorEventMapper.INSTANCE.map(
-            new Event(eventHeader, eventData), BINLOG_FILE_POS);
-    assertTrue(binlogEvent.isPresent());
-    stripped_sql = ((QueryEvent) (binlogEvent.get())).getSql();
-    expected_sql = "CREATE UNIQUE \nINDEX ON `my_db`.`my_table` (`col1`, `col2`)";
-    assertEquals(expected_sql, stripped_sql);
-  }
-
-  @Test
-  public void testQueryEventWithMySQLSpecComments() {
-    String sql_with_mysql_spec_comments =
-        "CREATE TABLE t1(a INT, KEY (a)) /*!50110 KEY_BLOCK_SIZE=1024 */";
-    String sql_with_mysql_spec_comments2 = "/*!CREATE TABLE t1(a INT, KEY (a))*/";
-    eventHeader.setEventType(EventType.QUERY);
-    QueryEventData eventData = new QueryEventData();
-    eventData.setDatabase(DATABASE);
-    eventData.setSql(sql_with_mysql_spec_comments);
-
-    Optional<BinlogEvent> binlogEvent =
-        BinaryLogConnectorEventMapper.INSTANCE.map(
-            new Event(eventHeader, eventData), BINLOG_FILE_POS);
-    assertTrue(binlogEvent.isPresent());
-    String expected_sql = "CREATE TABLE t1(a INT, KEY (a)) KEY_BLOCK_SIZE=1024 ";
-    String stripped_sql = ((QueryEvent) (binlogEvent.get())).getSql();
-    assertEquals(expected_sql, stripped_sql);
-
-    eventData.setSql(sql_with_mysql_spec_comments2);
-    binlogEvent =
-        BinaryLogConnectorEventMapper.INSTANCE.map(
-            new Event(eventHeader, eventData), BINLOG_FILE_POS);
-    assertTrue(binlogEvent.isPresent());
-    expected_sql = "CREATE TABLE t1(a INT, KEY (a))";
-    stripped_sql = ((QueryEvent) (binlogEvent.get())).getSql();
-    assertEquals(expected_sql, stripped_sql);
-  }
-
-  @Test
   public void testFormatDescriptionEvent() {
     eventHeader.setEventType(EventType.FORMAT_DESCRIPTION);
     FormatDescriptionEventData eventData = new FormatDescriptionEventData();

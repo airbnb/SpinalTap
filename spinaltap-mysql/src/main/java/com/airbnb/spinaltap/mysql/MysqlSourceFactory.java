@@ -10,46 +10,33 @@ import com.airbnb.spinaltap.common.util.Repository;
 import com.airbnb.spinaltap.common.validator.MutationOrderValidator;
 import com.airbnb.spinaltap.mysql.binlog_connector.BinaryLogConnectorSource;
 import com.airbnb.spinaltap.mysql.config.MysqlConfiguration;
-import com.airbnb.spinaltap.mysql.config.MysqlSchemaStoreConfiguration;
-import com.airbnb.spinaltap.mysql.schema.CachedMysqlSchemaStore;
-import com.airbnb.spinaltap.mysql.schema.LatestMysqlSchemaStore;
-import com.airbnb.spinaltap.mysql.schema.MysqlDDLHistoryStore;
-import com.airbnb.spinaltap.mysql.schema.MysqlSchemaDatabase;
-import com.airbnb.spinaltap.mysql.schema.MysqlSchemaStore;
-import com.airbnb.spinaltap.mysql.schema.MysqlSchemaStoreManager;
-import com.airbnb.spinaltap.mysql.schema.MysqlSchemaTracker;
-import com.airbnb.spinaltap.mysql.schema.MysqlSchemaUtil;
-import com.airbnb.spinaltap.mysql.schema.MysqlTableSchema;
-import com.airbnb.spinaltap.mysql.schema.SchemaStore;
-import com.airbnb.spinaltap.mysql.schema.SchemaTracker;
+import com.airbnb.spinaltap.mysql.schema.MysqlSchemaManager;
+import com.airbnb.spinaltap.mysql.schema.MysqlSchemaManagerFactory;
 import com.airbnb.spinaltap.mysql.validator.EventOrderValidator;
 import com.airbnb.spinaltap.mysql.validator.MutationSchemaValidator;
 import com.github.shyiko.mysql.binlog.BinaryLogClient;
-import com.google.common.base.Preconditions;
 import java.util.Collection;
 import java.util.concurrent.atomic.AtomicLong;
 import javax.validation.constraints.Min;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
-import org.skife.jdbi.v2.DBI;
 
 /** Represents a factory for a {@link MysqlSource}. */
 @UtilityClass
 public class MysqlSourceFactory {
-  public static Source create(
+  public Source create(
       @NonNull final MysqlConfiguration configuration,
       @NonNull final String user,
       @NonNull final String password,
       @Min(0) final long serverId,
       @NonNull final Repository<SourceState> backingStateRepository,
       @NonNull final Repository<Collection<SourceState>> stateHistoryRepository,
-      final MysqlSchemaStoreConfiguration schemaStoreConfig,
+      final MysqlSchemaManagerFactory schemaManagerFactory,
       @NonNull final MysqlSourceMetrics metrics,
       @Min(0) final long leaderEpoch) {
     final String name = configuration.getName();
     final String host = configuration.getHost();
     final int port = configuration.getPort();
-    final DBI mysqlDBI = MysqlSchemaUtil.createMysqlDBI(host, port, user, password, null);
 
     final BinaryLogClient binlogClient = new BinaryLogClient(host, port, user, password);
 
@@ -66,70 +53,25 @@ public class MysqlSourceFactory {
         new StateRepository(name, backingStateRepository, metrics);
     final StateHistory stateHistory = new StateHistory(name, stateHistoryRepository, metrics);
 
-    final LatestMysqlSchemaStore schemaReader = new LatestMysqlSchemaStore(name, mysqlDBI, metrics);
+    final MysqlClient mysqlClient = MysqlClient.create(host, port, user, password);
 
-    SchemaStore<MysqlTableSchema> schemaStore;
-    SchemaTracker schemaTracker;
-
-    if (configuration.isSchemaVersionEnabled()) {
-      Preconditions.checkNotNull(
-          schemaStoreConfig,
-          "MySQL schema version is enabled but mysql-schema-store is not set in config");
-      final DBI schemaStoreDBI =
-          MysqlSchemaUtil.createMysqlDBI(
-              schemaStoreConfig.getHost(),
-              schemaStoreConfig.getPort(),
-              user,
-              password,
-              schemaStoreConfig.getDatabase());
-      final MysqlSchemaStore mysqlSchemaStore =
-          new MysqlSchemaStore(
-              name, schemaStoreDBI, schemaStoreConfig.getArchiveDatabase(), metrics);
-
-      final DBI schemaDatabaseDBI =
-          MysqlSchemaUtil.createMysqlDBI(
-              schemaStoreConfig.getHost(), schemaStoreConfig.getPort(), user, password, null);
-      final MysqlSchemaDatabase schemaDatabase =
-          new MysqlSchemaDatabase(name, schemaDatabaseDBI, metrics);
-
-      final DBI ddlHistoryStoreDBI =
-          MysqlSchemaUtil.createMysqlDBI(
-              schemaStoreConfig.getHost(),
-              schemaStoreConfig.getPort(),
-              user,
-              password,
-              schemaStoreConfig.getDdlHistoryStoreDatabase());
-      final MysqlDDLHistoryStore ddlHistoryStore =
-          new MysqlDDLHistoryStore(
-              name, ddlHistoryStoreDBI, schemaStoreConfig.getArchiveDatabase(), metrics);
-
-      if (!mysqlSchemaStore.isCreated()) {
-        MysqlSchemaStoreManager schemaStoreManager =
-            new MysqlSchemaStoreManager(
-                name, schemaReader, mysqlSchemaStore, schemaDatabase, ddlHistoryStore);
-        schemaStoreManager.bootstrapAll();
-      }
-
-      schemaStore = new CachedMysqlSchemaStore(name, mysqlSchemaStore, metrics);
-      schemaTracker = new MysqlSchemaTracker(schemaStore, schemaDatabase, ddlHistoryStore);
-    } else {
-      schemaStore = schemaReader;
-      schemaTracker = (event) -> {};
-    }
+    final MysqlSchemaManager schemaManager =
+        schemaManagerFactory.create(
+            name, mysqlClient, configuration.isSchemaVersionEnabled(), metrics);
 
     final TableCache tableCache =
-        new TableCache(schemaStore, configuration.getOverridingDatabase());
+        new TableCache(schemaManager, configuration.getOverridingDatabase());
 
     final BinaryLogConnectorSource source =
         new BinaryLogConnectorSource(
             name,
             configuration,
             binlogClient,
-            new MysqlClient(host, port, user, password),
+            mysqlClient,
             tableCache,
             stateRepository,
             stateHistory,
-            schemaTracker,
+            schemaManager,
             metrics,
             new AtomicLong(leaderEpoch));
 

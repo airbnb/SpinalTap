@@ -15,9 +15,9 @@ import com.airbnb.spinaltap.common.pipe.PipeMetrics;
 import com.airbnb.spinaltap.common.source.Source;
 import com.airbnb.spinaltap.common.util.StateRepositoryFactory;
 import com.airbnb.spinaltap.mysql.config.MysqlConfiguration;
-import com.airbnb.spinaltap.mysql.config.MysqlSchemaStoreConfiguration;
 import com.airbnb.spinaltap.mysql.mutation.MysqlKeyProvider;
 import com.airbnb.spinaltap.mysql.mutation.mapper.ThriftMutationMapper;
+import com.airbnb.spinaltap.mysql.schema.MysqlSchemaManagerFactory;
 import com.google.common.base.Preconditions;
 import java.util.Collections;
 import java.util.List;
@@ -41,7 +41,7 @@ public final class MysqlPipeFactory extends AbstractPipeFactory<MysqlConfigurati
   @NonNull
   private final Map<String, Supplier<DestinationBuilder<Mutation>>> destinationBuilderSupplierMap;
 
-  @NonNull private final MysqlSchemaStoreConfiguration schemaStoreConfig;
+  @NonNull private final MysqlSchemaManagerFactory schemaManagerFactory;
 
   public MysqlPipeFactory(
       @NonNull final String mysqlUser,
@@ -49,14 +49,14 @@ public final class MysqlPipeFactory extends AbstractPipeFactory<MysqlConfigurati
       @Min(0) final long mysqlServerId,
       @NonNull
           final Map<String, Supplier<DestinationBuilder<Mutation>>> destinationBuilderSupplierMap,
-      final MysqlSchemaStoreConfiguration schemaStoreConfig,
+      final MysqlSchemaManagerFactory schemaManagerFactory,
       @NonNull final TaggedMetricRegistry metricRegistry) {
     super(metricRegistry);
     this.mysqlUser = mysqlUser;
     this.mysqlPassword = mysqlPassword;
     this.mysqlServerId = mysqlServerId;
     this.destinationBuilderSupplierMap = destinationBuilderSupplierMap;
-    this.schemaStoreConfig = schemaStoreConfig;
+    this.schemaManagerFactory = schemaManagerFactory;
   }
 
   /**
@@ -113,7 +113,7 @@ public final class MysqlPipeFactory extends AbstractPipeFactory<MysqlConfigurati
         mysqlServerId + configuration.getHostRole().ordinal() * 100,
         repositoryFactory.getStateRepository(configuration.getName(), partitionName),
         repositoryFactory.getStateHistoryRepository(configuration.getName(), partitionName),
-        schemaStoreConfig,
+        schemaManagerFactory,
         new MysqlSourceMetrics(configuration.getName(), metricRegistry),
         leaderEpoch);
   }
