@@ -10,7 +10,12 @@ import com.airbnb.spinaltap.common.source.SourceState;
 import com.airbnb.spinaltap.common.util.JsonUtil;
 import com.airbnb.spinaltap.mysql.BinlogFilePos;
 import com.airbnb.spinaltap.mysql.DataSource;
+import com.airbnb.spinaltap.mysql.config.MysqlConfiguration;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import com.github.shyiko.mysql.binlog.network.SSLMode;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Queues;
 import java.util.Collection;
 import java.util.Deque;
@@ -96,5 +101,34 @@ public class JsonSerializationTest {
     assertEquals(thirdState, stateHistory.removeLast());
     assertEquals(secondState, stateHistory.removeLast());
     assertEquals(firstState, stateHistory.removeLast());
+  }
+
+  @Test
+  public void testDeserializeMysqlConfiguration() throws Exception {
+    String configYaml =
+        "name: test\n"
+            + "host: localhost\n"
+            + "port: 3306\n"
+            + "tables:\n"
+            + "  - test_db:test_table\n"
+            + "  - test_db:test_table2\n"
+            + "socket_timeout_seconds: -1\n"
+            + "ssl_mode: REQUIRED\n"
+            + "destination:\n"
+            + "  pool_size: 5\n"
+            + "  buffer_size: 1000\n";
+    MysqlConfiguration config =
+        new ObjectMapper(new YAMLFactory()).readValue(configYaml, MysqlConfiguration.class);
+
+    assertEquals("test", config.getName());
+    assertEquals("localhost", config.getHost());
+    assertEquals(3306, config.getPort());
+    assertEquals(
+        ImmutableList.of("test_db:test_table", "test_db:test_table2"),
+        config.getCanonicalTableNames());
+    assertEquals(-1, config.getSocketTimeoutInSeconds());
+    assertEquals(1000, config.getDestinationConfiguration().getBufferSize());
+    assertEquals(5, config.getDestinationConfiguration().getPoolSize());
+    assertEquals(SSLMode.REQUIRED, config.getSslMode());
   }
 }
