@@ -66,11 +66,11 @@ public final class BinaryLogConnectorSource extends MysqlSource {
     this.binlogClient = binlogClient;
     this.mysqlClient = mysqlClient;
     this.serverUUID = mysqlClient.getServerUUID();
-    initializeClient(config.getSocketTimeoutInSeconds());
+    initializeClient(config);
   }
 
   /** Initializes the {@link BinaryLogClient}. */
-  private void initializeClient(final int socketTimeoutInSeconds) {
+  private void initializeClient(final MysqlConfiguration config) {
     binlogClient.setThreadFactory(
         runnable ->
             new Thread(
@@ -83,15 +83,15 @@ public final class BinaryLogConnectorSource extends MysqlSource {
         () -> {
           Socket socket = new Socket();
           try {
-            if (socketTimeoutInSeconds > 0) {
-              socket.setSoTimeout(socketTimeoutInSeconds * 1000);
+            if (config.getSocketTimeoutInSeconds() > 0) {
+              socket.setSoTimeout(config.getSocketTimeoutInSeconds() * 1000);
             }
           } catch (Exception ex) {
             throw new RuntimeException(ex);
           }
           return socket;
         });
-
+    binlogClient.setSSLMode(config.getSslMode());
     binlogClient.setKeepAlive(false);
     binlogClient.registerEventListener(new BinlogEventListener());
     binlogClient.registerLifecycleListener(new BinlogClientLifeCycleListener());
