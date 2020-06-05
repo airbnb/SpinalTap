@@ -50,9 +50,9 @@ public class MysqlConfiguration extends AbstractMysqlConfiguration {
       @NonNull final String name,
       @NonNull final List<String> canonicalTableNames,
       @NonNull final String host,
-      @NonNull final String hostRole,
+      final String hostRole,
       @Min(0) final int port,
-      @NonNull final String sslMode,
+      final String sslMode,
       @NonNull final DestinationConfiguration destinationConfiguration) {
     super(name, TYPE, INSTANCE_TAG, destinationConfiguration);
 
