@@ -7,7 +7,9 @@ package com.airbnb.spinaltap.mysql.config;
 import com.airbnb.spinaltap.common.config.DestinationConfiguration;
 import com.airbnb.spinaltap.mysql.BinlogFilePos;
 import com.airbnb.spinaltap.mysql.binlog_connector.BinaryLogConnectorSource;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.github.shyiko.mysql.binlog.network.SSLMode;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import java.util.List;
@@ -27,6 +29,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 @Setter
 @ToString
 @EqualsAndHashCode(callSuper = true)
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class MysqlConfiguration extends AbstractMysqlConfiguration {
   public static final String TYPE = "mySQL";
   public static final String INSTANCE_TAG = TYPE.toLowerCase();
@@ -47,8 +50,9 @@ public class MysqlConfiguration extends AbstractMysqlConfiguration {
       @NonNull final String name,
       @NonNull final List<String> canonicalTableNames,
       @NonNull final String host,
-      @NonNull final String hostRole,
+      final String hostRole,
       @Min(0) final int port,
+      final String sslMode,
       @NonNull final DestinationConfiguration destinationConfiguration) {
     super(name, TYPE, INSTANCE_TAG, destinationConfiguration);
 
@@ -58,6 +62,10 @@ public class MysqlConfiguration extends AbstractMysqlConfiguration {
 
     if (!Strings.isNullOrEmpty(hostRole)) {
       this.hostRole = HostRole.valueOf(hostRole.toUpperCase());
+    }
+
+    if (!Strings.isNullOrEmpty(sslMode)) {
+      this.sslMode = SSLMode.valueOf(sslMode.toUpperCase());
     }
   }
 
@@ -101,6 +109,9 @@ public class MysqlConfiguration extends AbstractMysqlConfiguration {
 
   @JsonProperty("overriding_database")
   private String overridingDatabase;
+
+  @JsonProperty("ssl_mode")
+  private SSLMode sslMode = SSLMode.DISABLED;
 
   @Override
   public void setPartitions(int partitions) {

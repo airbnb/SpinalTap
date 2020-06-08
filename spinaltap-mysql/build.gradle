@@ -7,6 +7,7 @@ dependencies {
   compile libraries.mysql_binlog_connector
   compile libraries.guava_retrying
   compile libraries.jackson_datatype_guava
+  compile libraries.jackson_dataformat_yaml
   compile libraries.mysql_connector
   compile libraries.hibernate_validator
   compileOnly libraries.lombok
