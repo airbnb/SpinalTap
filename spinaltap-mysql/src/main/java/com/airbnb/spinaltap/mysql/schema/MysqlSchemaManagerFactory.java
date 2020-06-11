@@ -5,6 +5,7 @@
 package com.airbnb.spinaltap.mysql.schema;
 
 import com.airbnb.common.metrics.TaggedMetricRegistry;
+import com.airbnb.spinaltap.common.config.TlsConfiguration;
 import com.airbnb.spinaltap.mysql.MysqlClient;
 import com.airbnb.spinaltap.mysql.MysqlSourceMetrics;
 import com.airbnb.spinaltap.mysql.config.MysqlSchemaStoreConfiguration;
@@ -14,21 +15,29 @@ public class MysqlSchemaManagerFactory {
   private final String username;
   private final String password;
   private final MysqlSchemaStoreConfiguration configuration;
+  private final TlsConfiguration tlsConfiguration;
   private Jdbi jdbi;
 
   public MysqlSchemaManagerFactory(
       final String username,
       final String password,
-      final MysqlSchemaStoreConfiguration configuration) {
+      final MysqlSchemaStoreConfiguration configuration,
+      final TlsConfiguration tlsConfiguration) {
     this.username = username;
     this.password = password;
     this.configuration = configuration;
+    this.tlsConfiguration = tlsConfiguration;
 
     if (configuration != null) {
       jdbi =
           Jdbi.create(
               MysqlClient.createMysqlDataSource(
-                  configuration.getHost(), configuration.getPort(), username, password));
+                  configuration.getHost(),
+                  configuration.getPort(),
+                  username,
+                  password,
+                  configuration.isMTlsEnabled(),
+                  tlsConfiguration));
       jdbi.useHandle(
           handle -> {
             handle.execute(
@@ -69,7 +78,12 @@ public class MysqlSchemaManagerFactory {
     Jdbi jdbi =
         Jdbi.create(
             MysqlClient.createMysqlDataSource(
-                configuration.getHost(), configuration.getPort(), username, password));
+                configuration.getHost(),
+                configuration.getPort(),
+                username,
+                password,
+                configuration.isMTlsEnabled(),
+                tlsConfiguration));
     MysqlSchemaStore schemaStore =
         new MysqlSchemaStore(
             sourceName,

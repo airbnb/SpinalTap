@@ -4,6 +4,7 @@
  */
 package com.airbnb.spinaltap.mysql;
 
+import com.airbnb.spinaltap.common.config.TlsConfiguration;
 import com.airbnb.spinaltap.common.source.Source;
 import com.airbnb.spinaltap.common.source.SourceState;
 import com.airbnb.spinaltap.common.util.Repository;
@@ -29,6 +30,7 @@ public class MysqlSourceFactory {
       @NonNull final String user,
       @NonNull final String password,
       @Min(0) final long serverId,
+      final TlsConfiguration tlsConfiguration,
       @NonNull final Repository<SourceState> backingStateRepository,
       @NonNull final Repository<Collection<SourceState>> stateHistoryRepository,
       final MysqlSchemaManagerFactory schemaManagerFactory,
@@ -53,7 +55,9 @@ public class MysqlSourceFactory {
         new StateRepository(name, backingStateRepository, metrics);
     final StateHistory stateHistory = new StateHistory(name, stateHistoryRepository, metrics);
 
-    final MysqlClient mysqlClient = MysqlClient.create(host, port, user, password);
+    final MysqlClient mysqlClient =
+        MysqlClient.create(
+            host, port, user, password, configuration.isMTlsEnabled(), tlsConfiguration);
 
     final MysqlSchemaManager schemaManager =
         schemaManagerFactory.create(
@@ -66,6 +70,7 @@ public class MysqlSourceFactory {
         new BinaryLogConnectorSource(
             name,
             configuration,
+            tlsConfiguration,
             binlogClient,
             mysqlClient,
             tableCache,

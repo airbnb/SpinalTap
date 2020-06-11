@@ -113,6 +113,9 @@ public class MysqlConfiguration extends AbstractMysqlConfiguration {
   @JsonProperty("ssl_mode")
   private SSLMode sslMode = SSLMode.DISABLED;
 
+  @JsonProperty("mtls_enabled")
+  private boolean mTlsEnabled;
+
   @Override
   public void setPartitions(int partitions) {
     // We only support 1 partition for mysql sources
