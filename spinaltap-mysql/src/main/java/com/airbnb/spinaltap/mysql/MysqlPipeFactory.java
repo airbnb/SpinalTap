@@ -7,6 +7,7 @@ package com.airbnb.spinaltap.mysql;
 import com.airbnb.common.metrics.TaggedMetricRegistry;
 import com.airbnb.jitney.event.spinaltap.v1.Mutation;
 import com.airbnb.spinaltap.common.config.DestinationConfiguration;
+import com.airbnb.spinaltap.common.config.TlsConfiguration;
 import com.airbnb.spinaltap.common.destination.Destination;
 import com.airbnb.spinaltap.common.destination.DestinationBuilder;
 import com.airbnb.spinaltap.common.pipe.AbstractPipeFactory;
@@ -43,10 +44,13 @@ public final class MysqlPipeFactory extends AbstractPipeFactory<MysqlConfigurati
 
   @NonNull private final MysqlSchemaManagerFactory schemaManagerFactory;
 
+  private final TlsConfiguration tlsConfiguration;
+
   public MysqlPipeFactory(
       @NonNull final String mysqlUser,
       @NonNull final String mysqlPassword,
       @Min(0) final long mysqlServerId,
+      final TlsConfiguration tlsConfiguration,
       @NonNull
           final Map<String, Supplier<DestinationBuilder<Mutation>>> destinationBuilderSupplierMap,
       final MysqlSchemaManagerFactory schemaManagerFactory,
@@ -55,6 +59,7 @@ public final class MysqlPipeFactory extends AbstractPipeFactory<MysqlConfigurati
     this.mysqlUser = mysqlUser;
     this.mysqlPassword = mysqlPassword;
     this.mysqlServerId = mysqlServerId;
+    this.tlsConfiguration = tlsConfiguration;
     this.destinationBuilderSupplierMap = destinationBuilderSupplierMap;
     this.schemaManagerFactory = schemaManagerFactory;
   }
@@ -111,6 +116,7 @@ public final class MysqlPipeFactory extends AbstractPipeFactory<MysqlConfigurati
         // Use a different server_id for REPLICAS in case the same database is configured as
         // both MASTER and REPLICA
         mysqlServerId + configuration.getHostRole().ordinal() * 100,
+        tlsConfiguration,
         repositoryFactory.getStateRepository(configuration.getName(), partitionName),
         repositoryFactory.getStateHistoryRepository(configuration.getName(), partitionName),
         schemaManagerFactory,

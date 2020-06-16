@@ -4,6 +4,7 @@
  */
 package com.airbnb.spinaltap;
 
+import com.airbnb.spinaltap.common.config.TlsConfiguration;
 import com.airbnb.spinaltap.kafka.KafkaProducerConfiguration;
 import com.airbnb.spinaltap.mysql.config.MysqlConfiguration;
 import com.airbnb.spinaltap.mysql.config.MysqlSchemaStoreConfiguration;
@@ -52,6 +53,9 @@ public class SpinalTapStandaloneConfiguration {
   @NotNull
   @JsonProperty("mysql-server-id")
   private long mysqlServerId = DEFAULT_MYSQL_SERVER_ID;
+
+  @JsonProperty("tls-config")
+  private TlsConfiguration tlsConfiguration;
 
   @JsonProperty("mysql-schema-store")
   private MysqlSchemaStoreConfiguration mysqlSchemaStoreConfig;

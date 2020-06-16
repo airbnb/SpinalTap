@@ -24,6 +24,9 @@ public class MysqlSchemaStoreConfiguration {
   @JsonProperty
   private int port;
 
+  @JsonProperty("mtls_enabled")
+  private boolean mTlsEnabled;
+
   @NonNull @JsonProperty private String database = "schema_store";
 
   @NonNull

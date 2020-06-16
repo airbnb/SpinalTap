@@ -114,6 +114,7 @@ public class JsonSerializationTest {
             + "  - test_db:test_table2\n"
             + "socket_timeout_seconds: -1\n"
             + "ssl_mode: REQUIRED\n"
+            + "mtls_enabled: true\n"
             + "destination:\n"
             + "  pool_size: 5\n"
             + "  buffer_size: 1000\n";
@@ -130,5 +131,6 @@ public class JsonSerializationTest {
     assertEquals(1000, config.getDestinationConfiguration().getBufferSize());
     assertEquals(5, config.getDestinationConfiguration().getPoolSize());
     assertEquals(SSLMode.REQUIRED, config.getSslMode());
+    assertTrue(config.isMTlsEnabled());
   }
 }

@@ -4,6 +4,7 @@
  */
 package com.airbnb.spinaltap.mysql.binlog_connector;
 
+import com.airbnb.spinaltap.common.config.TlsConfiguration;
 import com.airbnb.spinaltap.mysql.BinlogFilePos;
 import com.airbnb.spinaltap.mysql.DataSource;
 import com.airbnb.spinaltap.mysql.MysqlClient;
@@ -18,11 +19,14 @@ import com.airbnb.spinaltap.mysql.schema.MysqlSchemaManager;
 import com.github.shyiko.mysql.binlog.BinaryLogClient;
 import com.github.shyiko.mysql.binlog.event.Event;
 import com.github.shyiko.mysql.binlog.event.EventHeaderV4;
+import com.github.shyiko.mysql.binlog.network.DefaultSSLSocketFactory;
 import com.google.common.base.Preconditions;
 import java.net.Socket;
+import java.security.GeneralSecurityException;
 import java.util.HashSet;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
+import javax.net.ssl.SSLContext;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
@@ -41,6 +45,7 @@ public final class BinaryLogConnectorSource extends MysqlSource {
   public BinaryLogConnectorSource(
       @NonNull final String name,
       @NonNull final MysqlConfiguration config,
+      final TlsConfiguration tlsConfig,
       @NonNull final BinaryLogClient binlogClient,
       @NonNull final MysqlClient mysqlClient,
       @NonNull final TableCache tableCache,
@@ -66,11 +71,11 @@ public final class BinaryLogConnectorSource extends MysqlSource {
     this.binlogClient = binlogClient;
     this.mysqlClient = mysqlClient;
     this.serverUUID = mysqlClient.getServerUUID();
-    initializeClient(config);
+    initializeClient(config, tlsConfig);
   }
 
   /** Initializes the {@link BinaryLogClient}. */
-  private void initializeClient(final MysqlConfiguration config) {
+  private void initializeClient(final MysqlConfiguration config, final TlsConfiguration tlsConfig) {
     binlogClient.setThreadFactory(
         runnable ->
             new Thread(
@@ -95,6 +100,20 @@ public final class BinaryLogConnectorSource extends MysqlSource {
     binlogClient.setKeepAlive(false);
     binlogClient.registerEventListener(new BinlogEventListener());
     binlogClient.registerLifecycleListener(new BinlogClientLifeCycleListener());
+    if (config.isMTlsEnabled() && tlsConfig != null) {
+      binlogClient.setSslSocketFactory(
+          new DefaultSSLSocketFactory() {
+            @Override
+            protected void initSSLContext(SSLContext sc) throws GeneralSecurityException {
+              try {
+                sc.init(tlsConfig.getKeyManagers(), tlsConfig.getTrustManagers(), null);
+              } catch (Exception ex) {
+                log.error("Failed to initialize SSL Context for mTLS.", ex);
+                throw new RuntimeException(ex);
+              }
+            }
+          });
+    }
   }
 
   @Override

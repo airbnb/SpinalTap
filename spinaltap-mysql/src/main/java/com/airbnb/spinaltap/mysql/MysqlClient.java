@@ -4,6 +4,7 @@
  */
 package com.airbnb.spinaltap.mysql;
 
+import com.airbnb.spinaltap.common.config.TlsConfiguration;
 import com.mysql.jdbc.jdbc2.optional.MysqlConnectionPoolDataSource;
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import java.util.List;
@@ -19,12 +20,24 @@ import org.jdbi.v3.core.Jdbi;
 public class MysqlClient {
   private final Jdbi jdbi;
 
-  public static MysqlClient create(String host, int port, String user, String password) {
-    return new MysqlClient(Jdbi.create(createMysqlDataSource(host, port, user, password)));
+  public static MysqlClient create(
+      String host,
+      int port,
+      String user,
+      String password,
+      boolean mTlsEnabled,
+      TlsConfiguration tlsConfig) {
+    return new MysqlClient(
+        Jdbi.create(createMysqlDataSource(host, port, user, password, mTlsEnabled, tlsConfig)));
   }
 
   public static MysqlDataSource createMysqlDataSource(
-      String host, int port, String user, String password) {
+      String host,
+      int port,
+      String user,
+      String password,
+      boolean mTlsEnabled,
+      TlsConfiguration tlsConfig) {
     MysqlDataSource dataSource = new MysqlConnectionPoolDataSource();
 
     dataSource.setUser(user);
@@ -33,6 +46,25 @@ public class MysqlClient {
     dataSource.setPort(port);
     dataSource.setJdbcCompliantTruncation(false);
     dataSource.setAutoReconnectForConnectionPools(true);
+
+    if (mTlsEnabled && tlsConfig != null) {
+      dataSource.setUseSSL(true);
+      if (tlsConfig.getKeyStoreFilePath() != null && tlsConfig.getKeyStorePassword() != null) {
+        dataSource.setClientCertificateKeyStoreUrl("file:" + tlsConfig.getKeyStoreFilePath());
+        dataSource.setClientCertificateKeyStorePassword(tlsConfig.getKeyStorePassword());
+      }
+      if (tlsConfig.getKeyStoreType() != null) {
+        dataSource.setClientCertificateKeyStoreType(tlsConfig.getKeyStoreType());
+      }
+      if (tlsConfig.getTrustStoreFilePath() != null && tlsConfig.getTrustStorePassword() != null) {
+        dataSource.setTrustCertificateKeyStoreUrl("file:" + tlsConfig.getTrustStoreFilePath());
+        dataSource.setTrustCertificateKeyStorePassword(tlsConfig.getTrustStorePassword());
+      }
+      if (tlsConfig.getTrustStoreType() != null) {
+        dataSource.setTrustCertificateKeyStoreType(tlsConfig.getTrustStoreType());
+      }
+    }
+
     return dataSource;
   }
 
