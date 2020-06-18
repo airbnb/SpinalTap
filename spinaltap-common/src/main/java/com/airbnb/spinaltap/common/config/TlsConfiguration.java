@@ -39,7 +39,7 @@ public class TlsConfiguration {
   @JsonProperty("trust_store_type")
   private String trustStoreType;
 
-  public KeyManager[] getKeyManagers() throws Exception {
+  public KeyManagerFactory getKeyManagerFactory() throws Exception {
     if (keyStoreFilePath != null && keyStorePassword != null) {
       KeyStore keyStore =
           KeyStore.getInstance(keyStoreType == null ? KeyStore.getDefaultType() : keyStoreType);
@@ -47,12 +47,17 @@ public class TlsConfiguration {
       KeyManagerFactory keyManagerFactory =
           KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
       keyManagerFactory.init(keyStore, keyStorePassword.toCharArray());
-      return keyManagerFactory.getKeyManagers();
+      return keyManagerFactory;
     }
     return null;
   }
 
-  public TrustManager[] getTrustManagers() throws Exception {
+  public KeyManager[] getKeyManagers() throws Exception {
+    KeyManagerFactory keyManagerFactory = getKeyManagerFactory();
+    return keyManagerFactory == null ? null : keyManagerFactory.getKeyManagers();
+  }
+
+  public TrustManagerFactory getTrustManagerFactory() throws Exception {
     if (trustStoreFilePath != null && trustStorePassword != null) {
       KeyStore keyStore =
           KeyStore.getInstance(trustStoreType == null ? KeyStore.getDefaultType() : trustStoreType);
@@ -60,8 +65,13 @@ public class TlsConfiguration {
       TrustManagerFactory trustManagerFactory =
           TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
       trustManagerFactory.init(keyStore);
-      return trustManagerFactory.getTrustManagers();
+      return trustManagerFactory;
     }
     return null;
+  }
+
+  public TrustManager[] getTrustManagers() throws Exception {
+    TrustManagerFactory trustManagerFactory = getTrustManagerFactory();
+    return trustManagerFactory == null ? null : trustManagerFactory.getTrustManagers();
   }
 }
