@@ -32,7 +32,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 @AllArgsConstructor
-public final class StateHistory {
+public final class StateHistory<S extends SourceState> {
   private static final int DEFAULT_CAPACITY = 1440;
 
   @NonNull private final String sourceName;
@@ -40,13 +40,13 @@ public final class StateHistory {
   @Min(1)
   private final int capacity;
 
-  @NonNull private final Repository<Collection<SourceState>> repository;
+  @NonNull private final Repository<Collection<S>> repository;
   @NonNull private final MysqlSourceMetrics metrics;
-  @NonNull private final Deque<SourceState> stateHistory;
+  @NonNull private final Deque<S> stateHistory;
 
   public StateHistory(
       @NonNull final String sourceName,
-      @NonNull final Repository<Collection<SourceState>> repository,
+      @NonNull final Repository<Collection<S>> repository,
       @NonNull final MysqlSourceMetrics metrics) {
     this(sourceName, DEFAULT_CAPACITY, repository, metrics);
   }
@@ -54,9 +54,8 @@ public final class StateHistory {
   public StateHistory(
       @NonNull final String sourceName,
       @Min(1) final int capacity,
-      @NonNull final Repository<Collection<SourceState>> repository,
+      @NonNull final Repository<Collection<S>> repository,
       @NonNull final MysqlSourceMetrics metrics) {
-    Preconditions.checkState(capacity > 0);
 
     this.sourceName = sourceName;
     this.capacity = capacity;
@@ -66,7 +65,7 @@ public final class StateHistory {
   }
 
   /** Adds a new {@link SourceState} entry to the history. */
-  public void add(final SourceState state) {
+  public void add(final S state) {
     if (stateHistory.size() >= capacity) {
       stateHistory.removeFirst();
     }
@@ -76,7 +75,7 @@ public final class StateHistory {
   }
 
   /** Removes the most recently added {@link SourceState} entry from the history. */
-  public SourceState removeLast() {
+  public S removeLast() {
     return removeLast(1);
   }
 
@@ -86,12 +85,12 @@ public final class StateHistory {
    * @param count the number of records to remove.
    * @return the last removed {@link SourceState}.
    */
-  public SourceState removeLast(int count) {
+  public S removeLast(int count) {
     Preconditions.checkArgument(count > 0, "Count should be greater than 0");
     Preconditions.checkState(!stateHistory.isEmpty(), "The state history is empty");
     Preconditions.checkState(stateHistory.size() >= count, "Count is larger than history size");
 
-    SourceState state = stateHistory.removeLast();
+    S state = stateHistory.removeLast();
     for (int i = 1; i < count; i++) {
       state = stateHistory.removeLast();
     }
@@ -121,7 +120,7 @@ public final class StateHistory {
   }
 
   /** @return a collection representing the {@link SourceState}s currently in the state history. */
-  private Collection<SourceState> getPreviousStates() {
+  private Collection<S> getPreviousStates() {
     try {
       return repository.exists() ? repository.get() : Collections.emptyList();
     } catch (Exception ex) {

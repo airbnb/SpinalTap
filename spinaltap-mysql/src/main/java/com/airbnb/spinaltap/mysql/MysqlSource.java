@@ -6,7 +6,7 @@ package com.airbnb.spinaltap.mysql;
 
 import com.airbnb.spinaltap.Mutation;
 import com.airbnb.spinaltap.common.source.AbstractDataStoreSource;
-import com.airbnb.spinaltap.common.source.SourceState;
+import com.airbnb.spinaltap.common.source.MysqlSourceState;
 import com.airbnb.spinaltap.mysql.event.BinlogEvent;
 import com.airbnb.spinaltap.mysql.event.filter.MysqlEventFilter;
 import com.airbnb.spinaltap.mysql.event.mapper.MysqlMutationMapper;
@@ -50,19 +50,19 @@ public abstract class MysqlSource extends AbstractDataStoreSource<BinlogEvent> {
    */
   @NonNull private final TableCache tableCache;
 
-  /** The {@link StateRepository} where the {@link SourceState} is committed to. */
-  @NonNull private final StateRepository stateRepository;
+  /** The {@link StateRepository} where the {@link MysqlSourceState} is committed to. */
+  @NonNull private final StateRepository<MysqlSourceState> stateRepository;
 
   /** The initial {@link BinlogFilePos} to start streaming from for the source. */
   @NonNull private final BinlogFilePos initialBinlogFilePosition;
 
   @NonNull protected final MysqlSourceMetrics metrics;
 
-  /** The last checkpointed {@link SourceState} for the source. */
+  /** The last checkpointed {@link MysqlSourceState} for the source. */
   @NonNull
   @VisibleForTesting
   @Getter(AccessLevel.PACKAGE)
-  private final AtomicReference<SourceState> lastSavedState;
+  private final AtomicReference<MysqlSourceState> lastSavedState;
 
   /** The last MySQL {@link Transaction} seen so far from the streamed events. */
   @NonNull
@@ -73,15 +73,17 @@ public abstract class MysqlSource extends AbstractDataStoreSource<BinlogEvent> {
   /** The leader epoch of the current node processing the source stream. */
   @NonNull private final AtomicLong currentLeaderEpoch;
 
-  /** The {@link StateHistory} of checkpointed {@link SourceState}s. */
+  /** The {@link StateHistory} of checkpointed {@link MysqlSourceState}s. */
   @NonNull
   @VisibleForTesting
   @Getter(AccessLevel.PACKAGE)
-  private final StateHistory stateHistory;
+  private final StateHistory<MysqlSourceState> stateHistory;
 
   private final MysqlSchemaManager schemaManager;
 
-  /** The number of {@link SourceState} entries to remove from {@link StateHistory} on rollback. */
+  /**
+   * The number of {@link MysqlSourceState} entries to remove from {@link StateHistory} on rollback.
+   */
   private final AtomicInteger stateRollbackCount = new AtomicInteger(1);
 
   public MysqlSource(
@@ -89,14 +91,14 @@ public abstract class MysqlSource extends AbstractDataStoreSource<BinlogEvent> {
       @NonNull final DataSource dataSource,
       @NonNull final Set<String> tableNames,
       @NonNull final TableCache tableCache,
-      @NonNull final StateRepository stateRepository,
-      @NonNull final StateHistory stateHistory,
+      @NonNull final StateRepository<MysqlSourceState> stateRepository,
+      @NonNull final StateHistory<MysqlSourceState> stateHistory,
       @NonNull final BinlogFilePos initialBinlogFilePosition,
       @NonNull final MysqlSchemaManager schemaManager,
       @NonNull final MysqlSourceMetrics metrics,
       @NonNull final AtomicLong currentLeaderEpoch,
       @NonNull final AtomicReference<Transaction> lastTransaction,
-      @NonNull final AtomicReference<SourceState> lastSavedState) {
+      @NonNull final AtomicReference<MysqlSourceState> lastSavedState) {
     super(
         name,
         metrics,
@@ -128,7 +130,7 @@ public abstract class MysqlSource extends AbstractDataStoreSource<BinlogEvent> {
   protected void initialize() {
     tableCache.clear();
 
-    SourceState state = getSavedState();
+    MysqlSourceState state = getSavedState();
 
     lastSavedState.set(state);
     lastTransaction.set(
@@ -138,10 +140,10 @@ public abstract class MysqlSource extends AbstractDataStoreSource<BinlogEvent> {
     schemaManager.initialize(state.getLastPosition());
   }
 
-  /** Resets to the last valid {@link SourceState} recorded in the {@link StateHistory}. */
+  /** Resets to the last valid {@link MysqlSourceState} recorded in the {@link StateHistory}. */
   void resetToLastValidState() {
     if (stateHistory.size() >= stateRollbackCount.get()) {
-      final SourceState newState = stateHistory.removeLast(stateRollbackCount.get());
+      final MysqlSourceState newState = stateHistory.removeLast(stateRollbackCount.get());
       saveState(newState);
 
       metrics.resetSourcePosition();
@@ -159,8 +161,8 @@ public abstract class MysqlSource extends AbstractDataStoreSource<BinlogEvent> {
     }
   }
 
-  private SourceState getEarliestState() {
-    return new SourceState(0L, 0L, currentLeaderEpoch.get(), EARLIEST_BINLOG_POS);
+  private MysqlSourceState getEarliestState() {
+    return new MysqlSourceState(0L, 0L, currentLeaderEpoch.get(), EARLIEST_BINLOG_POS);
   }
 
   protected void onDeserializationError(final Exception ex) {
@@ -179,9 +181,11 @@ public abstract class MysqlSource extends AbstractDataStoreSource<BinlogEvent> {
     throw new RuntimeException(ex);
   }
 
-  /** Checkpoints the {@link SourceState} for the source at the given {@link Mutation} position. */
+  /**
+   * Checkpoints the {@link MysqlSourceState} for the source at the given {@link Mutation} position.
+   */
   public void commitCheckpoint(final Mutation<?> mutation) {
-    final SourceState savedState = lastSavedState.get();
+    final MysqlSourceState savedState = lastSavedState.get();
     if (mutation == null || savedState == null) {
       return;
     }
@@ -199,8 +203,8 @@ public abstract class MysqlSource extends AbstractDataStoreSource<BinlogEvent> {
       return;
     }
 
-    final SourceState newState =
-        new SourceState(
+    final MysqlSourceState newState =
+        new MysqlSourceState(
             metadata.getTimestamp(),
             metadata.getId(),
             currentLeaderEpoch.get(),
@@ -212,13 +216,13 @@ public abstract class MysqlSource extends AbstractDataStoreSource<BinlogEvent> {
     stateRollbackCount.set(1);
   }
 
-  void saveState(@NonNull final SourceState state) {
+  void saveState(@NonNull final MysqlSourceState state) {
     stateRepository.save(state);
     lastSavedState.set(state);
   }
 
-  SourceState getSavedState() {
+  MysqlSourceState getSavedState() {
     return Optional.ofNullable(stateRepository.read())
-        .orElse(new SourceState(0L, 0L, currentLeaderEpoch.get(), initialBinlogFilePosition));
+        .orElse(new MysqlSourceState(0L, 0L, currentLeaderEpoch.get(), initialBinlogFilePosition));
   }
 }

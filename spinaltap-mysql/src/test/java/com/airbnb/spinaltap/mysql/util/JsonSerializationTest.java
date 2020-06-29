@@ -6,7 +6,7 @@ package com.airbnb.spinaltap.mysql.util;
 
 import static org.junit.Assert.*;
 
-import com.airbnb.spinaltap.common.source.SourceState;
+import com.airbnb.spinaltap.common.source.MysqlSourceState;
 import com.airbnb.spinaltap.common.util.JsonUtil;
 import com.airbnb.spinaltap.mysql.BinlogFilePos;
 import com.airbnb.spinaltap.mysql.DataSource;
@@ -24,7 +24,8 @@ import org.junit.Test;
 public class JsonSerializationTest {
   private static final DataSource DATA_SOURCE = new DataSource("test", 3306, "test_service");
   private static final BinlogFilePos BINLOG_FILE_POS = new BinlogFilePos("test.218", 1234, 5678);
-  private static final SourceState SOURCE_STATE = new SourceState(15l, 20l, -1l, BINLOG_FILE_POS);
+  private static final MysqlSourceState SOURCE_STATE =
+      new MysqlSourceState(15l, 20l, -1l, BINLOG_FILE_POS);
   private static final String SERVER_UUID = "4a4ac150-fe5b-4093-a1ef-a8876011adaa";
 
   @Test
@@ -69,10 +70,10 @@ public class JsonSerializationTest {
 
   @Test
   public void testSerializeSourceState() throws Exception {
-    SourceState state =
+    MysqlSourceState state =
         JsonUtil.OBJECT_MAPPER.readValue(
             JsonUtil.OBJECT_MAPPER.writeValueAsString(SOURCE_STATE),
-            new TypeReference<SourceState>() {});
+            new TypeReference<MysqlSourceState>() {});
 
     assertEquals(BINLOG_FILE_POS, state.getLastPosition());
     assertEquals(SOURCE_STATE.getLastTimestamp(), state.getLastTimestamp());
@@ -81,19 +82,19 @@ public class JsonSerializationTest {
 
   @Test
   public void testSerializeStateHistory() throws Exception {
-    SourceState firstState = new SourceState(15l, 20l, -1l, BINLOG_FILE_POS);
-    SourceState secondState = new SourceState(16l, 21l, -1l, BINLOG_FILE_POS);
-    SourceState thirdState = new SourceState(17l, 22l, -1l, BINLOG_FILE_POS);
+    MysqlSourceState firstState = new MysqlSourceState(15l, 20l, -1l, BINLOG_FILE_POS);
+    MysqlSourceState secondState = new MysqlSourceState(16l, 21l, -1l, BINLOG_FILE_POS);
+    MysqlSourceState thirdState = new MysqlSourceState(17l, 22l, -1l, BINLOG_FILE_POS);
 
-    Deque<SourceState> stateHistory = Queues.newArrayDeque();
+    Deque<MysqlSourceState> stateHistory = Queues.newArrayDeque();
     stateHistory.addLast(firstState);
     stateHistory.addLast(secondState);
     stateHistory.addLast(thirdState);
 
-    Collection<SourceState> states =
+    Collection<MysqlSourceState> states =
         JsonUtil.OBJECT_MAPPER.readValue(
             JsonUtil.OBJECT_MAPPER.writeValueAsString(stateHistory),
-            new TypeReference<Collection<SourceState>>() {});
+            new TypeReference<Collection<MysqlSourceState>>() {});
 
     stateHistory = Queues.newArrayDeque(states);
 

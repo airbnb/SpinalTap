@@ -14,7 +14,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.airbnb.spinaltap.common.source.SourceState;
+import com.airbnb.spinaltap.common.source.MysqlSourceState;
 import com.airbnb.spinaltap.common.util.Repository;
 import com.airbnb.spinaltap.mysql.binlog_connector.BinaryLogConnectorSource;
 import com.airbnb.spinaltap.mysql.exception.InvalidBinlogPositionException;
@@ -45,14 +45,18 @@ public class MysqlSourceTest {
 
   private final TableCache tableCache = mock(TableCache.class);
   private final MysqlSourceMetrics mysqlMetrics = mock(MysqlSourceMetrics.class);
-  private final StateRepository stateRepository = mock(StateRepository.class);
+
+  @SuppressWarnings("unchecked")
+  private final StateRepository<MysqlSourceState> stateRepository = mock(StateRepository.class);
+
   private final MysqlSource.Listener listener = mock(MysqlSource.Listener.class);
   private final MysqlSchemaManager schemaManager = mock(MysqlSchemaManager.class);
 
   @Test
   public void testOpenClose() throws Exception {
     TestSource source = new TestSource();
-    SourceState savedState = new SourceState(SAVED_TIMESTAMP, SAVED_OFFSET, 0L, BINLOG_FILE_POS);
+    MysqlSourceState savedState =
+        new MysqlSourceState(SAVED_TIMESTAMP, SAVED_OFFSET, 0L, BINLOG_FILE_POS);
 
     when(stateRepository.read()).thenReturn(savedState);
 
@@ -73,8 +77,8 @@ public class MysqlSourceTest {
   @Test
   public void testSaveState() throws Exception {
     TestSource source = new TestSource();
-    SourceState savedState = mock(SourceState.class);
-    SourceState newState = mock(SourceState.class);
+    MysqlSourceState savedState = mock(MysqlSourceState.class);
+    MysqlSourceState newState = mock(MysqlSourceState.class);
 
     when(stateRepository.read()).thenReturn(savedState);
 
@@ -87,13 +91,13 @@ public class MysqlSourceTest {
   @Test
   public void testGetState() throws Exception {
     TestSource source = new TestSource();
-    SourceState savedState = mock(SourceState.class);
+    MysqlSourceState savedState = mock(MysqlSourceState.class);
 
     when(stateRepository.read()).thenReturn(savedState);
 
     source.initialize();
 
-    SourceState state = source.getSavedState();
+    MysqlSourceState state = source.getSavedState();
 
     assertEquals(savedState, state);
 
@@ -108,18 +112,19 @@ public class MysqlSourceTest {
 
   @Test
   public void testResetToLastValidState() throws Exception {
-    StateHistory stateHistory = createTestStateHistory();
+    StateHistory<MysqlSourceState> stateHistory = createTestStateHistory();
     TestSource source = new TestSource(stateHistory);
 
-    SourceState savedState = mock(SourceState.class);
-    SourceState earliestState = new SourceState(0L, 0L, 0L, MysqlSource.EARLIEST_BINLOG_POS);
+    MysqlSourceState savedState = mock(MysqlSourceState.class);
+    MysqlSourceState earliestState =
+        new MysqlSourceState(0L, 0L, 0L, MysqlSource.EARLIEST_BINLOG_POS);
 
     when(stateRepository.read()).thenReturn(savedState);
 
-    SourceState firstState = mock(SourceState.class);
-    SourceState secondState = mock(SourceState.class);
-    SourceState thirdState = mock(SourceState.class);
-    SourceState fourthState = mock(SourceState.class);
+    MysqlSourceState firstState = mock(MysqlSourceState.class);
+    MysqlSourceState secondState = mock(MysqlSourceState.class);
+    MysqlSourceState thirdState = mock(MysqlSourceState.class);
+    MysqlSourceState fourthState = mock(MysqlSourceState.class);
 
     stateHistory.add(firstState);
     stateHistory.add(secondState);
@@ -162,7 +167,7 @@ public class MysqlSourceTest {
     assertFalse(stateHistory.isEmpty());
 
     source.resetToLastValidState();
-    assertEquals(new SourceState(23L, 1L, 0L, filePos), source.getLastSavedState().get());
+    assertEquals(new MysqlSourceState(23L, 1L, 0L, filePos), source.getLastSavedState().get());
   }
 
   @Test
@@ -191,7 +196,7 @@ public class MysqlSourceTest {
 
   @Test
   public void testCommitCheckpoint() throws Exception {
-    StateHistory stateHistory = createTestStateHistory();
+    StateHistory<MysqlSourceState> stateHistory = createTestStateHistory();
     TestSource source = new TestSource(stateHistory);
 
     Row row = new Row(null, ImmutableMap.of());
@@ -200,7 +205,8 @@ public class MysqlSourceTest {
     MysqlMutationMetadata metadata =
         new MysqlMutationMetadata(null, filePos, null, 0L, 0L, 0L, null, lastTransaction, 0, 0);
     MysqlMutation mutation = new MysqlInsertMutation(metadata, row);
-    SourceState savedState = new SourceState(SAVED_TIMESTAMP, SAVED_OFFSET, 0L, BINLOG_FILE_POS);
+    MysqlSourceState savedState =
+        new MysqlSourceState(SAVED_TIMESTAMP, SAVED_OFFSET, 0L, BINLOG_FILE_POS);
 
     when(stateRepository.read()).thenReturn(savedState);
 
@@ -219,12 +225,13 @@ public class MysqlSourceTest {
     mutation = new MysqlInsertMutation(metadata, row);
 
     source.checkpoint(mutation);
-    assertEquals(new SourceState(23L, newOffset, 0L, filePos), source.getLastSavedState().get());
+    assertEquals(
+        new MysqlSourceState(23L, newOffset, 0L, filePos), source.getLastSavedState().get());
     assertEquals(stateHistory.removeLast(), source.getLastSavedState().get());
   }
 
-  private StateHistory createTestStateHistory() {
-    return new StateHistory("", 10, mock(Repository.class), mysqlMetrics);
+  private StateHistory<MysqlSourceState> createTestStateHistory() {
+    return new StateHistory<MysqlSourceState>("", 10, mock(Repository.class), mysqlMetrics);
   }
 
   @Getter
@@ -236,7 +243,7 @@ public class MysqlSourceTest {
       this(createTestStateHistory());
     }
 
-    TestSource(StateHistory stateHistory) {
+    TestSource(StateHistory<MysqlSourceState> stateHistory) {
       super(
           SOURCE_NAME,
           DATA_SOURCE,

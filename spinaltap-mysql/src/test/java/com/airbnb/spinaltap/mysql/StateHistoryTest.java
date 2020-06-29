@@ -9,7 +9,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 
-import com.airbnb.spinaltap.common.source.SourceState;
+import com.airbnb.spinaltap.common.source.MysqlSourceState;
 import com.airbnb.spinaltap.common.util.Repository;
 import com.google.common.collect.Lists;
 import java.util.Arrays;
@@ -26,13 +26,14 @@ public class StateHistoryTest {
 
   @Test
   public void test() throws Exception {
-    SourceState firstState = mock(SourceState.class);
-    SourceState secondState = mock(SourceState.class);
-    SourceState thirdState = mock(SourceState.class);
-    SourceState fourthState = mock(SourceState.class);
+    MysqlSourceState firstState = mock(MysqlSourceState.class);
+    MysqlSourceState secondState = mock(MysqlSourceState.class);
+    MysqlSourceState thirdState = mock(MysqlSourceState.class);
+    MysqlSourceState fourthState = mock(MysqlSourceState.class);
 
     TestRepository repository = new TestRepository(firstState);
-    StateHistory history = new StateHistory(SOURCE_NAME, 2, repository, metrics);
+    StateHistory<MysqlSourceState> history =
+        new StateHistory<>(SOURCE_NAME, 2, repository, metrics);
 
     history.add(secondState);
 
@@ -46,25 +47,27 @@ public class StateHistoryTest {
 
   @Test
   public void testEmptyHistory() throws Exception {
-    SourceState state = mock(SourceState.class);
+    MysqlSourceState state = mock(MysqlSourceState.class);
 
     TestRepository repository = new TestRepository();
-    StateHistory history = new StateHistory(SOURCE_NAME, 2, repository, metrics);
+    StateHistory<MysqlSourceState> history =
+        new StateHistory<>(SOURCE_NAME, 2, repository, metrics);
     assertTrue(history.isEmpty());
 
     repository = new TestRepository(state);
-    history = new StateHistory(SOURCE_NAME, 2, repository, metrics);
+    history = new StateHistory<>(SOURCE_NAME, 2, repository, metrics);
     assertFalse(history.isEmpty());
   }
 
   @Test
   public void testRemoveLastFromHistory() throws Exception {
-    SourceState firstState = mock(SourceState.class);
-    SourceState secondState = mock(SourceState.class);
-    SourceState thirdState = mock(SourceState.class);
+    MysqlSourceState firstState = mock(MysqlSourceState.class);
+    MysqlSourceState secondState = mock(MysqlSourceState.class);
+    MysqlSourceState thirdState = mock(MysqlSourceState.class);
 
     TestRepository repository = new TestRepository(firstState, secondState, thirdState);
-    StateHistory history = new StateHistory(SOURCE_NAME, 3, repository, metrics);
+    StateHistory<MysqlSourceState> history =
+        new StateHistory<>(SOURCE_NAME, 3, repository, metrics);
 
     assertEquals(thirdState, history.removeLast());
     assertEquals(secondState, history.removeLast());
@@ -74,28 +77,31 @@ public class StateHistoryTest {
 
   @Test(expected = IllegalStateException.class)
   public void testRemoveFromEmptyHistory() throws Exception {
-    StateHistory history = new StateHistory(SOURCE_NAME, 2, new TestRepository(), metrics);
+    StateHistory<MysqlSourceState> history =
+        new StateHistory<>(SOURCE_NAME, 2, new TestRepository(), metrics);
     history.removeLast();
   }
 
   @Test(expected = IllegalStateException.class)
   public void testRemoveMoreElementsThanInHistory() throws Exception {
-    SourceState firstState = mock(SourceState.class);
-    SourceState secondState = mock(SourceState.class);
+    MysqlSourceState firstState = mock(MysqlSourceState.class);
+    MysqlSourceState secondState = mock(MysqlSourceState.class);
 
     TestRepository repository = new TestRepository(firstState, secondState);
-    StateHistory history = new StateHistory(SOURCE_NAME, 2, repository, metrics);
+    StateHistory<MysqlSourceState> history =
+        new StateHistory<>(SOURCE_NAME, 2, repository, metrics);
 
     history.removeLast(3);
   }
 
   @Test
   public void testRemoveAllElementsFromHistory() throws Exception {
-    SourceState firstState = mock(SourceState.class);
-    SourceState secondState = mock(SourceState.class);
+    MysqlSourceState firstState = mock(MysqlSourceState.class);
+    MysqlSourceState secondState = mock(MysqlSourceState.class);
 
     TestRepository repository = new TestRepository(firstState, secondState);
-    StateHistory history = new StateHistory(SOURCE_NAME, 2, repository, metrics);
+    StateHistory<MysqlSourceState> history =
+        new StateHistory<>(SOURCE_NAME, 2, repository, metrics);
 
     assertEquals(firstState, history.removeLast(2));
     assertTrue(history.isEmpty());
@@ -103,12 +109,13 @@ public class StateHistoryTest {
 
   @Test
   public void testRemoveMultipleElementsFromHistory() throws Exception {
-    SourceState firstState = mock(SourceState.class);
-    SourceState secondState = mock(SourceState.class);
-    SourceState thirdState = mock(SourceState.class);
+    MysqlSourceState firstState = mock(MysqlSourceState.class);
+    MysqlSourceState secondState = mock(MysqlSourceState.class);
+    MysqlSourceState thirdState = mock(MysqlSourceState.class);
 
     TestRepository repository = new TestRepository(firstState, secondState, thirdState);
-    StateHistory history = new StateHistory(SOURCE_NAME, 3, repository, metrics);
+    StateHistory<MysqlSourceState> history =
+        new StateHistory<>(SOURCE_NAME, 3, repository, metrics);
 
     assertEquals(secondState, history.removeLast(2));
     assertEquals(Collections.singletonList(firstState), repository.get());
@@ -116,7 +123,7 @@ public class StateHistoryTest {
 
   @Test
   public void testRemoveStateHistory() throws Exception {
-    TestRepository repository = new TestRepository(mock(SourceState.class));
+    TestRepository repository = new TestRepository(mock(MysqlSourceState.class));
     assertTrue(repository.exists());
     repository.remove();
     assertFalse(repository.exists());
@@ -124,10 +131,10 @@ public class StateHistoryTest {
 
   @NoArgsConstructor
   @AllArgsConstructor
-  public class TestRepository implements Repository<Collection<SourceState>> {
-    private List<SourceState> states;
+  public static class TestRepository implements Repository<Collection<MysqlSourceState>> {
+    private List<MysqlSourceState> states;
 
-    TestRepository(SourceState... states) {
+    TestRepository(MysqlSourceState... states) {
       this(Arrays.asList(states));
     }
 
@@ -137,23 +144,24 @@ public class StateHistoryTest {
     }
 
     @Override
-    public void create(Collection<SourceState> states) throws Exception {
+    public void create(Collection<MysqlSourceState> states) throws Exception {
       this.states = Lists.newArrayList(states);
     }
 
     @Override
-    public void set(Collection<SourceState> states) throws Exception {
+    public void set(Collection<MysqlSourceState> states) throws Exception {
       create(states);
     }
 
     @Override
-    public void update(Collection<SourceState> states, DataUpdater<Collection<SourceState>> updater)
+    public void update(
+        Collection<MysqlSourceState> states, DataUpdater<Collection<MysqlSourceState>> updater)
         throws Exception {
       create(states);
     }
 
     @Override
-    public Collection<SourceState> get() throws Exception {
+    public Collection<MysqlSourceState> get() throws Exception {
       return states;
     }
 

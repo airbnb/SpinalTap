@@ -6,6 +6,7 @@ package com.airbnb.spinaltap.common.pipe;
 
 import com.airbnb.common.metrics.TaggedMetricRegistry;
 import com.airbnb.spinaltap.common.config.SourceConfiguration;
+import com.airbnb.spinaltap.common.source.SourceState;
 import com.airbnb.spinaltap.common.util.StateRepositoryFactory;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -15,7 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RequiredArgsConstructor
-public abstract class AbstractPipeFactory<T extends SourceConfiguration> {
+public abstract class AbstractPipeFactory<S extends SourceState, T extends SourceConfiguration> {
   private static String HOST_NAME = "unknown";
 
   protected final TaggedMetricRegistry metricRegistry;
@@ -23,7 +24,7 @@ public abstract class AbstractPipeFactory<T extends SourceConfiguration> {
   public abstract List<Pipe> createPipes(
       T sourceConfig,
       String partitionName,
-      StateRepositoryFactory repositoryFactory,
+      StateRepositoryFactory<S> repositoryFactory,
       long leaderEpoch)
       throws Exception;
 
