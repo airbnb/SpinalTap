@@ -84,13 +84,13 @@ public class TableCacheTest {
 
     assertNull(tableCache.get(TABLE_ID));
 
-    tableCache.addOrUpdate(TABLE_ID, TABLE_NAME, DATABASE_NAME, binlogFilePos, columnTypes);
+    tableCache.addOrUpdate(TABLE_ID, TABLE_NAME, DATABASE_NAME, columnTypes);
 
     Table table = tableCache.get(TABLE_ID);
     assertEquals(TABLE, table);
     verify(schemaManager, times(1)).getTableColumns(DATABASE_NAME, TABLE_NAME);
 
-    tableCache.addOrUpdate(TABLE_ID, TABLE_NAME, DATABASE_NAME, binlogFilePos, columnTypes);
+    tableCache.addOrUpdate(TABLE_ID, TABLE_NAME, DATABASE_NAME, columnTypes);
 
     table = tableCache.get(TABLE_ID);
     assertEquals(TABLE, table);
@@ -101,13 +101,13 @@ public class TableCacheTest {
     when(schemaManager.getTableColumns(DATABASE_NAME, TABLE_NAME))
         .thenReturn(TABLE_COLUMNS_UPDATED);
 
-    tableCache.addOrUpdate(TABLE_ID, TABLE_NAME, DATABASE_NAME, binlogFilePos, columnTypes);
+    tableCache.addOrUpdate(TABLE_ID, TABLE_NAME, DATABASE_NAME, columnTypes);
 
     table = tableCache.get(TABLE_ID);
     assertEquals(TABLE_UPDATED, table);
     verify(schemaManager, times(2)).getTableColumns(DATABASE_NAME, TABLE_NAME);
 
-    tableCache.addOrUpdate(TABLE_ID, TABLE_NAME, DATABASE_NAME, binlogFilePos, columnTypes);
+    tableCache.addOrUpdate(TABLE_ID, TABLE_NAME, DATABASE_NAME, columnTypes);
 
     table = tableCache.get(TABLE_ID);
     assertEquals(TABLE_UPDATED, table);
@@ -121,7 +121,7 @@ public class TableCacheTest {
     when(schemaManager.getTableColumns(DATABASE_NAME, TABLE_NAME))
         .thenReturn(TABLE_COLUMNS_LARGE_STUB);
 
-    tableCache.addOrUpdate(TABLE_ID, TABLE_NAME, DATABASE_NAME, binlogFilePos, columnTypes);
+    tableCache.addOrUpdate(TABLE_ID, TABLE_NAME, DATABASE_NAME, columnTypes);
 
     table = tableCache.get(TABLE_ID);
     assertEquals(TABLE, table);
@@ -138,14 +138,14 @@ public class TableCacheTest {
         Arrays.asList(
             ColumnDataType.TINY, ColumnDataType.STRING, ColumnDataType.FLOAT, ColumnDataType.LONG);
 
-    tableCache.addOrUpdate(TABLE_ID, TABLE_NAME, DATABASE_NAME, binlogFilePos, columnTypes);
+    tableCache.addOrUpdate(TABLE_ID, TABLE_NAME, DATABASE_NAME, columnTypes);
 
     verify(schemaManager, times(1)).getTableColumns(DATABASE_NAME, TABLE_NAME);
 
     when(schemaManager.getTableColumns(DATABASE_NAME, newTable)).thenReturn(TABLE_COLUMNS_UPDATED);
     columnTypes = Arrays.asList(ColumnDataType.TINY, ColumnDataType.STRING, ColumnDataType.FLOAT);
 
-    tableCache.addOrUpdate(TABLE_ID, newTable, DATABASE_NAME, binlogFilePos, columnTypes);
+    tableCache.addOrUpdate(TABLE_ID, newTable, DATABASE_NAME, columnTypes);
 
     verify(schemaManager, times(1)).getTableColumns(DATABASE_NAME, newTable);
     verifyZeroInteractions(metrics);

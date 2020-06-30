@@ -5,6 +5,7 @@
 package com.airbnb.spinaltap.mysql.binlog_connector;
 
 import com.airbnb.spinaltap.common.config.TlsConfiguration;
+import com.airbnb.spinaltap.common.source.MysqlSourceState;
 import com.airbnb.spinaltap.mysql.BinlogFilePos;
 import com.airbnb.spinaltap.mysql.DataSource;
 import com.airbnb.spinaltap.mysql.MysqlClient;
@@ -49,8 +50,8 @@ public final class BinaryLogConnectorSource extends MysqlSource {
       @NonNull final BinaryLogClient binlogClient,
       @NonNull final MysqlClient mysqlClient,
       @NonNull final TableCache tableCache,
-      @NonNull final StateRepository stateRepository,
-      @NonNull final StateHistory stateHistory,
+      @NonNull final StateRepository<MysqlSourceState> stateRepository,
+      @NonNull final StateHistory<MysqlSourceState> stateHistory,
       @NonNull final MysqlSchemaManager schemaManager,
       @NonNull final MysqlSourceMetrics metrics,
       @NonNull final AtomicLong currentLeaderEpoch) {

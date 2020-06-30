@@ -13,6 +13,7 @@ import com.airbnb.spinaltap.common.destination.DestinationBuilder;
 import com.airbnb.spinaltap.common.pipe.AbstractPipeFactory;
 import com.airbnb.spinaltap.common.pipe.Pipe;
 import com.airbnb.spinaltap.common.pipe.PipeMetrics;
+import com.airbnb.spinaltap.common.source.MysqlSourceState;
 import com.airbnb.spinaltap.common.source.Source;
 import com.airbnb.spinaltap.common.util.StateRepositoryFactory;
 import com.airbnb.spinaltap.mysql.config.MysqlConfiguration;
@@ -30,7 +31,8 @@ import lombok.extern.slf4j.Slf4j;
 
 /** Represents a factory implement for {@link Pipe}s streaming from a {@link MysqlSource}. */
 @Slf4j
-public final class MysqlPipeFactory extends AbstractPipeFactory<MysqlConfiguration> {
+public final class MysqlPipeFactory
+    extends AbstractPipeFactory<MysqlSourceState, MysqlConfiguration> {
   public static final String DEFAULT_MYSQL_TOPIC_PREFIX = "spinaltap";
 
   @NonNull private final String mysqlUser;
@@ -78,7 +80,7 @@ public final class MysqlPipeFactory extends AbstractPipeFactory<MysqlConfigurati
   public List<Pipe> createPipes(
       @NonNull final MysqlConfiguration sourceConfig,
       @NonNull final String partitionName,
-      @NonNull final StateRepositoryFactory repositoryFactory,
+      @NonNull final StateRepositoryFactory<MysqlSourceState> repositoryFactory,
       @Min(0) final long leaderEpoch)
       throws Exception {
     return Collections.singletonList(
@@ -88,7 +90,7 @@ public final class MysqlPipeFactory extends AbstractPipeFactory<MysqlConfigurati
   private Pipe create(
       final MysqlConfiguration sourceConfig,
       final String partitionName,
-      final StateRepositoryFactory repositoryFactory,
+      final StateRepositoryFactory<MysqlSourceState> repositoryFactory,
       final long leaderEpoch)
       throws Exception {
     final Source source = createSource(sourceConfig, repositoryFactory, partitionName, leaderEpoch);
@@ -106,7 +108,7 @@ public final class MysqlPipeFactory extends AbstractPipeFactory<MysqlConfigurati
 
   private Source createSource(
       final MysqlConfiguration configuration,
-      final StateRepositoryFactory repositoryFactory,
+      final StateRepositoryFactory<MysqlSourceState> repositoryFactory,
       final String partitionName,
       final long leaderEpoch) {
     return MysqlSourceFactory.create(

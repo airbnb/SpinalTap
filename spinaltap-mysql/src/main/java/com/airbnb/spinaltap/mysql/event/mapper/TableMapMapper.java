@@ -32,11 +32,7 @@ final class TableMapMapper implements Mapper<TableMapEvent, List<MysqlMutation>>
   public List<MysqlMutation> map(@NonNull final TableMapEvent event) {
     try {
       tableCache.addOrUpdate(
-          event.getTableId(),
-          event.getTable(),
-          event.getDatabase(),
-          event.getBinlogFilePos(),
-          event.getColumnTypes());
+          event.getTableId(), event.getTable(), event.getDatabase(), event.getColumnTypes());
     } catch (Exception ex) {
       log.error("Failed to process table map event: " + event, ex);
       throw new RuntimeException(ex);

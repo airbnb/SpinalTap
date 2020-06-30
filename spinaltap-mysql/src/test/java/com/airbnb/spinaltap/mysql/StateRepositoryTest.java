@@ -7,7 +7,7 @@ package com.airbnb.spinaltap.mysql;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
-import com.airbnb.spinaltap.common.source.SourceState;
+import com.airbnb.spinaltap.common.source.MysqlSourceState;
 import com.airbnb.spinaltap.common.util.Repository;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.Assert;
@@ -17,27 +17,30 @@ import org.mockito.stubbing.Answer;
 
 public class StateRepositoryTest {
   private final MysqlSourceMetrics metrics = mock(MysqlSourceMetrics.class);
-  private final Repository<SourceState> repository = mock(Repository.class);
 
-  private final StateRepository stateRepository = new StateRepository("test", repository, metrics);
+  @SuppressWarnings("unchecked")
+  private final Repository<MysqlSourceState> repository = mock(Repository.class);
+
+  private final StateRepository<MysqlSourceState> stateRepository =
+      new StateRepository<>("test", repository, metrics);
 
   @Test
   public void testSave() throws Exception {
-    SourceState state = mock(SourceState.class);
-    SourceState nextState = mock(SourceState.class);
-    AtomicReference<SourceState> updatedState = new AtomicReference<>();
+    MysqlSourceState state = mock(MysqlSourceState.class);
+    MysqlSourceState nextState = mock(MysqlSourceState.class);
+    AtomicReference<MysqlSourceState> updatedState = new AtomicReference<>();
 
     when(state.getCurrentLeaderEpoch()).thenReturn(5l);
 
     doAnswer(
-            new Answer<SourceState>() {
+            new Answer<MysqlSourceState>() {
               @Override
-              public SourceState answer(InvocationOnMock invocation) throws Throwable {
+              public MysqlSourceState answer(InvocationOnMock invocation) throws Throwable {
                 Object[] args = invocation.getArguments();
 
-                SourceState newState = (SourceState) args[0];
-                Repository.DataUpdater<SourceState> updater =
-                    (Repository.DataUpdater<SourceState>) args[1];
+                MysqlSourceState newState = (MysqlSourceState) args[0];
+                Repository.DataUpdater<MysqlSourceState> updater =
+                    (Repository.DataUpdater<MysqlSourceState>) args[1];
 
                 updatedState.set(updater.apply(state, newState));
 
@@ -45,7 +48,7 @@ public class StateRepositoryTest {
               }
             })
         .when(repository)
-        .update(any(SourceState.class), any(Repository.DataUpdater.class));
+        .update(any(MysqlSourceState.class), any(Repository.DataUpdater.class));
 
     // Test new leader epoch leader less than current
     when(nextState.getCurrentLeaderEpoch()).thenReturn(4l);
@@ -67,10 +70,10 @@ public class StateRepositoryTest {
   public void testSaveFailure() throws Exception {
     doThrow(new RuntimeException())
         .when(repository)
-        .update(any(SourceState.class), any(Repository.DataUpdater.class));
+        .update(any(MysqlSourceState.class), any(Repository.DataUpdater.class));
 
     try {
-      stateRepository.save(mock(SourceState.class));
+      stateRepository.save(mock(MysqlSourceState.class));
     } catch (RuntimeException ex) {
       verify(metrics, times(1)).stateSaveFailure(any(Exception.class));
       throw ex;
@@ -79,7 +82,7 @@ public class StateRepositoryTest {
 
   @Test
   public void testRead() throws Exception {
-    SourceState state = mock(SourceState.class);
+    MysqlSourceState state = mock(MysqlSourceState.class);
 
     when(repository.get()).thenReturn(state);
     when(repository.exists()).thenReturn(false);

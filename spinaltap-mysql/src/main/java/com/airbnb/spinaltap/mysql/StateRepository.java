@@ -13,13 +13,13 @@ import lombok.extern.slf4j.Slf4j;
 /** Represents a repository for a {@link SourceState} record. */
 @Slf4j
 @RequiredArgsConstructor
-public class StateRepository {
+public class StateRepository<S extends SourceState> {
   @NonNull private final String sourceName;
-  @NonNull private final Repository<SourceState> repository;
+  @NonNull private final Repository<S> repository;
   @NonNull private final MysqlSourceMetrics metrics;
 
   /** Saves or updates the {@link SourceState} record in the repository */
-  public void save(@NonNull final SourceState state) {
+  public void save(@NonNull final S state) {
     try {
       repository.update(
           state,
@@ -42,8 +42,8 @@ public class StateRepository {
   }
 
   /** @return the {@link SourceState} record present in the repository. */
-  public SourceState read() {
-    SourceState state = null;
+  public S read() {
+    S state = null;
 
     try {
       if (repository.exists()) {

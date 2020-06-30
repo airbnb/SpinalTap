@@ -5,8 +5,8 @@
 package com.airbnb.spinaltap.mysql;
 
 import com.airbnb.spinaltap.common.config.TlsConfiguration;
+import com.airbnb.spinaltap.common.source.MysqlSourceState;
 import com.airbnb.spinaltap.common.source.Source;
-import com.airbnb.spinaltap.common.source.SourceState;
 import com.airbnb.spinaltap.common.util.Repository;
 import com.airbnb.spinaltap.common.validator.MutationOrderValidator;
 import com.airbnb.spinaltap.mysql.binlog_connector.BinaryLogConnectorSource;
@@ -31,8 +31,8 @@ public class MysqlSourceFactory {
       @NonNull final String password,
       @Min(0) final long serverId,
       final TlsConfiguration tlsConfiguration,
-      @NonNull final Repository<SourceState> backingStateRepository,
-      @NonNull final Repository<Collection<SourceState>> stateHistoryRepository,
+      @NonNull final Repository<MysqlSourceState> backingStateRepository,
+      @NonNull final Repository<Collection<MysqlSourceState>> stateHistoryRepository,
       final MysqlSchemaManagerFactory schemaManagerFactory,
       @NonNull final MysqlSourceMetrics metrics,
       @Min(0) final long leaderEpoch) {
@@ -51,9 +51,10 @@ public class MysqlSourceFactory {
       binlogClient.setServerId(serverId);
     }
 
-    final StateRepository stateRepository =
-        new StateRepository(name, backingStateRepository, metrics);
-    final StateHistory stateHistory = new StateHistory(name, stateHistoryRepository, metrics);
+    final StateRepository<MysqlSourceState> stateRepository =
+        new StateRepository<>(name, backingStateRepository, metrics);
+    final StateHistory<MysqlSourceState> stateHistory =
+        new StateHistory<>(name, stateHistoryRepository, metrics);
 
     final MysqlClient mysqlClient =
         MysqlClient.create(

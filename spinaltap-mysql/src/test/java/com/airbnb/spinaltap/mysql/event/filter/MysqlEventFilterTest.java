@@ -7,7 +7,7 @@ package com.airbnb.spinaltap.mysql.event.filter;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
-import com.airbnb.spinaltap.common.source.SourceState;
+import com.airbnb.spinaltap.common.source.MysqlSourceState;
 import com.airbnb.spinaltap.common.util.Filter;
 import com.airbnb.spinaltap.mysql.BinlogFilePos;
 import com.airbnb.spinaltap.mysql.TableCache;
@@ -39,7 +39,7 @@ public class MysqlEventFilterTest {
     TableCache tableCache = mock(TableCache.class);
     BinlogEvent lastEvent = new XidEvent(0l, 0l, BINLOG_FILE_POS, 0l);
     BinlogFilePos nextPosition = new BinlogFilePos("test.123", 15, 100);
-    SourceState state = new SourceState(0l, lastEvent.getOffset(), 0l, BINLOG_FILE_POS);
+    MysqlSourceState state = new MysqlSourceState(0l, lastEvent.getOffset(), 0l, BINLOG_FILE_POS);
     Filter<BinlogEvent> filter =
         MysqlEventFilter.create(tableCache, TABLE_NAMES, new AtomicReference(state));
 

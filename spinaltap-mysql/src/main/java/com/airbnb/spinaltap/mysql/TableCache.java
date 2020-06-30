@@ -51,20 +51,18 @@ public class TableCache {
    * @param tableId The table id
    * @param tableName The table name
    * @param database The database name
-   * @param binlogFilePos The binlog file position
    * @param columnTypes The list of columnd data types
    */
   public void addOrUpdate(
       @Min(0) final long tableId,
       @NonNull final String tableName,
       @NonNull final String database,
-      @NonNull final BinlogFilePos binlogFilePos,
       @NonNull final List<ColumnDataType> columnTypes)
       throws Exception {
     final Table table = tableCache.getIfPresent(tableId);
 
     if (table == null || !validTable(table, tableName, database, columnTypes)) {
-      tableCache.put(tableId, fetchTable(tableId, database, tableName, binlogFilePos, columnTypes));
+      tableCache.put(tableId, fetchTable(tableId, database, tableName, columnTypes));
     }
   }
 
@@ -99,7 +97,6 @@ public class TableCache {
       final long tableId,
       final String databaseName,
       final String tableName,
-      final BinlogFilePos binlogFilePos,
       final List<ColumnDataType> columnTypes)
       throws Exception {
     final List<MysqlColumn> tableSchema = schemaManager.getTableColumns(databaseName, tableName);

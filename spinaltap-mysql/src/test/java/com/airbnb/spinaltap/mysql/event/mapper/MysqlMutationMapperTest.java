@@ -362,7 +362,7 @@ public class MysqlMutationMapperTest {
 
     assertTrue(mutations.isEmpty());
     verify(tableCache, times(1))
-        .addOrUpdate(TABLE_ID, TABLE_NAME, DATABASE_NAME, BINLOG_FILE_POS, event.getColumnTypes());
+        .addOrUpdate(TABLE_ID, TABLE_NAME, DATABASE_NAME, event.getColumnTypes());
   }
 
   @Test
