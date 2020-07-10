@@ -145,6 +145,7 @@ public final class MysqlPipeFactory
         .withValidation()
         .withLargeMessage(sourceConfiguration.isLargeMessageEnabled())
         .withDelaySendMs(sourceConfiguration.getDelaySendMs())
+        .withProducerConfig(destinationConfiguration.getProducerConfig())
         .build();
   }
 }

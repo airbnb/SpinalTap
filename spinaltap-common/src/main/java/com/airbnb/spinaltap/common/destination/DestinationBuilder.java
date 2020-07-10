@@ -13,6 +13,7 @@ import com.airbnb.spinaltap.common.validator.MutationOrderValidator;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import javax.validation.constraints.Min;
@@ -24,6 +25,7 @@ public abstract class DestinationBuilder<T> {
   protected String topicNamePrefix = "spinaltap";
   protected boolean largeMessageEnabled = false;
   protected long delaySendMs = 0;
+  protected Map<String, Object> producerConfig;
   private String name = "";
   private KeyProvider<Mutation<?>, String> keyProvider;
   private int bufferSize = 0;
@@ -70,6 +72,11 @@ public abstract class DestinationBuilder<T> {
 
   public final DestinationBuilder<T> withValidation() {
     this.validationEnabled = true;
+    return this;
+  }
+
+  public final DestinationBuilder<T> withProducerConfig(final Map<String, Object> producerConfig) {
+    this.producerConfig = producerConfig;
     return this;
   }
 

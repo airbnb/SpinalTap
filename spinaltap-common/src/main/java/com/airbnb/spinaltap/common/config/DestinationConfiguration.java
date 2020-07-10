@@ -5,6 +5,7 @@
 package com.airbnb.spinaltap.common.config;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.Map;
 import javax.validation.constraints.Min;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -39,4 +40,7 @@ public class DestinationConfiguration {
   @Min(0)
   @JsonProperty("pool_size")
   private int poolSize = DEFAULT_POOL_SIZE;
+
+  @JsonProperty("producer_config")
+  private Map<String, Object> producerConfig;
 }
