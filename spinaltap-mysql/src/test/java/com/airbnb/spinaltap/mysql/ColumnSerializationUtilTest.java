@@ -68,7 +68,8 @@ public class ColumnSerializationUtilTest {
         "c2",
         ByteBuffer.wrap(
             ColumnSerializationUtil.serializeColumn(
-                new Column(new ColumnMetadata("c2", ColumnDataType.STRING, false, 1, ""), "string"))),
+                new Column(
+                    new ColumnMetadata("c2", ColumnDataType.STRING, false, 1, ""), "string"))),
         "c3",
         ByteBuffer.wrap(
             ColumnSerializationUtil.serializeColumn(
@@ -78,6 +79,7 @@ public class ColumnSerializationUtilTest {
         "c4",
         ByteBuffer.wrap(
             ColumnSerializationUtil.serializeColumn(
-                new Column(new ColumnMetadata("c4", ColumnDataType.DATETIME, false, 3, ""), null))));
+                new Column(
+                    new ColumnMetadata("c4", ColumnDataType.DATETIME, false, 3, ""), null))));
   }
 }

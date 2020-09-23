@@ -195,7 +195,8 @@ public class KafkaDestinationTest extends AbstractKafkaIntegrationTestHarness {
         new Row(
             table,
             ImmutableMap.of(
-                "id", new Column(new ColumnMetadata("id", ColumnDataType.LONGLONG, true, 0, ""), 1L)));
+                "id",
+                new Column(new ColumnMetadata("id", ColumnDataType.LONGLONG, true, 0, ""), 1L)));
     MysqlMutation mutation;
     switch (type) {
       case INSERT:
