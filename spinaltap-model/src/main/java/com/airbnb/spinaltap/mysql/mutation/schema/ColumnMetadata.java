@@ -13,4 +13,5 @@ public class ColumnMetadata {
   private final ColumnDataType colType;
   private final boolean isPrimaryKey;
   private final int position;
+  private final String rawColumnType;
 }

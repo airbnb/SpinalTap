@@ -24,7 +24,7 @@ public class MysqlKeyProviderTest {
           "users",
           "test",
           null,
-          ImmutableList.of(new ColumnMetadata(ID_COLUMN, ColumnDataType.LONGLONG, true, 0)),
+          ImmutableList.of(new ColumnMetadata(ID_COLUMN, ColumnDataType.LONGLONG, true, 0, "")),
           ImmutableList.of(ID_COLUMN));
 
   private static final MysqlMutationMetadata MUTATION_METADATA =

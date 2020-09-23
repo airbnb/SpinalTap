@@ -29,10 +29,10 @@ public class TableCacheTest {
           DATABASE_NAME,
           OVERRIDING_DATABASE_NAME,
           Arrays.asList(
-              new ColumnMetadata("col1", ColumnDataType.TINY, true, 0),
-              new ColumnMetadata("col2", ColumnDataType.STRING, false, 1),
-              new ColumnMetadata("col3", ColumnDataType.FLOAT, true, 2),
-              new ColumnMetadata("col4", ColumnDataType.LONG, false, 3)),
+              new ColumnMetadata("col1", ColumnDataType.TINY, true, 0, "TINY"),
+              new ColumnMetadata("col2", ColumnDataType.STRING, false, 1, "TEXT"),
+              new ColumnMetadata("col3", ColumnDataType.FLOAT, true, 2, "FLOAT"),
+              new ColumnMetadata("col4", ColumnDataType.LONG, false, 3, "LONG")),
           Arrays.asList("col1", "col3"));
 
   private static final List<MysqlColumn> TABLE_COLUMNS =
@@ -49,9 +49,9 @@ public class TableCacheTest {
           DATABASE_NAME,
           OVERRIDING_DATABASE_NAME,
           Arrays.asList(
-              new ColumnMetadata("col1", ColumnDataType.TINY, true, 0),
-              new ColumnMetadata("col2", ColumnDataType.STRING, false, 1),
-              new ColumnMetadata("col3", ColumnDataType.FLOAT, true, 2)),
+              new ColumnMetadata("col1", ColumnDataType.TINY, true, 0, "TINY"),
+              new ColumnMetadata("col2", ColumnDataType.STRING, false, 1, "STRING"),
+              new ColumnMetadata("col3", ColumnDataType.FLOAT, true, 2, "FLOAT")),
           Arrays.asList("col1", "col3"));
 
   private static final List<MysqlColumn> TABLE_COLUMNS_UPDATED =
@@ -63,7 +63,7 @@ public class TableCacheTest {
   private static final List<MysqlColumn> TABLE_COLUMNS_LARGE_STUB =
       Arrays.asList(
           new MysqlColumn("col1", "TINY", "TINY", true),
-          new MysqlColumn("col2", "STRING", "STRING", false),
+          new MysqlColumn("col2", "STRING", "TEXT", false),
           new MysqlColumn("col3", "FLOAT", "FLOAT", true),
           new MysqlColumn("col4", "LONG", "LONG", false),
           new MysqlColumn("col5", "VARCHAR", "VARCHAR", false));

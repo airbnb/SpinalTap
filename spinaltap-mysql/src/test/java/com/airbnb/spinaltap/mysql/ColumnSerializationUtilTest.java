@@ -64,20 +64,20 @@ public class ColumnSerializationUtilTest {
         "c1",
         ByteBuffer.wrap(
             ColumnSerializationUtil.serializeColumn(
-                new Column(new ColumnMetadata("c1", ColumnDataType.INT24, false, 0), 12345))),
+                new Column(new ColumnMetadata("c1", ColumnDataType.INT24, false, 0, ""), 12345))),
         "c2",
         ByteBuffer.wrap(
             ColumnSerializationUtil.serializeColumn(
-                new Column(new ColumnMetadata("c2", ColumnDataType.STRING, false, 1), "string"))),
+                new Column(new ColumnMetadata("c2", ColumnDataType.STRING, false, 1, ""), "string"))),
         "c3",
         ByteBuffer.wrap(
             ColumnSerializationUtil.serializeColumn(
                 new Column(
-                    new ColumnMetadata("c3", ColumnDataType.BLOB, false, 2),
+                    new ColumnMetadata("c3", ColumnDataType.BLOB, false, 2, ""),
                     "blob.data".getBytes()))),
         "c4",
         ByteBuffer.wrap(
             ColumnSerializationUtil.serializeColumn(
-                new Column(new ColumnMetadata("c4", ColumnDataType.DATETIME, false, 3), null))));
+                new Column(new ColumnMetadata("c4", ColumnDataType.DATETIME, false, 3, ""), null))));
   }
 }
