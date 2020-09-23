@@ -31,7 +31,7 @@ public class RowTest {
             TABLE_NAME,
             DB_NAME,
             null,
-            ImmutableList.of(new ColumnMetadata(ID_COLUMN, ColumnDataType.LONGLONG, false, 0)),
+            ImmutableList.of(new ColumnMetadata(ID_COLUMN, ColumnDataType.LONGLONG, false, 0, "")),
             ImmutableList.of());
 
     Row row =
@@ -49,7 +49,7 @@ public class RowTest {
             TABLE_NAME,
             DB_NAME,
             null,
-            ImmutableList.of(new ColumnMetadata(ID_COLUMN, ColumnDataType.LONGLONG, true, 0)),
+            ImmutableList.of(new ColumnMetadata(ID_COLUMN, ColumnDataType.LONGLONG, true, 0, "")),
             ImmutableList.of(ID_COLUMN));
 
     Row row =
@@ -68,8 +68,8 @@ public class RowTest {
             DB_NAME,
             null,
             ImmutableList.of(
-                new ColumnMetadata(ID_COLUMN, ColumnDataType.LONGLONG, true, 0),
-                new ColumnMetadata(NAME_COLUMN, ColumnDataType.VARCHAR, false, 1)),
+                new ColumnMetadata(ID_COLUMN, ColumnDataType.LONGLONG, true, 0, ""),
+                new ColumnMetadata(NAME_COLUMN, ColumnDataType.VARCHAR, false, 1, "")),
             ImmutableList.of(ID_COLUMN));
 
     Row row =
@@ -91,8 +91,8 @@ public class RowTest {
             DB_NAME,
             null,
             ImmutableList.of(
-                new ColumnMetadata(ID_COLUMN, ColumnDataType.LONGLONG, true, 0),
-                new ColumnMetadata(NAME_COLUMN, ColumnDataType.VARCHAR, true, 1)),
+                new ColumnMetadata(ID_COLUMN, ColumnDataType.LONGLONG, true, 0, ""),
+                new ColumnMetadata(NAME_COLUMN, ColumnDataType.VARCHAR, true, 1, "")),
             ImmutableList.of(ID_COLUMN, NAME_COLUMN));
 
     Row row =

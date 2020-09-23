@@ -114,7 +114,11 @@ public class TableCache {
       MysqlColumn colInfo = schemaIterator.next();
       columnMetadata.add(
           new ColumnMetadata(
-              colInfo.getName(), columnTypes.get(position), colInfo.isPrimaryKey(), position));
+              colInfo.getName(),
+              columnTypes.get(position),
+              colInfo.isPrimaryKey(),
+              position,
+              colInfo.getColumnType()));
     }
 
     final List<String> primaryColumns =
