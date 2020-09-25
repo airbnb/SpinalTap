@@ -61,10 +61,10 @@ public class MysqlMutationMapperTest {
           "test_db",
           null,
           ImmutableList.of(
-              new ColumnMetadata("id", ColumnDataType.LONGLONG, true, 0, ""),
-              new ColumnMetadata("name", ColumnDataType.VARCHAR, false, 1, ""),
-              new ColumnMetadata("age", ColumnDataType.INT24, false, 2, ""),
-              new ColumnMetadata("sex", ColumnDataType.TINY, false, 3, "")),
+              new ColumnMetadata("id", ColumnDataType.LONGLONG, true, 0),
+              new ColumnMetadata("name", ColumnDataType.VARCHAR, false, 1),
+              new ColumnMetadata("age", ColumnDataType.INT24, false, 2),
+              new ColumnMetadata("sex", ColumnDataType.TINY, false, 3)),
           ImmutableList.of("id"));
 
   private final AtomicReference<Transaction> beginTransaction = new AtomicReference<>();
