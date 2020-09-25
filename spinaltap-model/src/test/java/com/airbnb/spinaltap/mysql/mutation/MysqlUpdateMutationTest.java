@@ -24,7 +24,7 @@ public class MysqlUpdateMutationTest {
             "table_name",
             "db_name",
             null,
-            ImmutableList.of(new ColumnMetadata("id", ColumnDataType.LONGLONG, false, 0, "")),
+            ImmutableList.of(new ColumnMetadata("id", ColumnDataType.LONGLONG, false, 0)),
             ImmutableList.of());
 
     Row row = new Row(table, ImmutableMap.of("id", new Column(table.getColumns().get("id"), 2)));

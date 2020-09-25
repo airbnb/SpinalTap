@@ -112,13 +112,11 @@ public class TableCache {
     final List<ColumnMetadata> columnMetadata = new ArrayList<>();
     for (int position = 0; position < columnTypes.size() && schemaIterator.hasNext(); position++) {
       MysqlColumn colInfo = schemaIterator.next();
-      columnMetadata.add(
+      ColumnMetadata metadata =
           new ColumnMetadata(
-              colInfo.getName(),
-              columnTypes.get(position),
-              colInfo.isPrimaryKey(),
-              position,
-              colInfo.getColumnType()));
+              colInfo.getName(), columnTypes.get(position), colInfo.isPrimaryKey(), position);
+      metadata.setRawColumnType(colInfo.getColumnType());
+      columnMetadata.add(metadata);
     }
 
     final List<String> primaryColumns =

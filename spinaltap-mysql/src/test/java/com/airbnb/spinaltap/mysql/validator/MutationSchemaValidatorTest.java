@@ -29,9 +29,9 @@ public class MutationSchemaValidatorTest {
           "test_db",
           null,
           ImmutableList.of(
-              new ColumnMetadata(ID_COLUMN, ColumnDataType.LONGLONG, true, 0, ""),
-              new ColumnMetadata(NAME_COLUMN, ColumnDataType.VARCHAR, false, 1, ""),
-              new ColumnMetadata(AGE_COLUMN, ColumnDataType.INT24, false, 2, "")),
+              new ColumnMetadata(ID_COLUMN, ColumnDataType.LONGLONG, true, 0),
+              new ColumnMetadata(NAME_COLUMN, ColumnDataType.VARCHAR, false, 1),
+              new ColumnMetadata(AGE_COLUMN, ColumnDataType.INT24, false, 2)),
           ImmutableList.of(ID_COLUMN));
 
   private static final MysqlMutationMetadata MUTATION_METADATA =
@@ -105,6 +105,6 @@ public class MutationSchemaValidatorTest {
 
   private Column createColumn(
       String name, ColumnDataType dataType, boolean isPk, Serializable value, int position) {
-    return new Column(new ColumnMetadata(name, dataType, isPk, position, ""), value);
+    return new Column(new ColumnMetadata(name, dataType, isPk, position), value);
   }
 }
