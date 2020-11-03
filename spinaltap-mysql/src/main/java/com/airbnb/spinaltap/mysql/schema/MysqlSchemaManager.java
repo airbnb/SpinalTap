@@ -31,6 +31,8 @@ public class MysqlSchemaManager implements MysqlSchemaArchiver {
   private static final Pattern INDEX_DDL_SQL_PATTERN =
       Pattern.compile(
           "^((CREATE(\\s+(UNIQUE|FULLTEXT|SPATIAL))?)|DROP)\\s+INDEX", Pattern.CASE_INSENSITIVE);
+  private static final Pattern GRANT_DDL_SQL_PATTERN =
+      Pattern.compile("^GRANT\\s+", Pattern.CASE_INSENSITIVE);
   private final String sourceName;
   private final MysqlSchemaStore schemaStore;
   private final MysqlSchemaDatabase schemaDatabase;
@@ -54,7 +56,11 @@ public class MysqlSchemaManager implements MysqlSchemaArchiver {
     }
 
     if (!shouldProcessDDL(sql)) {
-      log.info("Not processing DDL {} because it is not our interest.", sql);
+      if (isDDLGrant(sql)) {
+        log.info("Not processing a Grant DDL because it is not our interest.");
+      } else {
+        log.info("Not processing DDL {} because it is not our interest.", sql);
+      }
       return;
     }
 
@@ -244,5 +250,9 @@ public class MysqlSchemaManager implements MysqlSchemaArchiver {
     return TABLE_DDL_SQL_PATTERN.matcher(sql).find()
         || INDEX_DDL_SQL_PATTERN.matcher(sql).find()
         || DATABASE_DDL_SQL_PATTERN.matcher(sql).find();
+  }
+
+  private static boolean isDDLGrant(final String sql) {
+    return GRANT_DDL_SQL_PATTERN.matcher(sql).find();
   }
 }
