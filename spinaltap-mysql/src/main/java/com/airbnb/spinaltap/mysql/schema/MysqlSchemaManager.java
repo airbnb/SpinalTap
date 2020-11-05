@@ -51,7 +51,11 @@ public class MysqlSchemaManager implements MysqlSchemaArchiver {
     BinlogFilePos pos = event.getBinlogFilePos();
     String database = event.getDatabase();
     if (!isSchemaVersionEnabled) {
-      log.info("Skip processing DDL {} because schema versioning is not enabled.", sql);
+      if (isDDLGrant(sql)) {
+        log.info("Skip processing a Grant DDL because schema versioning is not enabled.");
+      } else {
+        log.info("Skip processing DDL {} because schema versioning is not enabled.", sql);
+      }
       return;
     }
 
