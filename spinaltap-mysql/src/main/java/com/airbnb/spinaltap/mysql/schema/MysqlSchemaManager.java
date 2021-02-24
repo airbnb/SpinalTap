@@ -175,7 +175,7 @@ public class MysqlSchemaManager implements MysqlSchemaArchiver {
     return isTableColumnChanged;
   }
 
-  public void initialize(BinlogFilePos pos) {
+  public synchronized void initialize(BinlogFilePos pos) {
     if (!isSchemaVersionEnabled) {
       log.info("Schema versioning is not enabled for {}", sourceName);
       return;
@@ -227,7 +227,7 @@ public class MysqlSchemaManager implements MysqlSchemaArchiver {
   }
 
   @Override
-  public void archive() {
+  public synchronized void archive() {
     if (!isSchemaVersionEnabled) {
       log.info("Schema versioning is not enabled for {}", sourceName);
       return;
