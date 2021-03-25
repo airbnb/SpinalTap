@@ -33,7 +33,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @AllArgsConstructor
 public final class StateHistory<S extends SourceState> {
-  private static final int DEFAULT_CAPACITY = 1440;
+  private static final int DEFAULT_CAPACITY = 500;
 
   @NonNull private final String sourceName;
 
@@ -66,7 +66,7 @@ public final class StateHistory<S extends SourceState> {
 
   /** Adds a new {@link SourceState} entry to the history. */
   public void add(final S state) {
-    if (stateHistory.size() >= capacity) {
+    while (stateHistory.size() >= capacity) {
       stateHistory.removeFirst();
     }
 
