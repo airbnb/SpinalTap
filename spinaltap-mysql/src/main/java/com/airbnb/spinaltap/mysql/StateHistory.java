@@ -33,7 +33,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @AllArgsConstructor
 public final class StateHistory<S extends SourceState> {
-  private static final int DEFAULT_CAPACITY = 500;
+  private static final int DEFAULT_CAPACITY = 50;
 
   @NonNull private final String sourceName;
 
