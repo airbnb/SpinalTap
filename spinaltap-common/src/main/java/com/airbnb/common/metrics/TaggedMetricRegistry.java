@@ -133,59 +133,31 @@ public class TaggedMetricRegistry {
   }
 
   public Counter counter(String name) {
-    return new Counter(registry.counter(name), registry.counter(name + UNTAGGED_SUFFIX));
+    return new DropwizardCounter(registry.counter(name), registry.counter(name + UNTAGGED_SUFFIX));
   }
 
   public Counter counter(String name, Map<String, String> tags) {
-    return new Counter(
+    return new DropwizardCounter(
         registry.counter(taggedName(name, tags)), registry.counter(name + UNTAGGED_SUFFIX));
   }
 
   public Counter counter(String name, String... tags) {
-    return new Counter(
+    return new DropwizardCounter(
         registry.counter(taggedName(name, tags)), registry.counter(name + UNTAGGED_SUFFIX));
   }
 
   public Histogram histogram(String name) {
-    return new Histogram(registry.histogram(name), registry.histogram(name + UNTAGGED_SUFFIX));
+    return new DropwizardHistogram(registry.histogram(name), registry.histogram(name + UNTAGGED_SUFFIX));
   }
 
   public Histogram histogram(String name, Map<String, String> tags) {
-    return new Histogram(
+    return new DropwizardHistogram(
         registry.histogram(taggedName(name, tags)), registry.histogram(name + UNTAGGED_SUFFIX));
   }
 
   public Histogram histogram(String name, String... tags) {
-    return new Histogram(
+    return new DropwizardHistogram(
         registry.histogram(taggedName(name, tags)), registry.histogram(name + UNTAGGED_SUFFIX));
-  }
-
-  public Meter meter(String name) {
-    return new Meter(registry.meter(name), registry.meter(name + UNTAGGED_SUFFIX));
-  }
-
-  public Meter meter(String name, Map<String, String> tags) {
-    return new Meter(
-        registry.meter(taggedName(name, tags)), registry.meter(name + UNTAGGED_SUFFIX));
-  }
-
-  public Meter meter(String name, String... tags) {
-    return new Meter(
-        registry.meter(taggedName(name, tags)), registry.meter(name + UNTAGGED_SUFFIX));
-  }
-
-  public Timer timer(String name) {
-    return new Timer(registry.timer(name), registry.timer(name + UNTAGGED_SUFFIX));
-  }
-
-  public Timer timer(String name, Map<String, String> tags) {
-    return new Timer(
-        registry.timer(taggedName(name, tags)), registry.timer(name + UNTAGGED_SUFFIX));
-  }
-
-  public Timer timer(String name, String... tags) {
-    return new Timer(
-        registry.timer(taggedName(name, tags)), registry.timer(name + UNTAGGED_SUFFIX));
   }
 
   public MetricRegistry getMetricRegistry() {
