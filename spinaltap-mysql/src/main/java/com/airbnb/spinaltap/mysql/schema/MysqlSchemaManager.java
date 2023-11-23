@@ -77,9 +77,20 @@ public class MysqlSchemaManager implements MysqlSchemaArchiver {
       return;
     }
 
-    // It could be a new database which has not been created in schema store database, so don't
-    // switch to any database before applying database DDL.
-    schemaDatabase.applyDDL(sql, DATABASE_DDL_SQL_PATTERN.matcher(sql).find() ? null : database);
+    String databaseToUse = database;
+    // Set database to be null in following 2 cases:
+    // 1. It could be a new database which has not been created in schema store database, so don't
+    //   switch to any database before applying database DDL.
+    // 2. It could be a system database while DDL uses the fully qualified table name (db.table).
+    //   E.g. User can apply DDL "CREATE TABLE DB.TABLE xxx" while the database set in current
+    // session is "sys".
+    // In either case, `addSourcePrefix` inside `applyDDL` will add the source prefix to the
+    // database name
+    // (sourceName/databaseName) so that it will be properly tracked in schema database
+    if (DATABASE_DDL_SQL_PATTERN.matcher(sql).find() || SYSTEM_DATABASES.contains(database)) {
+      databaseToUse = null;
+    }
+    schemaDatabase.applyDDL(sql, databaseToUse);
 
     // See what changed, check database by database
     Set<String> databasesInSchemaStore =
