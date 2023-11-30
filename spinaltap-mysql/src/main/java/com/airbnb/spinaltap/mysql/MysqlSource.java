@@ -131,6 +131,7 @@ public abstract class MysqlSource extends AbstractDataStoreSource<BinlogEvent> {
     tableCache.clear();
 
     MysqlSourceState state = getSavedState();
+    log.info("Initializing source {} with saved state {}.", name, state);
 
     lastSavedState.set(state);
     lastTransaction.set(
