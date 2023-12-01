@@ -4,35 +4,12 @@
  */
 package com.airbnb.common.metrics;
 
-/**
- * Our own version of the Histogram class that multiplexes tagged metrics to tagged and non-tagged
- * versions, because Datadog is not capable of averaging across tag values correctly.
- */
-public class Histogram {
-
-  private final com.codahale.metrics.Histogram[] histograms;
-
-  public Histogram(com.codahale.metrics.Histogram... histograms) {
-    this.histograms = histograms;
-  }
-
+/** A Histogram interface used to record and analyze the distribution of values. */
+public interface Histogram {
   /**
    * Adds a recorded value.
    *
    * @param value the length of the value
    */
-  public void update(int value) {
-    update((long) value);
-  }
-
-  /**
-   * Adds a recorded value.
-   *
-   * @param value the length of the value
-   */
-  public void update(long value) {
-    for (com.codahale.metrics.Histogram histogram : histograms) {
-      histogram.update(value);
-    }
-  }
+  public void update(long value);
 }
