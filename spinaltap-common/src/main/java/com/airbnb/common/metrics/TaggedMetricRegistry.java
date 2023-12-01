@@ -147,7 +147,8 @@ public class TaggedMetricRegistry {
   }
 
   public Histogram histogram(String name) {
-    return new DropwizardHistogram(registry.histogram(name), registry.histogram(name + UNTAGGED_SUFFIX));
+    return new DropwizardHistogram(
+        registry.histogram(name), registry.histogram(name + UNTAGGED_SUFFIX));
   }
 
   public Histogram histogram(String name, Map<String, String> tags) {
