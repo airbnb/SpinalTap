@@ -42,10 +42,11 @@ public abstract class AbstractDestination<T> extends ListenableDestination {
     try {
       final Stopwatch stopwatch = Stopwatch.createStarted();
 
-      final List<T> messages = mapper.apply(mutations.stream().collect(Collectors.toList()));
+      // introduce delay before mapper apply
       final Mutation<?> latestMutation = mutations.get(mutations.size() - 1);
-
       delay(latestMutation);
+
+      final List<T> messages = mapper.apply(mutations.stream().collect(Collectors.toList()));
       publish(messages);
 
       lastPublishedMutation.set(latestMutation);
